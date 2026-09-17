@@ -5,33 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Penggajian extends Model
+class TeachingSession extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'guru_id',
-        'periode',
-        'jumlah_sesi',
-        'jumlah_hadir',
-        'total_jam',
-        'transport_id',
-        'honor',
-        'total_transport',
-        'total',
-        'status_bayar',
+        'guru_id', 'location_id', 'transport_id', 'mapel',
+        'tanggal', 'jam_mulai', 'jam_selesai', 'jumlah_sesi',
     ];
 
     protected function casts(): array
     {
         return [
+            'tanggal' => 'date',
+            'jam_mulai' => 'datetime:H:i',
+            'jam_selesai' => 'datetime:H:i',
             'jumlah_sesi' => 'integer',
-            'jumlah_hadir' => 'integer',
-            'total_jam' => 'decimal:2',
-            'honor' => 'decimal:2',
-            'total_transport' => 'decimal:2',
-            'total' => 'decimal:2',
         ];
     }
 
@@ -40,8 +31,18 @@ class Penggajian extends Model
         return $this->belongsTo(Guru::class);
     }
 
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
+    }
+
     public function transport(): BelongsTo
     {
         return $this->belongsTo(Transport::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, 'session_id');
     }
 }

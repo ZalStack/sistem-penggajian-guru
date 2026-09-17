@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PenggajianController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\TeachingSessionController;
 use App\Http\Controllers\TransportController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +26,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::match(['patch', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -40,6 +44,22 @@ Route::middleware('auth')->group(function () {
     Route::delete('transport/{transport}', [TransportController::class, 'destroy'])->name('transport.destroy');
     Route::get('transport', [TransportController::class, 'index'])->name('transport.index');
 
+    Route::get('location', [LocationController::class, 'index'])->name('location.index');
+    Route::post('location', [LocationController::class, 'store'])->name('location.store');
+    Route::put('location/{location}', [LocationController::class, 'update'])->name('location.update');
+    Route::delete('location/{location}', [LocationController::class, 'destroy'])->name('location.destroy');
+
+    Route::get('session', [TeachingSessionController::class, 'index'])->name('session.index');
+    Route::post('session', [TeachingSessionController::class, 'store'])->name('session.store');
+    Route::put('session/{session}', [TeachingSessionController::class, 'update'])->name('session.update');
+    Route::delete('session/{session}', [TeachingSessionController::class, 'destroy'])->name('session.destroy');
+
+    Route::get('attendance', [AttendanceController::class, 'adminRecap'])->name('attendance.index');
+
+    Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
+    Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate');
+    Route::post('salary/{penggajian}/pay', [SalaryController::class, 'pay'])->name('salary.pay');
+
     Route::get('penggajian', [PenggajianController::class, 'index'])->name('penggajian.index');
     Route::get('penggajian/create', [PenggajianController::class, 'create'])->name('penggajian.create');
     Route::post('penggajian', [PenggajianController::class, 'store'])->name('penggajian.store');
@@ -51,6 +71,11 @@ Route::middleware('auth')->group(function () {
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.exportPdf');
     Route::get('laporan/export-excel', [LaporanController::class, 'exportExcel'])->name('laporan.exportExcel');
+
+    Route::post('checkin', [AttendanceController::class, 'checkin'])->name('checkin');
+    Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout');
+    Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
+    Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
 });
 
 require __DIR__.'/auth.php';

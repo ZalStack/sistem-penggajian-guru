@@ -10,24 +10,36 @@ interface AuthenticatedLayoutProps {
     children: ReactNode;
 }
 
-const navItems = [
+const adminNavItems = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard' },
     { href: 'guru.index', pattern: 'guru.*', label: 'Data Guru', icon: 'lucide:users' },
     { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'lucide:award' },
     { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'lucide:car' },
-    { href: 'penggajian.index', pattern: 'penggajian.*', label: 'Penggajian', icon: 'lucide:calculator' },
-    { href: 'laporan.index', pattern: 'laporan.*', label: 'Laporan & Rekap', icon: 'lucide:file-text' },
+    { href: 'location.index', pattern: 'location.*', label: 'Lokasi Absensi', icon: 'lucide:map-pin' },
+    { href: 'session.index', pattern: 'session.*', label: 'Sesi Mengajar', icon: 'lucide:book-open' },
+    { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'lucide:clipboard-check' },
+    { href: 'salary.index', pattern: 'salary.*', label: 'Penggajian', icon: 'lucide:banknote' },
+    { href: 'laporan.index', pattern: 'laporan.*', label: 'Laporan', icon: 'lucide:file-text' },
+];
+
+const guruNavItems = [
+    { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Absensi Saya', icon: 'lucide:clipboard-check' },
+    { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji Saya', icon: 'lucide:banknote' },
 ];
 
 export default function AuthenticatedLayout({ header, children }: AuthenticatedLayoutProps) {
     const { props } = usePage<{
-        auth: { user: { name: string; email: string } };
+        auth: { user: { name: string; email: string; role: string } };
         flash?: { success?: string; error?: string; warning?: string; info?: string };
     }>();
     const user = props.auth.user;
     const flash = props.flash;
     const [mobileOpen, setMobileOpen] = useState(false);
     const [sidebarDesktop, setSidebarDesktop] = useState(true);
+
+    const isAdmin = user?.role === 'admin';
+    const navItems = isAdmin ? adminNavItems : guruNavItems;
 
     const userInitials = (user?.name || 'A')
         .split(' ')
@@ -36,7 +48,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
         .slice(0, 2)
         .toUpperCase();
 
-    // Determine current section title
     const activeItem = navItems.find((item) => route().current(item.pattern));
 
     return (
@@ -61,7 +72,7 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                                 <span className="text-base font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
                                     SIGURU
                                     <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                                        v2
+                                        {isAdmin ? 'Admin' : 'Guru'}
                                     </span>
                                 </span>
                                 <span className="text-[11px] text-slate-400 block leading-none font-medium truncate">
@@ -73,7 +84,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                     <button
                         onClick={() => setMobileOpen(false)}
                         className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                        aria-label="Tutup menu"
                     >
                         <Icon icon="lucide:x" className="text-xl" />
                     </button>
@@ -82,7 +92,7 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                 <div className="flex flex-col justify-between h-[calc(100vh-4rem)] p-3 overflow-y-auto">
                     <nav className="space-y-1.5">
                         <div className={`px-3 pt-2 pb-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider ${!sidebarDesktop && 'lg:hidden'}`}>
-                            Menu Utama
+                            {isAdmin ? 'Menu Utama' : 'Menu Guru'}
                         </div>
                         {navItems.map((item) => {
                             const isActive = route().current(item.pattern);
@@ -112,7 +122,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                         })}
                     </nav>
 
-                    {/* Bottom user profile teaser in sidebar */}
                     {(sidebarDesktop || mobileOpen) && (
                         <div className="pt-4 border-t border-slate-100">
                             <Link
@@ -136,7 +145,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                 </div>
             </aside>
 
-            {/* Mobile backdrop overlay */}
             {mobileOpen && (
                 <div
                     className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
@@ -144,28 +152,22 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                 />
             )}
 
-            {/* Main Content Area */}
             <div className={`flex-1 min-w-0 flex flex-col transition-all duration-300 ${sidebarDesktop ? 'lg:ml-64' : 'lg:ml-20'}`}>
-                {/* Top Header */}
                 <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-md border-b border-slate-200/80 transition-shadow">
                     <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setMobileOpen(true)}
                                 className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
-                                aria-label="Buka menu navigasi"
                             >
                                 <Icon icon="lucide:menu" className="text-xl" />
                             </button>
                             <button
                                 onClick={() => setSidebarDesktop(!sidebarDesktop)}
                                 className="hidden lg:flex p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                                aria-label="Toggle sidebar desktop"
                             >
                                 <Icon icon={sidebarDesktop ? 'lucide:panel-left-close' : 'lucide:panel-left'} className="text-lg" />
                             </button>
-
-                            {/* Section indicator */}
                             <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
                                 <Link href={route('dashboard')} className="hover:text-slate-700 transition-colors">SIGURU</Link>
                                 <Icon icon="lucide:chevron-right" className="text-slate-300 text-xs" />
@@ -174,7 +176,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                         </div>
 
                         <div className="flex items-center gap-3">
-                            {/* Profile Dropdown */}
                             <Dropdown>
                                 <Dropdown.Trigger>
                                     <button className="flex items-center gap-2.5 py-1.5 pl-2 pr-3 rounded-full hover:bg-slate-100 transition-colors border border-slate-200/70 shadow-2xs">
@@ -192,6 +193,9 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                                         <p className="text-xs text-slate-400 font-medium">Masuk sebagai</p>
                                         <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
                                         <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                                        <span className="inline-block mt-1 text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                                            {isAdmin ? 'Administrator' : 'Guru'}
+                                        </span>
                                     </div>
                                     <Dropdown.Link href={route('profile.edit')} className="flex items-center gap-2 text-xs">
                                         <Icon icon="lucide:user" className="text-sm" /> Pengaturan Profil
@@ -205,7 +209,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                     </div>
                 </header>
 
-                {/* Flash Messages Container */}
                 <div className="px-4 sm:px-6 lg:px-8 pt-4 space-y-2.5">
                     {flash?.success && <FlashMessage type="success" message={flash.success} />}
                     {flash?.error && <FlashMessage type="error" message={flash.error} />}
@@ -213,7 +216,6 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                     {flash?.info && <FlashMessage type="info" message={flash.info} />}
                 </div>
 
-                {/* Main Page Content */}
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
                     {children}
                 </main>

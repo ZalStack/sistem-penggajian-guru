@@ -2,6 +2,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    role: 'admin' | 'guru';
+    guru_id: number | null;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -31,6 +33,7 @@ export interface Guru {
     grade_id: number;
     mapel: 'IPA' | 'MTK';
     jenjang: string | null;
+    user_id: number | null;
     grade?: Grade;
     penggajians?: Penggajian[];
     created_at: string;
@@ -42,32 +45,69 @@ export interface Penggajian {
     guru_id: number;
     periode: string;
     jumlah_sesi: number;
+    jumlah_hadir: number;
+    total_jam: number;
     transport_id: number;
     honor: number;
     total_transport: number;
     total: number;
+    status_bayar: 'belum_dibayar' | 'sudah_dibayar';
     guru?: Guru;
     transport?: Transport;
     created_at: string;
     updated_at: string;
 }
 
-export interface DashboardData {
-    totalGuru: number;
-    totalGrade: number;
-    totalPenggajian: number;
-    totalHonor: number;
-    guruPerGrade: {
-        kode: string;
-        count: number;
-        honor: string;
-    }[];
-    periode: string;
+export interface Location {
+    id: number;
+    nama_lokasi: string;
+    latitude: number;
+    longitude: number;
+    radius: number;
+    sessions_count?: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface TeachingSession {
+    id: number;
+    guru_id: number;
+    location_id: number;
+    transport_id: number;
+    mapel: 'IPA' | 'MTK';
+    tanggal: string;
+    jam_mulai: string;
+    jam_selesai: string;
+    jumlah_sesi: number;
+    guru?: Guru;
+    location?: Location;
+    transport?: Transport;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Attendance {
+    id: number;
+    guru_id: number;
+    session_id: number;
+    checkin_time: string | null;
+    checkin_lat: number | null;
+    checkin_lng: number | null;
+    checkout_time: string | null;
+    checkout_lat: number | null;
+    checkout_lng: number | null;
+    durasi: number;
+    status: 'valid' | 'tidak_valid' | 'belum_checkin' | 'belum_checkout';
+    tanggal: string;
+    guru?: Guru;
+    session?: TeachingSession;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface PageProps {
     auth: {
-        user: User;
+        user: User & { role: string };
     };
     flash?: {
         success?: string;
