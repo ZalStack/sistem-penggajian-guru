@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Guru;
 use App\Models\TeachingSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,7 +21,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $guru = $user->guru;
 
-        if (!$guru) {
+        if (! $guru) {
             return back()->withErrors(['error' => 'Akun ini tidak terhubung dengan data guru.']);
         }
 
@@ -59,7 +60,7 @@ class AttendanceController extends Controller
 
         return back()->with('success', $isValid
             ? 'Check-in berhasil! Lokasi valid.'
-            : 'Check-in dicatat, tetapi lokasi di luar radius (' . number_format($distance, 0) . 'm dari lokasi tujuan).');
+            : 'Check-in dicatat, tetapi lokasi di luar radius ('.number_format($distance, 0).'m dari lokasi tujuan).');
     }
 
     public function checkout(Request $request)
@@ -73,7 +74,7 @@ class AttendanceController extends Controller
         $user = $request->user();
         $guru = $user->guru;
 
-        if (!$guru) {
+        if (! $guru) {
             return back()->withErrors(['error' => 'Akun ini tidak terhubung dengan data guru.']);
         }
 
@@ -83,7 +84,7 @@ class AttendanceController extends Controller
             ->where('tanggal', $today)
             ->first();
 
-        if (!$attendance || !$attendance->checkin_time) {
+        if (! $attendance || ! $attendance->checkin_time) {
             return back()->withErrors(['error' => 'Anda belum melakukan check-in untuk sesi ini.']);
         }
 
@@ -101,13 +102,23 @@ class AttendanceController extends Controller
             'status' => $durasi > 0 ? 'valid' : 'tidak_valid',
         ]);
 
-        return back()->with('success', 'Check-out berhasil! Durasi mengajar: ' . $durasi . ' menit.');
+        return back()->with('success', 'Check-out berhasil! Durasi mengajar: '.$durasi.' menit.');
     }
 
     public function guruAttendance(Request $request)
     {
         $user = $request->user();
         $guru = $user->guru;
+
+        if (! $guru) {
+            return Inertia::render('Guru/Attendance/Index', [
+                'attendances' => [],
+                'totalHadir' => 0,
+                'totalJam' => 0,
+                'guru' => (object) ['nama' => $user->name],
+                'filters' => $request->only(['bulan']),
+            ]);
+        }
 
         $attendances = Attendance::with('session.location', 'session.transport')
             ->where('guru_id', $guru->id)
@@ -138,7 +149,7 @@ class AttendanceController extends Controller
 
         return Inertia::render('Admin/Attendance/Index', [
             'attendances' => $attendances,
-            'gurus' => \App\Models\Guru::with('grade')->orderBy('nama')->get(),
+            'gurus' => Guru::with('grade')->orderBy('nama')->get(),
             'filters' => $request->only(['periode', 'filter_guru']),
         ]);
     }

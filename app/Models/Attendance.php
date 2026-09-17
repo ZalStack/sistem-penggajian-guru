@@ -52,7 +52,9 @@ class Attendance extends Model
 
     public static function calculateDuration($checkin, $checkout): int
     {
-        if (!$checkin || !$checkout) return 0;
+        if (! $checkin || ! $checkout) {
+            return 0;
+        }
 
         return (int) $checkin->diffInMinutes($checkout);
     }

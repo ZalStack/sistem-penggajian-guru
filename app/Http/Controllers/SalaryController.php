@@ -81,7 +81,7 @@ class SalaryController extends Controller
             );
         }
 
-        return back()->with('success', 'Gaji berhasil dihitung untuk periode ' . $periodo);
+        return back()->with('success', 'Gaji berhasil dihitung untuk periode '.$periodo);
     }
 
     public function pay(Request $request, Penggajian $penggajian)
@@ -95,6 +95,16 @@ class SalaryController extends Controller
     {
         $user = $request->user();
         $guru = $user->guru;
+
+        if (! $guru) {
+            return Inertia::render('Guru/Salary/Index', [
+                'penggajians' => [],
+                'guru' => (object) ['nama' => $user->name],
+                'totalGaji' => 0,
+                'totalBayar' => 0,
+                'gajiBulanIni' => null,
+            ]);
+        }
 
         $penggajians = Penggajian::with('transport')
             ->where('guru_id', $guru->id)

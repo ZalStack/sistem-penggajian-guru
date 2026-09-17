@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
 
             $userGuru = User::create([
                 'name' => $data['nama'],
-                'email' => 'guru' . ($i + 1) . '@siguru.com',
+                'email' => 'guru'.($i + 1).'@siguru.com',
                 'password' => Hash::make('password'),
                 'role' => 'guru',
                 'guru_id' => $guru->id,

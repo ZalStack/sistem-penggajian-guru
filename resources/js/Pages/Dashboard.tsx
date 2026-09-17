@@ -22,7 +22,7 @@ interface DashboardProps {
     recentSessions?: any[];
     recentPenggajian?: any[];
     todaySessions?: any[];
-    todayAttendances?: Map<number, any>;
+    todayAttendances?: Record<string, any>;
     guru?: any;
     role: 'admin' | 'guru';
 }
@@ -49,7 +49,7 @@ export default function Dashboard({ stats, recentSessions, recentPenggajian, tod
                         {todaySessions && todaySessions.length > 0 ? (
                             <div className="space-y-3">
                                 {todaySessions.map((session: any) => {
-                                    const attendance = todayAttendances?.get?.(session.id) || (todayAttendances as any)?.[session.id];
+                                    const attendance = (todayAttendances as Record<string, any>)?.[session.id];
                                     return (
                                         <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                                             <div className="flex items-center gap-3">

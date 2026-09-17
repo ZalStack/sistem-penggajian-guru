@@ -37,7 +37,7 @@ class TeachingSessionController extends Controller
             'location_id' => 'required|exists:locations,id',
             'transport_id' => 'required|exists:transports,id',
             'mapel' => 'required|in:IPA,MTK',
-            'tanggal' => 'required|date|after_or_equal:today',
+            'tanggal' => 'required|date',
             'jam_mulai' => 'required',
             'jam_selesai' => 'required|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',

@@ -2,18 +2,18 @@
 
 namespace App\Exports;
 
-use App\Models\Penggajian;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PenggajianExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected Collection $penggajians;
+
     protected int $row = 0;
 
     public function __construct(Collection $penggajians)

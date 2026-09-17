@@ -42,7 +42,7 @@ function getStatusBadge(status: Attendance['status']) {
 export default function AttendanceIndex({ attendances, gurus, filters }: AttendanceIndexProps) {
     const handleFilterChange = (key: string, value: string) => {
         router.get(
-            route('admin.attendance.index'),
+            route('attendance.index'),
             { ...filters, [key]: value || undefined },
             { preserveState: true, replace: true }
         );
@@ -124,7 +124,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                             variant="secondary"
                             onClick={() => {
                                 router.get(
-                                    route('admin.attendance.index'),
+                                    route('attendance.index'),
                                     {},
                                     { preserveState: true, replace: true }
                                 );

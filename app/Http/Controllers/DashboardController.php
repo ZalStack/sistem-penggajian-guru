@@ -53,6 +53,22 @@ class DashboardController extends Controller
         $now = now();
         $periode = $now->format('Y-m');
 
+        if (! $guru) {
+            return Inertia::render('Dashboard', [
+                'stats' => [
+                    'total_sesi' => 0,
+                    'total_hadir' => 0,
+                    'total_jam' => 0,
+                    'gaji_bulan' => 0,
+                    'status_bayar' => 'belum_dibayar',
+                ],
+                'todaySessions' => [],
+                'todayAttendances' => (object) [],
+                'guru' => (object) ['nama' => $user->name],
+                'role' => 'guru',
+            ]);
+        }
+
         $totalHadir = Attendance::where('guru_id', $guru->id)
             ->whereMonth('tanggal', $now->month)
             ->whereYear('tanggal', $now->year)

@@ -39,7 +39,7 @@ function formatTime(dateStr: string | null): string {
 export default function AttendanceIndex({ attendances, totalHadir, totalJam, guru, filters }: AttendanceIndexProps) {
     const handleFilterBulan = (value: string) => {
         router.get(
-            route('guru.attendance.index'),
+            route('my-attendance'),
             { bulan: value || undefined },
             { preserveState: true, replace: true }
         );
