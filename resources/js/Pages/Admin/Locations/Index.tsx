@@ -183,10 +183,10 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-600 font-mono text-xs">{location.latitude.toFixed(6)}</span>
+                                            <span className="text-slate-600 font-mono text-xs">{Number(location.latitude).toFixed(6)}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-600 font-mono text-xs">{location.longitude.toFixed(6)}</span>
+                                            <span className="text-slate-600 font-mono text-xs">{Number(location.longitude).toFixed(6)}</span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="info">{location.radius} m</Badge>
@@ -237,7 +237,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                         <div>
                                             <p className="font-bold text-slate-900 text-sm">{location.nama_lokasi}</p>
                                             <p className="text-xs text-slate-400 font-mono">
-                                                {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+                                                {Number(location.latitude).toFixed(4)}, {Number(location.longitude).toFixed(4)}
                                             </p>
                                         </div>
                                     </div>

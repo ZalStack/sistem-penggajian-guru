@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Guru;
+use App\Models\Penggajian;
 use App\Models\TeachingSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -48,19 +49,21 @@ class AttendanceController extends Controller
 
         $isValid = $distance <= $session->location->radius;
 
+        if (! $isValid) {
+            return back()->withErrors(['error' => 'Check-in gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m). Silakan mendekat ke lokasi mengajar.']);
+        }
+
         $attendance = Attendance::updateOrCreate(
             ['guru_id' => $guru->id, 'session_id' => $session->id, 'tanggal' => $today],
             [
                 'checkin_time' => now(),
                 'checkin_lat' => $validated['latitude'],
                 'checkin_lng' => $validated['longitude'],
-                'status' => $isValid ? 'belum_checkout' : 'tidak_valid',
+                'status' => 'belum_checkout',
             ]
         );
 
-        return back()->with('success', $isValid
-            ? 'Check-in berhasil! Lokasi valid.'
-            : 'Check-in dicatat, tetapi lokasi di luar radius ('.number_format($distance, 0).'m dari lokasi tujuan).');
+        return back()->with('success', 'Check-in berhasil! Lokasi valid ('.number_format($distance, 0).'m dari lokasi tujuan).');
     }
 
     public function checkout(Request $request)
@@ -92,6 +95,19 @@ class AttendanceController extends Controller
             return back()->withErrors(['error' => 'Anda sudah melakukan check-out untuk sesi ini.']);
         }
 
+        $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
+
+        $distance = Attendance::calculateDistance(
+            $validated['latitude'], $validated['longitude'],
+            (float) $session->location->latitude, (float) $session->location->longitude
+        );
+
+        $isWithinRadius = $distance <= $session->location->radius;
+
+        if (! $isWithinRadius) {
+            return back()->withErrors(['error' => 'Check-out gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m).']);
+        }
+
         $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
 
         $attendance->update([
@@ -102,7 +118,12 @@ class AttendanceController extends Controller
             'status' => $durasi > 0 ? 'valid' : 'tidak_valid',
         ]);
 
-        return back()->with('success', 'Check-out berhasil! Durasi mengajar: '.$durasi.' menit.');
+        if ($durasi > 0) {
+            $periodo = now()->format('Y-m');
+            Penggajian::calculateForGuru($guru, $periodo);
+        }
+
+        return back()->with('success', 'Check-out berhasil! Lokasi valid ('.number_format($distance, 0).'m). Durasi mengajar: '.$durasi.' menit.');
     }
 
     public function guruAttendance(Request $request)

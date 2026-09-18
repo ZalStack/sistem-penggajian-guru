@@ -47,6 +47,10 @@ class LocationController extends Controller
 
     public function destroy(Location $location)
     {
+        if ($location->sessions()->exists()) {
+            return back()->with('error', 'Lokasi tidak dapat dihapus karena masih digunakan oleh '.$location->sessions()->count().' sesi mengajar.');
+        }
+
         $location->delete();
 
         return back()->with('success', 'Lokasi berhasil dihapus.');

@@ -18,11 +18,12 @@ interface SalaryIndexProps {
         filter_guru?: string;
         status_bayar?: string;
     };
+    periodeDefault: string;
 }
 
-export default function SalaryIndex({ penggajians, gurus, filters }: SalaryIndexProps) {
+export default function SalaryIndex({ penggajians, gurus, filters, periodeDefault }: SalaryIndexProps) {
     const calculateForm = useForm({
-        periode: filters.periode ?? '',
+        periode: filters.periode ?? periodeDefault,
     });
 
     const handleFilterChange = (key: string, value: string) => {
@@ -251,14 +252,14 @@ export default function SalaryIndex({ penggajians, gurus, filters }: SalaryIndex
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Link
-                                                    href={route('penggajian.show', p.id)}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                                                    title="Lihat & Cetak Slip Gaji"
+                                                <a
+                                                    href={route('salary.payslip', p.id)}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                                    title="Download Slip Gaji PDF"
                                                 >
-                                                    <Icon icon="lucide:printer" className="text-sm" />
-                                                    <span className="hidden sm:inline">Slip</span>
-                                                </Link>
+                                                    <Icon icon="lucide:download" className="text-sm" />
+                                                    <span className="hidden sm:inline">PDF</span>
+                                                </a>
                                                 {p.status_bayar === 'belum_dibayar' && (
                                                     <Button
                                                         variant="success"
@@ -352,13 +353,13 @@ export default function SalaryIndex({ penggajians, gurus, filters }: SalaryIndex
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Link
-                                            href={route('penggajian.show', p.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                                        <a
+                                            href={route('salary.payslip', p.id)}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                                         >
-                                            <Icon icon="lucide:printer" className="text-xs" />
-                                            Slip
-                                        </Link>
+                                            <Icon icon="lucide:download" className="text-xs" />
+                                            PDF
+                                        </a>
                                         {p.status_bayar === 'belum_dibayar' && (
                                             <Button
                                                 variant="success"

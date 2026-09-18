@@ -20,10 +20,10 @@ class Attendance extends Model
         return [
             'checkin_time' => 'datetime',
             'checkout_time' => 'datetime',
-            'checkin_lat' => 'decimal:7',
-            'checkin_lng' => 'decimal:7',
-            'checkout_lat' => 'decimal:7',
-            'checkout_lng' => 'decimal:7',
+            'checkin_lat' => 'float',
+            'checkin_lng' => 'float',
+            'checkout_lat' => 'float',
+            'checkout_lng' => 'float',
             'durasi' => 'integer',
             'tanggal' => 'date',
         ];

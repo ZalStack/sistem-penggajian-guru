@@ -83,6 +83,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         <TableHead className="text-right">Transport</TableHead>
                                         <TableHead className="text-right">Total</TableHead>
                                         <TableHead>Status Bayar</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -116,6 +117,16 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                                     {statusConfig[pg.status_bayar]?.label || pg.status_bayar}
                                                 </Badge>
                                             </TableCell>
+                                            <TableCell className="text-right">
+                                                <a
+                                                    href={route('my-salary.payslip', pg.id)}
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                                    title="Download Slip Gaji PDF"
+                                                >
+                                                    <Icon icon="lucide:download" className="text-sm" />
+                                                    <span className="hidden sm:inline">Slip Gaji</span>
+                                                </a>
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                     {/* Grand Total Row */}
@@ -132,6 +143,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         <TableCell className="text-right font-bold text-slate-900">
                                             {formatCurrency(totalGaji)}
                                         </TableCell>
+                                        <TableCell />
                                         <TableCell />
                                     </TableRow>
                                 </TableBody>
@@ -174,6 +186,16 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                                 {statusConfig[pg.status_bayar]?.label || pg.status_bayar}
                                             </Badge>
                                         </div>
+                                    </div>
+
+                                    <div className="pt-2 border-t border-slate-200/60">
+                                        <a
+                                            href={route('my-salary.payslip', pg.id)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                        >
+                                            <Icon icon="lucide:download" className="text-xs" />
+                                            Download Slip Gaji
+                                        </a>
                                     </div>
                                 </div>
                             ))}

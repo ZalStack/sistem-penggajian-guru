@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Attendance;
 use App\Models\Guru;
 use App\Models\Penggajian;
-use App\Models\TeachingSession;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -22,10 +21,13 @@ class SalaryController extends Controller
 
         $penggajians = $query->get();
 
+        $periodeDefault = now()->format('Y-m');
+
         return Inertia::render('Admin/Salary/Index', [
             'penggajians' => $penggajians,
             'gurus' => Guru::with('grade')->orderBy('nama')->get(),
             'filters' => $request->only(['periode', 'filter_guru', 'status_bayar']),
+            'periodeDefault' => $periodeDefault,
         ]);
     }
 
@@ -42,46 +44,11 @@ class SalaryController extends Controller
         }
         $gurus = $guruQuery->get();
 
-        $periodo = $validated['periode'];
-        [$year, $month] = explode('-', $periodo);
-
         foreach ($gurus as $guru) {
-            $sessions = TeachingSession::where('guru_id', $guru->id)
-                ->whereYear('tanggal', $year)
-                ->whereMonth('tanggal', $month)
-                ->get();
-
-            $attendances = Attendance::where('guru_id', $guru->id)
-                ->whereYear('tanggal', $year)
-                ->whereMonth('tanggal', $month)
-                ->where('status', 'valid')
-                ->get();
-
-            $jumlahSesi = $sessions->sum('jumlah_sesi');
-            $jumlahHadir = $attendances->count();
-            $totalJam = round($attendances->sum('durasi') / 60, 2);
-
-            $transportId = $sessions->first()?->transport_id ?? 1;
-            $biayaTransport = $sessions->first()?->transport?->biaya ?? 0;
-
-            $honor = $jumlahSesi * ($guru->grade->honor_per_sesi ?? 0);
-            $totalTransport = $jumlahHadir * $biayaTransport;
-            $totalGaji = $honor + $totalTransport;
-
-            Penggajian::updateOrCreate(
-                ['guru_id' => $guru->id, 'periode' => $periodo, 'transport_id' => $transportId],
-                [
-                    'jumlah_sesi' => $jumlahSesi,
-                    'jumlah_hadir' => $jumlahHadir,
-                    'total_jam' => $totalJam,
-                    'honor' => $honor,
-                    'total_transport' => $totalTransport,
-                    'total' => $totalGaji,
-                ]
-            );
+            Penggajian::calculateForGuru($guru, $validated['periode']);
         }
 
-        return back()->with('success', 'Gaji berhasil dihitung untuk periode '.$periodo);
+        return back()->with('success', 'Gaji berhasil dihitung untuk periode '.$validated['periode']);
     }
 
     public function pay(Request $request, Penggajian $penggajian)
@@ -89,6 +56,18 @@ class SalaryController extends Controller
         $penggajian->update(['status_bayar' => 'sudah_dibayar']);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
+    }
+
+    public function downloadPayslip(Penggajian $penggajian)
+    {
+        $penggajian->load('guru.grade', 'transport');
+
+        $pdf = Pdf::loadView('pdf.payslip', ['penggajian' => $penggajian])
+            ->setPaper('a5', 'portrait');
+
+        $filename = 'slip-gaji-'.$penggajian->guru->nama.'-'.$penggajian->periode.'.pdf';
+
+        return $pdf->download($filename);
     }
 
     public function guruSalary(Request $request)
@@ -112,7 +91,7 @@ class SalaryController extends Controller
             ->get();
 
         $now = now();
-        $mingguIni = Penggajian::where('guru_id', $guru->id)
+        $bulanIni = Penggajian::where('guru_id', $guru->id)
             ->where('periode', $now->format('Y-m'))
             ->first();
 
@@ -124,7 +103,7 @@ class SalaryController extends Controller
             'guru' => $guru,
             'totalGaji' => $totalGaji,
             'totalBayar' => $totalBayar,
-            'gajiBulanIni' => $mingguIni,
+            'gajiBulanIni' => $bulanIni,
         ]);
     }
 }

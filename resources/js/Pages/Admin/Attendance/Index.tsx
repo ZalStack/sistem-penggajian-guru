@@ -5,7 +5,7 @@ import Input from '@/Components/ui/input';
 import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Attendance, Guru, Grade } from '@/types';
 
@@ -62,11 +62,20 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
         <AuthenticatedLayout>
             <Head title="Rekap Absensi" />
 
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Rekap Absensi</h1>
-                <p className="text-sm text-slate-500 mt-1">
-                    Pantau dan kelola data kehadiran guru seluruh sesi mengajar
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Rekap Absensi</h1>
+                    <p className="text-sm text-slate-500 mt-1">
+                        Pantau dan kelola data kehadiran guru seluruh sesi mengajar
+                    </p>
+                </div>
+                <Link
+                    href={route('salary.index')}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm"
+                >
+                    <Icon icon="lucide:banknote" className="text-base" />
+                    Hitung Gaji
+                </Link>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

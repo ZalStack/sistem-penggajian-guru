@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('guru', GuruController::class)->except(['edit']);
     Route::get('guru/{guru}/edit', [GuruController::class, 'edit'])->name('guru.edit');
+    Route::post('guru/{guru}/reset-password', [GuruController::class, 'resetPassword'])->name('guru.resetPassword');
 
     Route::post('grade', [GradeController::class, 'store'])->name('grade.store');
     Route::put('grade/{grade}', [GradeController::class, 'update'])->name('grade.update');
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
     Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate');
     Route::post('salary/{penggajian}/pay', [SalaryController::class, 'pay'])->name('salary.pay');
+    Route::get('salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('salary.payslip');
 
     Route::get('penggajian', [PenggajianController::class, 'index'])->name('penggajian.index');
     Route::get('penggajian/create', [PenggajianController::class, 'create'])->name('penggajian.create');
@@ -76,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout');
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
     Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
+    Route::get('my-salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('my-salary.payslip');
 });
 
 require __DIR__.'/auth.php';

@@ -157,6 +157,7 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                     <TableRow>
                                         <TableHead className="w-16">No</TableHead>
                                         <TableHead>Nama Guru</TableHead>
+                                        <TableHead>Email Login</TableHead>
                                         <TableHead>Grade</TableHead>
                                         <TableHead>Mapel</TableHead>
                                         <TableHead>Jenjang</TableHead>
@@ -179,6 +180,9 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                                         <p className="text-[11px] text-slate-400">ID #{guru.id}</p>
                                                     </div>
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-slate-600 text-sm">{guru.user?.email ?? '-'}</span>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="purple">
@@ -251,6 +255,11 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                         <Badge variant="purple">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
                                         <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'}>{guru.mapel}</Badge>
                                     </div>
+                                    {guru.user && (
+                                        <p className="text-xs text-slate-500">
+                                            <Icon icon="lucide:mail" className="inline text-[10px] mr-1" />{guru.user.email}
+                                        </p>
+                                    )}
 
                                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
                                         <Link

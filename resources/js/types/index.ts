@@ -35,6 +35,7 @@ export interface Guru {
     jenjang: string | null;
     user_id: number | null;
     grade?: Grade;
+    user?: { id: number; email: string } | null;
     penggajians?: Penggajian[];
     created_at: string;
     updated_at: string;

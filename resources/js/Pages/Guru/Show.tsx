@@ -2,16 +2,23 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
 import Badge from '@/Components/ui/badge';
-import { Head, Link } from '@inertiajs/react';
+import Button from '@/Components/ui/button';
+import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
 import { Guru } from '@/types';
 
 interface GuruShowProps {
-    guru: Guru;
+    guru: Guru & { user?: { id: number; email: string } | null };
 }
 
 export default function GuruShow({ guru }: GuruShowProps) {
+    const handleResetPassword = () => {
+        if (confirm(`Reset password guru "${guru.nama}"? Password baru akan ditampilkan setelah reset.`)) {
+            router.post(route('guru.resetPassword', guru.id));
+        }
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title={`Detail Guru - ${guru.nama}`} />
@@ -26,10 +33,18 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Detail Profil Guru</h1>
-                        <p className="text-xs text-slate-500 mt-0.5">Informasi penugasan dan riwayat penggajian guru</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Informasi penugasan, akun login, dan riwayat penggajian</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    {guru.user && (
+                        <button
+                            onClick={handleResetPassword}
+                            className="inline-flex items-center gap-2 px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-sm"
+                        >
+                            <Icon icon="lucide:key-round" /> Reset Password
+                        </button>
+                    )}
                     <Link
                         href={route('guru.edit', guru.id)}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
@@ -40,7 +55,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Profile Information Card */}
+                {/* Profile + Login Card */}
                 <Card className="lg:col-span-1">
                     <div className="text-center pb-2">
                         <div className="w-20 h-20 bg-slate-900 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 font-bold text-2xl shadow-md">
@@ -88,19 +103,52 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     </div>
                 </Card>
 
-                {/* Salary History */}
-                <div className="lg:col-span-2">
+                {/* Right Side */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Login Info Card */}
+                    {guru.user ? (
+                        <Card title="Akun Login" description="Informasi akun yang digunakan guru untuk login">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Icon icon="lucide:mail" className="text-emerald-600 text-base" />
+                                        <span className="text-xs font-semibold text-emerald-700">Email</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-emerald-900">{guru.user.email}</p>
+                                </div>
+                                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Icon icon="lucide:shield" className="text-blue-600 text-base" />
+                                        <span className="text-xs font-semibold text-blue-700">Role</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-blue-900">Guru</p>
+                                </div>
+                            </div>
+                            <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="flex items-start gap-2">
+                                    <Icon icon="lucide:info" className="text-slate-400 text-base mt-0.5 flex-shrink-0" />
+                                    <p className="text-xs text-slate-500">
+                                        Password dapat direset melalui tombol <span className="font-semibold">Reset Password</span> di pojok kanan atas. Password default: <span className="font-mono font-semibold text-slate-700">4 huruf awal nama + 123456</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
+                    ) : (
+                        <Card>
+                            <div className="text-center py-6">
+                                <Icon icon="lucide:alert-circle" className="text-3xl text-amber-400 mx-auto mb-2" />
+                                <p className="text-sm font-semibold text-slate-800">Belum Memiliki Akun Login</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Edit data guru untuk menambahkan akun login.
+                                </p>
+                            </div>
+                        </Card>
+                    )}
+
+                    {/* Salary History */}
                     <Card
                         title="Riwayat Penggajian Guru"
                         description="Daftar seluruh sesi dan honor yang telah disalurkan"
-                        headerAction={
-                            <Link
-                                href={route('penggajian.create')}
-                                className="text-xs font-semibold text-slate-900 hover:underline inline-flex items-center gap-1"
-                            >
-                                <Icon icon="lucide:plus" /> Input Gaji
-                            </Link>
-                        }
                     >
                         {guru.penggajians && guru.penggajians.length > 0 ? (
                             <Table>

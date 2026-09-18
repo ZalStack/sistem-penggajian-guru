@@ -88,7 +88,7 @@ class DashboardController extends Controller
 
         $penggajian = Penggajian::where('guru_id', $guru->id)->where('periode', $periode)->first();
 
-        $todaySessions = TeachingSession::with('location')
+        $todaySessions = TeachingSession::with('location', 'transport')
             ->where('guru_id', $guru->id)
             ->whereDate('tanggal', $now->toDateString())
             ->get();
