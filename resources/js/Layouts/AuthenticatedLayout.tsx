@@ -28,6 +28,13 @@ const guruNavItems = [
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji Saya', icon: 'lucide:banknote' },
 ];
 
+const guruBottomNav = [
+    { href: 'dashboard', pattern: 'dashboard', label: 'Beranda', icon: 'lucide:layout-dashboard' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Absensi', icon: 'lucide:clipboard-check' },
+    { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji', icon: 'lucide:banknote' },
+    { href: 'profile.edit', pattern: 'profile.*', label: 'Profil', icon: 'lucide:user' },
+];
+
 export default function AuthenticatedLayout({ header, children }: AuthenticatedLayoutProps) {
     const { props } = usePage<{
         auth: { user: { name: string; email: string; role: string } };
@@ -52,7 +59,7 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
 
     return (
         <div className="min-h-screen flex bg-slate-50 text-slate-900 selection:bg-slate-900 selection:text-white">
-            {/* Sidebar */}
+            {/* Sidebar — Admin: always show on mobile toggle + desktop; Guru: desktop only */}
             <aside
                 className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200/80 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${
                     sidebarDesktop ? 'lg:w-64' : 'lg:w-20'
@@ -216,10 +223,48 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                     {flash?.info && <FlashMessage type="info" message={flash.info} />}
                 </div>
 
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+                <main className={`flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto ${!isAdmin ? 'pb-24 lg:pb-8' : ''}`}>
                     {children}
                 </main>
             </div>
+
+            {/* Bottom Navigation — Guru role only, mobile only */}
+            {!isAdmin && (
+                <nav className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur-lg border-t border-slate-200/80 safe-area-pb">
+                    <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+                        {guruBottomNav.map((item) => {
+                            const isActive = route().current(item.pattern);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={route(item.href)}
+                                    className="relative flex flex-col items-center justify-center gap-0.5 w-full h-full group"
+                                >
+                                    <div
+                                        className={`flex items-center justify-center w-10 h-8 rounded-xl transition-all duration-200 ${
+                                            isActive
+                                                ? 'bg-slate-900 text-white scale-105 shadow-md'
+                                                : 'text-slate-400 group-hover:text-slate-700 group-hover:bg-slate-100'
+                                        }`}
+                                    >
+                                        <Icon icon={item.icon} className="text-lg" />
+                                    </div>
+                                    <span
+                                        className={`text-[10px] font-semibold transition-colors ${
+                                            isActive ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </span>
+                                    {isActive && (
+                                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-slate-900 rounded-full" />
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </nav>
+            )}
         </div>
     );
 }

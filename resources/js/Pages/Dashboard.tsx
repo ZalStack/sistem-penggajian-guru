@@ -6,6 +6,7 @@ import Button from '@/Components/ui/button';
 import { Head, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 interface DashboardProps {
     stats: {
@@ -38,6 +39,28 @@ function formatTime(dateStr: string | null): string {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
     return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+function computeCanCheckin(jamMulai: string, jamSelesai: string): boolean {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const [hm, sm] = jamMulai.split(':').map(Number);
+    const [hs, ss] = (jamSelesai || jamMulai).split(':').map(Number);
+    const mulai = new Date(`${today}T${String(hm).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00`);
+    const selesai = new Date(`${today}T${String(hs).padStart(2, '0')}:${String(ss).padStart(2, '0')}:00`);
+    const windowStart = new Date(mulai.getTime() - 30 * 60 * 1000);
+    return now >= windowStart && now <= selesai;
+}
+
+function computeCanCheckout(jamMulai: string, jamSelesai: string): boolean {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const [hm, sm] = jamMulai.split(':').map(Number);
+    const [hs, ss] = (jamSelesai || jamMulai).split(':').map(Number);
+    const mulai = new Date(`${today}T${String(hm).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00`);
+    const selesai = new Date(`${today}T${String(hs).padStart(2, '0')}:${String(ss).padStart(2, '0')}:00`);
+    const windowEnd = new Date(selesai.getTime() + 30 * 60 * 1000);
+    return now >= mulai && now <= windowEnd;
 }
 
 function handleCheckin(sessionId: number) {
@@ -80,6 +103,93 @@ function handleCheckout(sessionId: number) {
     );
 }
 
+function SessionCard({ session, attendance, attStatus }: { session: any; attendance: any; attStatus: string }) {
+    const [canCheckin, setCanCheckin] = useState(false);
+    const [canCheckout, setCanCheckout] = useState(false);
+
+    useEffect(() => {
+        const update = () => {
+            const jm = session.jam_mulai?.substring(0, 5) || '00:00';
+            const js = session.jam_selesai?.substring(0, 5) || jm;
+            setCanCheckin(computeCanCheckin(jm, js));
+            setCanCheckout(computeCanCheckout(jm, js));
+        };
+        update();
+        const interval = setInterval(update, 30000);
+        return () => clearInterval(interval);
+    }, [session.jam_mulai, session.jam_selesai]);
+
+    let statusBadge = null;
+    if (attStatus === 'valid') {
+        statusBadge = <Badge variant="success">Selesai</Badge>;
+    } else if (attStatus === 'checkin') {
+        statusBadge = <Badge variant="warning">Check-in</Badge>;
+    } else if (attStatus === 'invalid') {
+        statusBadge = <Badge variant="danger">Tidak Valid</Badge>;
+    }
+
+    return (
+        <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon icon="lucide:book-open" className="text-white text-sm" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900">{session.location?.nama_lokasi}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.mapel} &bull; {session.jumlah_sesi} sesi
+                        </p>
+                        {session.transport && (
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                Transport: {session.transport.jenis}
+                            </p>
+                        )}
+                        {attStatus !== 'none' && attendance?.checkin_time && (
+                            <p className="text-xs text-slate-400 mt-0.5">
+                                Masuk: {formatTime(attendance.checkin_time)}
+                                {attendance?.checkout_time && (
+                                    <> &bull; Keluar: {formatTime(attendance.checkout_time)}</>
+                                )}
+                                {attendance?.durasi > 0 && (
+                                    <> &bull; {attendance.durasi} menit</>
+                                )}
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    {statusBadge}
+                    <div className="flex gap-1.5">
+                        {attStatus === 'none' && (
+                            canCheckin ? (
+                                <Button variant="success" size="sm" onClick={() => handleCheckin(session.id)}>
+                                    <Icon icon="lucide:log-in" /> Masuk
+                                </Button>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">
+                                    <Icon icon="lucide:clock" className="text-xs" /> Belum Waktunya
+                                </span>
+                            )
+                        )}
+                        {attStatus === 'checkin' && (
+                            canCheckout ? (
+                                <Button variant="danger" size="sm" onClick={() => handleCheckout(session.id)}>
+                                    <Icon icon="lucide:log-out" /> Keluar
+                                </Button>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-amber-600 bg-amber-50 rounded-lg cursor-not-allowed">
+                                    <Icon icon="lucide:clock" className="text-xs" /> Menunggu Selesai
+                                </span>
+                            )
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard({ stats, recentSessions, recentPenggajian, todaySessions, todayAttendances, guru, role }: DashboardProps) {
     if (role === 'guru') {
         return (
@@ -104,63 +214,13 @@ export default function Dashboard({ stats, recentSessions, recentPenggajian, tod
                                 {todaySessions.map((session: any) => {
                                     const attStatus = getGuruAttendanceStatus(todayAttendances?.[String(session.id)]);
                                     const attendance = todayAttendances?.[String(session.id)];
-
-                                    let statusBadge = null;
-                                    if (attStatus === 'valid') {
-                                        statusBadge = <Badge variant="success">Selesai</Badge>;
-                                    } else if (attStatus === 'checkin') {
-                                        statusBadge = <Badge variant="warning">Check-in</Badge>;
-                                    } else if (attStatus === 'invalid') {
-                                        statusBadge = <Badge variant="danger">Tidak Valid</Badge>;
-                                    }
-
                                     return (
-                                        <div key={session.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                        <Icon icon="lucide:book-open" className="text-white text-sm" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-slate-900">{session.location?.nama_lokasi}</p>
-                                                        <p className="text-xs text-slate-500 mt-0.5">
-                                                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.mapel} &bull; {session.jumlah_sesi} sesi
-                                                        </p>
-                                                        {session.transport && (
-                                                            <p className="text-xs text-slate-400 mt-0.5">
-                                                                Transport: {session.transport.jenis}
-                                                            </p>
-                                                        )}
-                                                        {attStatus !== 'none' && attendance?.checkin_time && (
-                                                            <p className="text-xs text-slate-400 mt-0.5">
-                                                                Masuk: {formatTime(attendance.checkin_time)}
-                                                                {attendance?.checkout_time && (
-                                                                    <> &bull; Keluar: {formatTime(attendance.checkout_time)}</>
-                                                                )}
-                                                                {attendance?.durasi > 0 && (
-                                                                    <> &bull; {attendance.durasi} menit</>
-                                                                )}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                                                    {statusBadge}
-                                                    <div className="flex gap-1.5">
-                                                        {(attStatus === 'none') && (
-                                                            <Button variant="success" size="sm" onClick={() => handleCheckin(session.id)}>
-                                                                <Icon icon="lucide:log-in" /> Masuk
-                                                            </Button>
-                                                        )}
-                                                        {attStatus === 'checkin' && (
-                                                            <Button variant="danger" size="sm" onClick={() => handleCheckout(session.id)}>
-                                                                <Icon icon="lucide:log-out" /> Keluar
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <SessionCard
+                                            key={session.id}
+                                            session={session}
+                                            attendance={attendance}
+                                            attStatus={attStatus}
+                                        />
                                     );
                                 })}
                             </div>

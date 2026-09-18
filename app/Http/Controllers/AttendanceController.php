@@ -42,6 +42,19 @@ class AttendanceController extends Controller
             return back()->withErrors(['error' => 'Anda sudah melakukan check-in untuk sesi ini hari ini.']);
         }
 
+        $now = now();
+        $jamMulai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_mulai->format('H:i'));
+        $jamSelesai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_selesai->format('H:i'));
+        $checkinWindowStart = $jamMulai->copy()->subMinutes(30);
+
+        if ($now->lt($checkinWindowStart)) {
+            return back()->withErrors(['error' => 'Check-in belum bisa dilakukan. Jam mengajar mulai pukul '.$jamMulai->format('H:i').' (check-in dibuka 30 menit sebelumnya).']);
+        }
+
+        if ($now->gt($jamSelesai)) {
+            return back()->withErrors(['error' => 'Check-in gagal! Sesi mengajar sudah berakhir pada pukul '.$jamSelesai->format('H:i').'.']);
+        }
+
         $distance = Attendance::calculateDistance(
             $validated['latitude'], $validated['longitude'],
             (float) $session->location->latitude, (float) $session->location->longitude
@@ -97,6 +110,19 @@ class AttendanceController extends Controller
 
         $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
 
+        $now = now();
+        $jamMulai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_mulai->format('H:i'));
+        $jamSelesai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_selesai->format('H:i'));
+        $checkoutWindowEnd = $jamSelesai->copy()->addMinutes(30);
+
+        if ($now->lt($jamMulai)) {
+            return back()->withErrors(['error' => 'Check-out belum bisa dilakukan. Sesi mengajar mulai pukul '.$jamMulai->format('H:i').'.']);
+        }
+
+        if ($now->gt($checkoutWindowEnd)) {
+            return back()->withErrors(['error' => 'Check-out gagal! Batas waktu check-out sudah lewat (pukul '.$checkoutWindowEnd->format('H:i').').']);
+        }
+
         $distance = Attendance::calculateDistance(
             $validated['latitude'], $validated['longitude'],
             (float) $session->location->latitude, (float) $session->location->longitude
@@ -109,21 +135,20 @@ class AttendanceController extends Controller
         }
 
         $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
+        $durasi = max($durasi, 1);
 
         $attendance->update([
             'checkout_time' => now(),
             'checkout_lat' => $validated['latitude'],
             'checkout_lng' => $validated['longitude'],
             'durasi' => $durasi,
-            'status' => $durasi > 0 ? 'valid' : 'tidak_valid',
+            'status' => 'valid',
         ]);
 
-        if ($durasi > 0) {
-            $periodo = now()->format('Y-m');
-            Penggajian::calculateForGuru($guru, $periodo);
-        }
+        $periodo = now()->format('Y-m');
+        Penggajian::calculateForGuru($guru, $periodo);
 
-        return back()->with('success', 'Check-out berhasil! Lokasi valid ('.number_format($distance, 0).'m). Durasi mengajar: '.$durasi.' menit.');
+        return back()->with('success', 'Check-out berhasil! Lokasi valid ('.number_format($distance, 0).'m). Durasi mengajar: '.$durasi.' menit. Gaji sudah dihitung otomatis.');
     }
 
     public function guruAttendance(Request $request)
