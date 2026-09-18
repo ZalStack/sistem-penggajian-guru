@@ -14,10 +14,16 @@ class PenggajianController extends Controller
 {
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'periode' => 'nullable|string|max:7',
+            'filter_grade' => 'nullable|integer|exists:grades,id',
+            'filter_transport' => 'nullable|integer|exists:transports,id',
+        ]);
+
         $query = Penggajian::with(['guru.grade', 'transport'])
-            ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
-            ->when($request->filter_grade, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($request->filter_transport, fn ($q, $t) => $q->where('transport_id', $t));
+            ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
+            ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
+            ->when($validated['filter_transport'] ?? null, fn ($q, $t) => $q->where('transport_id', $t));
 
         return Inertia::render('Penggajian/Index', [
             'penggajians' => $query->orderBy('periode', 'desc')->paginate(10)->withQueryString(),
@@ -124,6 +130,10 @@ class PenggajianController extends Controller
 
     public function destroy(Penggajian $penggajian)
     {
+        if ($penggajian->status_bayar === 'sudah_dibayar') {
+            return redirect()->route('penggajian.index')->with('error', 'Data penggajian yang sudah dibayar tidak dapat dihapus.');
+        }
+
         $penggajian->delete();
 
         return redirect()->route('penggajian.index')->with('success', 'Data penggajian berhasil dihapus.');

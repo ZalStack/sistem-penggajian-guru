@@ -19,7 +19,7 @@ class TransportController extends Controller
     {
         $validated = $request->validate([
             'jenis' => 'required|string|max:50|unique:transports,jenis',
-            'biaya' => 'required|numeric|min:0',
+            'biaya' => 'required|numeric|min:1',
         ]);
 
         Transport::create($validated);
@@ -31,7 +31,7 @@ class TransportController extends Controller
     {
         $validated = $request->validate([
             'jenis' => 'required|string|max:50|unique:transports,jenis,'.$transport->id,
-            'biaya' => 'required|numeric|min:0',
+            'biaya' => 'required|numeric|min:1',
         ]);
 
         $transport->update($validated);

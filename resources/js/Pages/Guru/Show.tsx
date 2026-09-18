@@ -128,7 +128,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                 <div className="flex items-start gap-2">
                                     <Icon icon="lucide:info" className="text-slate-400 text-base mt-0.5 flex-shrink-0" />
                                     <p className="text-xs text-slate-500">
-                                        Password dapat direset melalui tombol <span className="font-semibold">Reset Password</span> di pojok kanan atas. Password default: <span className="font-mono font-semibold text-slate-700">4 huruf awal nama + 123456</span>
+                                        Password dapat direset melalui tombol <span className="font-semibold">Reset Password</span> di pojok kanan atas. Password baru akan ditampilkan sekali setelah reset.
                                     </p>
                                 </div>
                             </div>

@@ -16,11 +16,11 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->isGuru()) {
-            return $this->guruDashboard($user);
+        if ($user->isAdmin()) {
+            return $this->adminDashboard();
         }
 
-        return $this->adminDashboard();
+        return $this->guruDashboard($user);
     }
 
     private function adminDashboard()

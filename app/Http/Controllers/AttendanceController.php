@@ -27,7 +27,7 @@ class AttendanceController extends Controller
             return back()->with('error', 'Akun ini tidak terhubung dengan data guru.');
         }
 
-        $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
+        $session = TeachingSession::with('location')->lockForUpdate()->findOrFail($validated['session_id']);
 
         if ($session->guru_id !== $guru->id) {
             return back()->with('error', 'Sesi ini bukan milik Anda.');
@@ -39,9 +39,19 @@ class AttendanceController extends Controller
             return back()->with('error', 'Check-in hanya dapat dilakukan pada tanggal jadwal sesi ('.$session->tanggal->format('d/m/Y').').');
         }
 
+        $now = now();
+        $jamMulai = $session->jam_mulai;
+        $jamSelesai = $session->jam_selesai;
+        $windowStart = $jamMulai->copy()->subMinutes(30);
+
+        if ($now < $windowStart || $now > $jamSelesai) {
+            return back()->with('error', 'Check-in hanya dapat dilakukan dalam rentang waktu 30 menit sebelum jam mulai hingga jam selesai sesi ('.$jamMulai->format('H:i').' - '.$jamSelesai->format('H:i').').');
+        }
+
         $existing = Attendance::where('guru_id', $guru->id)
             ->where('session_id', $session->id)
             ->where('tanggal', $sessionDate)
+            ->lockForUpdate()
             ->first();
 
         if ($existing && $existing->checkin_time) {
@@ -90,18 +100,13 @@ class AttendanceController extends Controller
         }
 
         $sessionDate = now()->toDateString();
+
         $attendance = Attendance::where('guru_id', $guru->id)
             ->where('session_id', $validated['session_id'])
-            ->whereNull('checkout_time')
+            ->where('tanggal', $sessionDate)
+            ->lockForUpdate()
             ->latest('checkin_time')
             ->first();
-
-        if (! $attendance) {
-            $attendance = Attendance::where('guru_id', $guru->id)
-                ->where('session_id', $validated['session_id'])
-                ->where('tanggal', $sessionDate)
-                ->first();
-        }
 
         if (! $attendance || ! $attendance->checkin_time) {
             return back()->with('error', 'Anda belum melakukan check-in untuk sesi ini.');
@@ -109,6 +114,11 @@ class AttendanceController extends Controller
 
         if ($attendance->checkout_time) {
             return back()->with('error', 'Anda sudah melakukan check-out untuk sesi ini.');
+        }
+
+        $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
+        if ($durasi < 15) {
+            return back()->with('error', 'Durasi mengajar minimal 15 menit. Silakan check-out setelah minimal 15 menit check-in.');
         }
 
         $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
@@ -123,9 +133,6 @@ class AttendanceController extends Controller
         if (! $isWithinRadius) {
             return back()->with('error', 'Check-out gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m).');
         }
-
-        $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
-        $durasi = max($durasi, 1);
 
         DB::transaction(function () use ($attendance, $validated, $durasi) {
             $attendance->update([
@@ -178,15 +185,20 @@ class AttendanceController extends Controller
 
     public function adminRecap(Request $request)
     {
-        $query = Attendance::with(['guru.grade', 'session.location', 'session.transport'])
-            ->when($request->periode, fn ($q, $p) => $q->whereMonth('tanggal', substr($p, 5, 2))->whereYear('tanggal', substr($p, 0, 4)))
-            ->when($request->filter_guru, fn ($q, $g) => $q->where('guru_id', $g))
-            ->orderBy('tanggal', 'desc');
+        $validated = $request->validate([
+            'periode' => 'nullable|date_format:Y-m',
+            'filter_guru' => 'nullable|integer|exists:gurus,id',
+        ]);
 
-        $attendances = $query->get();
+        $query = Attendance::with(['guru.grade', 'session.location', 'session.transport'])
+            ->when($validated['periode'] ?? null, fn ($q, $p) => $q->whereMonth('tanggal', substr($p, 5, 2))->whereYear('tanggal', substr($p, 0, 4)))
+            ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
+            ->orderBy('tanggal', 'desc')
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('Admin/Attendance/Index', [
-            'attendances' => $attendances,
+            'attendances' => $query,
             'gurus' => Guru::with('grade')->orderBy('nama')->get(),
             'filters' => $request->only(['periode', 'filter_guru']),
         ]);

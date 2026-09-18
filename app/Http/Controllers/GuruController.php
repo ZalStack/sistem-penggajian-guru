@@ -16,7 +16,10 @@ class GuruController extends Controller
     public function index(Request $request)
     {
         $query = Guru::with(['grade', 'user'])
-            ->when($request->search, fn ($q, $s) => $q->where('nama', 'like', "%{$s}%"))
+            ->when($request->search, function ($q, $s) {
+                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                return $q->where('nama', 'like', "%{$safe}%", '\\');
+            })
             ->when($request->filter_grade, fn ($q, $g) => $q->where('grade_id', $g))
             ->when($request->filter_mapel, fn ($q, $m) => $q->where('mapel', $m));
 
@@ -42,7 +45,6 @@ class GuruController extends Controller
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
             'email' => 'required|email|unique:users,email',
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
         $generatedPassword = Str::random(16);
@@ -52,8 +54,9 @@ class GuruController extends Controller
                 'name' => $validated['nama'],
                 'email' => $validated['email'],
                 'password' => Hash::make($generatedPassword),
-                'role' => 'guru',
             ]);
+
+            $user->forceFill(['role' => 'guru'])->save();
 
             $guru = Guru::create([
                 'nama' => $validated['nama'],
@@ -63,7 +66,7 @@ class GuruController extends Controller
                 'user_id' => $user->id,
             ]);
 
-            $user->update(['guru_id' => $guru->id]);
+            $user->forceFill(['guru_id' => $guru->id])->save();
         });
 
         return redirect()->route('guru.index')->with('success', 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$generatedPassword);

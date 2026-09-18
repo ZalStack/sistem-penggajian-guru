@@ -43,6 +43,16 @@ class TeachingSessionController extends Controller
             'jumlah_sesi' => 'required|integer|min:1|max:10',
         ]);
 
+        $overlap = TeachingSession::where('guru_id', $validated['guru_id'])
+            ->whereDate('tanggal', $validated['tanggal'])
+            ->where('jam_mulai', '<', $validated['jam_selesai'])
+            ->where('jam_selesai', '>', $validated['jam_mulai'])
+            ->exists();
+
+        if ($overlap) {
+            return back()->withErrors(['jam_mulai' => 'Guru sudah memiliki sesi di waktu yang overlap dengan jadwal ini.'])->withInput();
+        }
+
         TeachingSession::create($validated);
 
         return back()->with('success', 'Sesi mengajar berhasil ditambahkan.');
@@ -61,6 +71,17 @@ class TeachingSessionController extends Controller
             'jumlah_sesi' => 'required|integer|min:1|max:10',
         ]);
 
+        $overlap = TeachingSession::where('guru_id', $validated['guru_id'])
+            ->whereDate('tanggal', $validated['tanggal'])
+            ->where('id', '!=', $session->id)
+            ->where('jam_mulai', '<', $validated['jam_selesai'])
+            ->where('jam_selesai', '>', $validated['jam_mulai'])
+            ->exists();
+
+        if ($overlap) {
+            return back()->withErrors(['jam_mulai' => 'Guru sudah memiliki sesi di waktu yang overlap dengan jadwal ini.'])->withInput();
+        }
+
         $session->update($validated);
 
         return back()->with('success', 'Sesi mengajar berhasil diperbarui.');
@@ -68,6 +89,11 @@ class TeachingSessionController extends Controller
 
     public function destroy(TeachingSession $session)
     {
+        $attendanceCount = $session->attendances()->count();
+        if ($attendanceCount > 0) {
+            return back()->with('error', 'Sesi tidak dapat dihapus karena masih memiliki '.$attendanceCount.' data absensi.');
+        }
+
         $session->delete();
 
         return back()->with('success', 'Sesi mengajar berhasil dihapus.');

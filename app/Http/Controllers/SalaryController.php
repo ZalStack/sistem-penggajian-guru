@@ -12,10 +12,16 @@ class SalaryController extends Controller
 {
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'periode' => 'nullable|string|max:7',
+            'filter_guru' => 'nullable|integer|exists:gurus,id',
+            'status_bayar' => 'nullable|in:belum_dibayar,sudah_dibayar',
+        ]);
+
         $query = Penggajian::with(['guru.grade', 'transport'])
-            ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
-            ->when($request->filter_guru, fn ($q, $g) => $q->where('guru_id', $g))
-            ->when($request->status_bayar, fn ($q, $s) => $q->where('status_bayar', $s))
+            ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
+            ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
+            ->when($validated['status_bayar'] ?? null, fn ($q, $s) => $q->where('status_bayar', $s))
             ->orderBy('periode', 'desc')
             ->orderBy('guru_id');
 
@@ -53,10 +59,6 @@ class SalaryController extends Controller
 
     public function pay(Request $request, Penggajian $penggajian)
     {
-        if ($request->user()->role !== 'admin') {
-            abort(403, 'Unauthorized access.');
-        }
-
         $penggajian->update(['status_bayar' => 'sudah_dibayar']);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
@@ -65,11 +67,15 @@ class SalaryController extends Controller
     public function downloadPayslip(Penggajian $penggajian)
     {
         $user = request()->user();
-        if ($user->role !== 'admin' && $user->guru_id !== $penggajian->guru_id) {
-            abort(403, 'Unauthorized access.');
-        }
 
-        $penggajian->load('guru.grade', 'transport');
+        if ($user->isAdmin()) {
+            $penggajian->load('guru.grade', 'transport');
+        } else {
+            $penggajian = Penggajian::where('guru_id', $user->guru_id)
+                ->where('id', $penggajian->id)
+                ->with('guru.grade', 'transport')
+                ->firstOrFail();
+        }
 
         $pdf = Pdf::loadView('pdf.payslip', ['penggajian' => $penggajian])
             ->setPaper('a5', 'portrait');

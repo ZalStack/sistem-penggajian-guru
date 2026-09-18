@@ -15,8 +15,17 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+    ];
+
+    protected $visible = [
+        'id',
+        'name',
+        'email',
         'role',
         'guru_id',
+        'email_verified_at',
+        'created_at',
+        'updated_at',
     ];
 
     protected $hidden = [

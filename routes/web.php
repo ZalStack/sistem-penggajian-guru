@@ -17,8 +17,6 @@ Route::get('/', function () {
     return inertia('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => false,
-        'laravelVersion' => app()->version(),
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -31,8 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['patch', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('checkin', [AttendanceController::class, 'checkin'])->name('checkin');
-    Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout');
+    Route::post('checkin', [AttendanceController::class, 'checkin'])->name('checkin')->middleware('throttle:10,1');
+    Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
     Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
     Route::get('my-salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('my-salary.payslip');
@@ -65,7 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('attendance', [AttendanceController::class, 'adminRecap'])->name('attendance.index');
 
         Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
-        Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate');
+        Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate')->middleware('throttle:1,60');
         Route::post('salary/{penggajian}/pay', [SalaryController::class, 'pay'])->name('salary.pay');
         Route::get('salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('salary.payslip');
 

@@ -19,7 +19,7 @@ class GradeController extends Controller
     {
         $validated = $request->validate([
             'kode_grade' => 'required|string|max:10|unique:grades,kode_grade',
-            'honor_per_sesi' => 'required|numeric|min:0',
+            'honor_per_sesi' => 'required|numeric|min:1',
         ]);
 
         Grade::create($validated);
@@ -31,7 +31,7 @@ class GradeController extends Controller
     {
         $validated = $request->validate([
             'kode_grade' => 'required|string|max:10|unique:grades,kode_grade,'.$grade->id,
-            'honor_per_sesi' => 'required|numeric|min:0',
+            'honor_per_sesi' => 'required|numeric|min:1',
         ]);
 
         $grade->update($validated);

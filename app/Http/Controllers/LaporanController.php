@@ -15,11 +15,18 @@ class LaporanController extends Controller
 {
     private function buildQuery(Request $request)
     {
+        $validated = $request->validate([
+            'periode' => 'nullable|string|max:7',
+            'filter_grade' => 'nullable|integer|exists:grades,id',
+            'filter_mapel' => 'nullable|in:IPA,MTK',
+            'filter_transport' => 'nullable|integer|exists:transports,id',
+        ]);
+
         return Penggajian::with(['guru.grade', 'transport'])
-            ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
-            ->when($request->filter_grade, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($request->filter_mapel, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
-            ->when($request->filter_transport, fn ($q, $t) => $q->where('transport_id', $t));
+            ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
+            ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
+            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
+            ->when($validated['filter_transport'] ?? null, fn ($q, $t) => $q->where('transport_id', $t));
     }
 
     public function index(Request $request)
