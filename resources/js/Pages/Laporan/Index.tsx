@@ -83,12 +83,12 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                 <div className="flex flex-col md:flex-row md:items-end gap-3">
                     <div className="flex-1">
                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Periode (Bulan/Tahun)</label>
-                        <input type="month" defaultValue={filters.periode || ''} onChange={(e) => updateFilter('periode', e.target.value)}
+                        <input type="month" value={filters.periode || ''} onChange={(e) => updateFilter('periode', e.target.value)}
                             className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors" />
                     </div>
                     <div className="w-full md:w-44">
                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Filter Grade</label>
-                        <select defaultValue={filters.filter_grade || ''} onChange={(e) => updateFilter('filter_grade', e.target.value)}
+                        <select value={filters.filter_grade || ''} onChange={(e) => updateFilter('filter_grade', e.target.value)}
                             className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors">
                             <option value="">Semua Grade</option>
                             {grades.map((g) => <option key={g.id} value={g.id}>{g.kode_grade}</option>)}
@@ -96,7 +96,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                     </div>
                     <div className="w-full md:w-36">
                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Mapel</label>
-                        <select defaultValue={filters.filter_mapel || ''} onChange={(e) => updateFilter('filter_mapel', e.target.value)}
+                        <select value={filters.filter_mapel || ''} onChange={(e) => updateFilter('filter_mapel', e.target.value)}
                             className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors">
                             <option value="">Semua</option>
                             <option value="IPA">IPA</option>
@@ -105,7 +105,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                     </div>
                     <div className="w-full md:w-44">
                         <label className="block text-xs font-semibold text-gray-600 mb-1.5">Transport</label>
-                        <select defaultValue={filters.filter_transport || ''} onChange={(e) => updateFilter('filter_transport', e.target.value)}
+                        <select value={filters.filter_transport || ''} onChange={(e) => updateFilter('filter_transport', e.target.value)}
                             className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors">
                             <option value="">Semua Transport</option>
                             {transports.map((t) => <option key={t.id} value={t.id}>{t.jenis}</option>)}

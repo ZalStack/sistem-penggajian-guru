@@ -41,8 +41,9 @@ class GradeController extends Controller
 
     public function destroy(Grade $grade)
     {
-        if ($grade->gurus()->exists()) {
-            return redirect()->route('grade.index')->with('error', 'Grade tidak dapat dihapus karena masih digunakan oleh '.$grade->gurus()->count().' guru.');
+        $gurusCount = $grade->gurus()->count();
+        if ($gurusCount > 0) {
+            return redirect()->route('grade.index')->with('error', 'Grade tidak dapat dihapus karena masih digunakan oleh '.$gurusCount.' guru.');
         }
 
         $grade->delete();

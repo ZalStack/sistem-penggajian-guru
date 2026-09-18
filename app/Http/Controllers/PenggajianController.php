@@ -41,7 +41,9 @@ class PenggajianController extends Controller
             'guru_id' => [
                 'required',
                 'exists:gurus,id',
-                Rule::unique('penggajians', 'guru_id')->where('periode', $request->periode),
+                Rule::unique('penggajians', 'guru_id')
+                    ->where('periode', $request->periode)
+                    ->where('transport_id', $request->transport_id),
             ],
             'periode' => 'required|string|max:7',
             'jumlah_sesi' => 'required|integer|min:1',
@@ -54,7 +56,7 @@ class PenggajianController extends Controller
         $guru = Guru::with('grade')->findOrFail($validated['guru_id']);
         $transport = Transport::findOrFail($validated['transport_id']);
 
-        $honor = $guru->grade->honor_per_sesi * $validated['jumlah_sesi'];
+        $honor = ($guru->grade?->honor_per_sesi ?? 0) * $validated['jumlah_sesi'];
         $totalTransport = $transport->biaya * $validated['jumlah_sesi'];
 
         Penggajian::create([
@@ -86,20 +88,21 @@ class PenggajianController extends Controller
                 'exists:gurus,id',
                 Rule::unique('penggajians', 'guru_id')
                     ->where('periode', $request->periode)
+                    ->where('transport_id', $request->transport_id)
                     ->ignore($penggajian->id),
             ],
             'periode' => 'required|string|max:7',
             'jumlah_sesi' => 'required|integer|min:1',
             'transport_id' => 'required|exists:transports,id',
         ], [
-            'guru_id.unique' => 'Guru ini sudah memiliki data penggajian pada periode yang dipilih.',
+            'guru_id.unique' => 'Guru ini sudah memiliki data penggajian pada periode dan transport yang dipilih.',
             'jumlah_sesi.min' => 'Jumlah sesi minimal 1.',
         ]);
 
         $guru = Guru::with('grade')->findOrFail($validated['guru_id']);
         $transport = Transport::findOrFail($validated['transport_id']);
 
-        $honor = $guru->grade->honor_per_sesi * $validated['jumlah_sesi'];
+        $honor = ($guru->grade?->honor_per_sesi ?? 0) * $validated['jumlah_sesi'];
         $totalTransport = $transport->biaya * $validated['jumlah_sesi'];
 
         $penggajian->update([

@@ -43,13 +43,13 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
         router.post(route('salary.pay', id));
     };
 
-    const totalGaji = penggajians.reduce((sum, p) => sum + p.total, 0);
+    const totalGaji = penggajians.reduce((sum, p) => sum + (Number(p.total) || 0), 0);
     const sudahDibayar = penggajians
         .filter((p) => p.status_bayar === 'sudah_dibayar')
-        .reduce((sum, p) => sum + p.total, 0);
+        .reduce((sum, p) => sum + (Number(p.total) || 0), 0);
     const belumDibayar = penggajians
         .filter((p) => p.status_bayar === 'belum_dibayar')
-        .reduce((sum, p) => sum + p.total, 0);
+        .reduce((sum, p) => sum + (Number(p.total) || 0), 0);
 
     return (
         <AuthenticatedLayout>

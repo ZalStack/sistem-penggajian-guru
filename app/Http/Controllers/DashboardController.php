@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\Penggajian;
 use App\Models\TeachingSession;
@@ -56,15 +57,18 @@ class DashboardController extends Controller
         if (! $guru) {
             return Inertia::render('Dashboard', [
                 'stats' => [
-                    'total_sesi' => 0,
+                    'total_sesi_bulan' => 0,
                     'total_hadir' => 0,
-                    'total_jam' => 0,
+                    'total_sesi_semua' => 0,
                     'gaji_bulan' => 0,
+                    'potensi_gaji' => 0,
                     'status_bayar' => 'belum_dibayar',
                 ],
                 'todaySessions' => [],
                 'todayAttendances' => (object) [],
-                'guru' => (object) ['nama' => $user->name],
+                'allSessions' => [],
+                'guru' => (object) ['nama' => $user->name, 'grade' => null],
+                'grades' => [],
                 'role' => 'guru',
             ]);
         }
@@ -75,40 +79,95 @@ class DashboardController extends Controller
             ->where('status', 'valid')
             ->count();
 
-        $totalSesi = TeachingSession::where('guru_id', $guru->id)
+        $totalSesiBulan = TeachingSession::where('guru_id', $guru->id)
             ->whereMonth('tanggal', $now->month)
             ->whereYear('tanggal', $now->year)
             ->sum('jumlah_sesi');
 
-        $totalJam = Attendance::where('guru_id', $guru->id)
-            ->whereMonth('tanggal', $now->month)
-            ->whereYear('tanggal', $now->year)
-            ->where('status', 'valid')
-            ->sum('durasi');
+        $totalSesiSemua = TeachingSession::where('guru_id', $guru->id)
+            ->sum('jumlah_sesi');
+
+        $honorPerSesi = (float) ($guru->grade?->honor_per_sesi ?? 0);
+        $potensiGaji = $totalSesiBulan * $honorPerSesi;
 
         $penggajian = Penggajian::where('guru_id', $guru->id)->where('periode', $periode)->first();
 
         $todaySessions = TeachingSession::with('location', 'transport')
             ->where('guru_id', $guru->id)
             ->whereDate('tanggal', $now->toDateString())
-            ->get();
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'tanggal' => $s->tanggal->format('Y-m-d'),
+                'jam_mulai' => $s->jam_mulai->format('H:i'),
+                'jam_selesai' => $s->jam_selesai->format('H:i'),
+                'mapel' => $s->mapel,
+                'jumlah_sesi' => $s->jumlah_sesi,
+                'location' => [
+                    'nama_lokasi' => $s->location->nama_lokasi,
+                    'latitude' => $s->location->latitude,
+                    'longitude' => $s->location->longitude,
+                    'radius' => $s->location->radius,
+                ],
+                'transport' => $s->transport ? [
+                    'jenis' => $s->transport->jenis,
+                ] : null,
+            ]);
 
         $todayAttendances = Attendance::where('guru_id', $guru->id)
             ->whereDate('tanggal', $now->toDateString())
             ->get()
             ->keyBy('session_id');
 
+        $allSessions = TeachingSession::with('location', 'transport', 'guru.grade')
+            ->where('guru_id', $guru->id)
+            ->orderBy('tanggal', 'desc')
+            ->get()
+            ->groupBy(fn ($s) => $s->tanggal->format('Y-m'))
+            ->map(function ($sessions, $monthKey) {
+                $totalSesi = $sessions->sum('jumlah_sesi');
+                return [
+                    'month_key' => $monthKey,
+                    'month_label' => \Carbon\Carbon::parse($monthKey.'-01')->translatedFormat('F Y'),
+                    'total_sesi' => $totalSesi,
+                    'sessions' => $sessions->values()->map(fn ($s) => [
+                        'id' => $s->id,
+                        'tanggal' => $s->tanggal->format('Y-m-d'),
+                        'jam_mulai' => $s->jam_mulai->format('H:i'),
+                        'jam_selesai' => $s->jam_selesai->format('H:i'),
+                        'mapel' => $s->mapel,
+                        'jumlah_sesi' => $s->jumlah_sesi,
+                        'lokasi' => $s->location->nama_lokasi ?? '-',
+                        'transport' => $s->transport->jenis ?? '-',
+                        'kode_grade' => $s->guru->grade?->kode_grade ?? '-',
+                        'jenjang' => $s->guru->jenjang ?? '-',
+                    ]),
+                ];
+            })
+            ->values();
+
+        $grades = Grade::orderBy('kode_grade')->get();
+
         return Inertia::render('Dashboard', [
             'stats' => [
-                'total_sesi' => $totalSesi,
+                'total_sesi_bulan' => $totalSesiBulan,
                 'total_hadir' => $totalHadir,
-                'total_jam' => round($totalJam / 60, 1),
+                'total_sesi_semua' => $totalSesiSemua,
                 'gaji_bulan' => $penggajian?->total ?? 0,
+                'potensi_gaji' => $potensiGaji,
                 'status_bayar' => $penggajian?->status_bayar ?? 'belum_dibayar',
             ],
             'todaySessions' => $todaySessions,
             'todayAttendances' => $todayAttendances,
-            'guru' => $guru,
+            'allSessions' => $allSessions,
+            'guruData' => [
+                'nama' => $guru->nama,
+                'grade' => $guru->grade?->toArray() ?? null,
+                'mapel' => $guru->mapel,
+                'jenjang' => $guru->jenjang,
+            ],
+            'guru' => $guru->load('grade'),
+            'grades' => $grades,
             'role' => 'guru',
         ]);
     }

@@ -91,6 +91,7 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                     <button
                         onClick={() => setMobileOpen(false)}
                         className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        aria-label="Tutup menu"
                     >
                         <Icon icon="lucide:x" className="text-xl" />
                     </button>
@@ -109,6 +110,7 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                                     href={route(item.href)}
                                     onClick={() => setMobileOpen(false)}
                                     title={!sidebarDesktop ? item.label : undefined}
+                                    aria-current={isActive ? 'page' : undefined}
                                     className={`group flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 ${
                                         isActive
                                             ? 'bg-slate-900 text-white shadow-sm'
@@ -166,12 +168,14 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
                             <button
                                 onClick={() => setMobileOpen(true)}
                                 className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+                                aria-label="Buka menu navigasi"
                             >
                                 <Icon icon="lucide:menu" className="text-xl" />
                             </button>
                             <button
                                 onClick={() => setSidebarDesktop(!sidebarDesktop)}
                                 className="hidden lg:flex p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                                aria-label={sidebarDesktop ? 'Sembunyikan sidebar' : 'Tampilkan sidebar'}
                             >
                                 <Icon icon={sidebarDesktop ? 'lucide:panel-left-close' : 'lucide:panel-left'} className="text-lg" />
                             </button>
@@ -218,7 +222,9 @@ export default function AuthenticatedLayout({ header, children }: AuthenticatedL
 
                 <div className="px-4 sm:px-6 lg:px-8 pt-4 space-y-2.5">
                     {flash?.success && <FlashMessage type="success" message={flash.success} />}
-                    {flash?.error && <FlashMessage type="error" message={flash.error} />}
+                    {(flash?.error || (props.errors as any)?.error) && (
+                        <FlashMessage type="error" message={flash?.error || (props.errors as any)?.error} />
+                    )}
                     {flash?.warning && <FlashMessage type="warning" message={flash.warning} />}
                     {flash?.info && <FlashMessage type="info" message={flash.info} />}
                 </div>

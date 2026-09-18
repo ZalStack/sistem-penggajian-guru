@@ -7,6 +7,7 @@ use App\Models\Guru;
 use App\Models\Penggajian;
 use App\Models\TeachingSession;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class AttendanceController extends Controller
@@ -23,36 +24,28 @@ class AttendanceController extends Controller
         $guru = $user->guru;
 
         if (! $guru) {
-            return back()->withErrors(['error' => 'Akun ini tidak terhubung dengan data guru.']);
+            return back()->with('error', 'Akun ini tidak terhubung dengan data guru.');
         }
 
         $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
 
         if ($session->guru_id !== $guru->id) {
-            return back()->withErrors(['error' => 'Sesi ini bukan milik Anda.']);
+            return back()->with('error', 'Sesi ini bukan milik Anda.');
         }
 
-        $today = now()->toDateString();
+        $sessionDate = $session->tanggal->toDateString();
+
+        if ($sessionDate !== now()->toDateString()) {
+            return back()->with('error', 'Check-in hanya dapat dilakukan pada tanggal jadwal sesi ('.$session->tanggal->format('d/m/Y').').');
+        }
+
         $existing = Attendance::where('guru_id', $guru->id)
             ->where('session_id', $session->id)
-            ->where('tanggal', $today)
+            ->where('tanggal', $sessionDate)
             ->first();
 
         if ($existing && $existing->checkin_time) {
-            return back()->withErrors(['error' => 'Anda sudah melakukan check-in untuk sesi ini hari ini.']);
-        }
-
-        $now = now();
-        $jamMulai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_mulai->format('H:i'));
-        $jamSelesai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_selesai->format('H:i'));
-        $checkinWindowStart = $jamMulai->copy()->subMinutes(30);
-
-        if ($now->lt($checkinWindowStart)) {
-            return back()->withErrors(['error' => 'Check-in belum bisa dilakukan. Jam mengajar mulai pukul '.$jamMulai->format('H:i').' (check-in dibuka 30 menit sebelumnya).']);
-        }
-
-        if ($now->gt($jamSelesai)) {
-            return back()->withErrors(['error' => 'Check-in gagal! Sesi mengajar sudah berakhir pada pukul '.$jamSelesai->format('H:i').'.']);
+            return back()->with('error', 'Anda sudah melakukan check-in untuk sesi ini hari ini.');
         }
 
         $distance = Attendance::calculateDistance(
@@ -63,18 +56,20 @@ class AttendanceController extends Controller
         $isValid = $distance <= $session->location->radius;
 
         if (! $isValid) {
-            return back()->withErrors(['error' => 'Check-in gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m). Silakan mendekat ke lokasi mengajar.']);
+            return back()->with('error', 'Check-in gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m). Silakan mendekat ke lokasi mengajar.');
         }
 
-        $attendance = Attendance::updateOrCreate(
-            ['guru_id' => $guru->id, 'session_id' => $session->id, 'tanggal' => $today],
-            [
-                'checkin_time' => now(),
-                'checkin_lat' => $validated['latitude'],
-                'checkin_lng' => $validated['longitude'],
-                'status' => 'belum_checkout',
-            ]
-        );
+        $attendance = DB::transaction(function () use ($guru, $session, $sessionDate, $validated) {
+            return Attendance::updateOrCreate(
+                ['guru_id' => $guru->id, 'session_id' => $session->id, 'tanggal' => $sessionDate],
+                [
+                    'checkin_time' => now(),
+                    'checkin_lat' => $validated['latitude'],
+                    'checkin_lng' => $validated['longitude'],
+                    'status' => 'belum_checkout',
+                ]
+            );
+        });
 
         return back()->with('success', 'Check-in berhasil! Lokasi valid ('.number_format($distance, 0).'m dari lokasi tujuan).');
     }
@@ -91,37 +86,32 @@ class AttendanceController extends Controller
         $guru = $user->guru;
 
         if (! $guru) {
-            return back()->withErrors(['error' => 'Akun ini tidak terhubung dengan data guru.']);
+            return back()->with('error', 'Akun ini tidak terhubung dengan data guru.');
         }
 
-        $today = now()->toDateString();
+        $sessionDate = now()->toDateString();
         $attendance = Attendance::where('guru_id', $guru->id)
             ->where('session_id', $validated['session_id'])
-            ->where('tanggal', $today)
+            ->whereNull('checkout_time')
+            ->latest('checkin_time')
             ->first();
 
+        if (! $attendance) {
+            $attendance = Attendance::where('guru_id', $guru->id)
+                ->where('session_id', $validated['session_id'])
+                ->where('tanggal', $sessionDate)
+                ->first();
+        }
+
         if (! $attendance || ! $attendance->checkin_time) {
-            return back()->withErrors(['error' => 'Anda belum melakukan check-in untuk sesi ini.']);
+            return back()->with('error', 'Anda belum melakukan check-in untuk sesi ini.');
         }
 
         if ($attendance->checkout_time) {
-            return back()->withErrors(['error' => 'Anda sudah melakukan check-out untuk sesi ini.']);
+            return back()->with('error', 'Anda sudah melakukan check-out untuk sesi ini.');
         }
 
         $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
-
-        $now = now();
-        $jamMulai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_mulai->format('H:i'));
-        $jamSelesai = \Carbon\Carbon::parse($session->tanggal->format('Y-m-d').' '.$session->jam_selesai->format('H:i'));
-        $checkoutWindowEnd = $jamSelesai->copy()->addMinutes(30);
-
-        if ($now->lt($jamMulai)) {
-            return back()->withErrors(['error' => 'Check-out belum bisa dilakukan. Sesi mengajar mulai pukul '.$jamMulai->format('H:i').'.']);
-        }
-
-        if ($now->gt($checkoutWindowEnd)) {
-            return back()->withErrors(['error' => 'Check-out gagal! Batas waktu check-out sudah lewat (pukul '.$checkoutWindowEnd->format('H:i').').']);
-        }
 
         $distance = Attendance::calculateDistance(
             $validated['latitude'], $validated['longitude'],
@@ -131,21 +121,23 @@ class AttendanceController extends Controller
         $isWithinRadius = $distance <= $session->location->radius;
 
         if (! $isWithinRadius) {
-            return back()->withErrors(['error' => 'Check-out gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m).']);
+            return back()->with('error', 'Check-out gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m).');
         }
 
         $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
         $durasi = max($durasi, 1);
 
-        $attendance->update([
-            'checkout_time' => now(),
-            'checkout_lat' => $validated['latitude'],
-            'checkout_lng' => $validated['longitude'],
-            'durasi' => $durasi,
-            'status' => 'valid',
-        ]);
+        DB::transaction(function () use ($attendance, $validated, $durasi) {
+            $attendance->update([
+                'checkout_time' => now(),
+                'checkout_lat' => $validated['latitude'],
+                'checkout_lng' => $validated['longitude'],
+                'durasi' => $durasi,
+                'status' => 'valid',
+            ]);
+        });
 
-        $periodo = now()->format('Y-m');
+        $periodo = $attendance->tanggal->format('Y-m');
         Penggajian::calculateForGuru($guru, $periodo);
 
         return back()->with('success', 'Check-out berhasil! Lokasi valid ('.number_format($distance, 0).'m). Durasi mengajar: '.$durasi.' menit. Gaji sudah dihitung otomatis.');

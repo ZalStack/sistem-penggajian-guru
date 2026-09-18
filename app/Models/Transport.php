@@ -23,4 +23,9 @@ class Transport extends Model
     {
         return $this->hasMany(Penggajian::class);
     }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(TeachingSession::class);
+    }
 }

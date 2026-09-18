@@ -13,15 +13,18 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanController extends Controller
 {
-    public function index(Request $request)
+    private function buildQuery(Request $request)
     {
-        $query = Penggajian::with(['guru.grade', 'transport'])
+        return Penggajian::with(['guru.grade', 'transport'])
             ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
             ->when($request->filter_grade, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
             ->when($request->filter_mapel, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
             ->when($request->filter_transport, fn ($q, $t) => $q->where('transport_id', $t));
+    }
 
-        $penggajians = $query->get();
+    public function index(Request $request)
+    {
+        $penggajians = $this->buildQuery($request)->get();
 
         return Inertia::render('Laporan/Index', [
             'penggajians' => $penggajians,
@@ -35,13 +38,7 @@ class LaporanController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $query = Penggajian::with(['guru.grade', 'transport'])
-            ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
-            ->when($request->filter_grade, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($request->filter_mapel, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
-            ->when($request->filter_transport, fn ($q, $t) => $q->where('transport_id', $t));
-
-        $penggajians = $query->get();
+        $penggajians = $this->buildQuery($request)->get();
         $periode = $request->periode ?? now()->format('Y-m');
 
         $pdf = Pdf::loadView('pdf.laporan', [
@@ -56,13 +53,7 @@ class LaporanController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $query = Penggajian::with(['guru.grade', 'transport'])
-            ->when($request->periode, fn ($q, $p) => $q->where('periode', $p))
-            ->when($request->filter_grade, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($request->filter_mapel, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
-            ->when($request->filter_transport, fn ($q, $t) => $q->where('transport_id', $t));
-
-        $penggajians = $query->get();
+        $penggajians = $this->buildQuery($request)->get();
         $periode = $request->periode ?? now()->format('Y-m');
 
         return Excel::download(new PenggajianExport($penggajians), "rekap-penggajian-{$periode}.xlsx");

@@ -12,8 +12,6 @@ return new class extends Migration
         Schema::table('penggajians', function (Blueprint $table) {
             $table->integer('jumlah_hadir')->default(0)->after('jumlah_sesi');
             $table->decimal('total_jam', 8, 2)->default(0)->after('jumlah_hadir');
-            $table->decimal('total_transport', 12, 2)->default(0)->change();
-            $table->decimal('total', 12, 2)->default(0)->change();
             $table->enum('status_bayar', ['belum_dibayar', 'sudah_dibayar'])->default('belum_dibayar')->after('total');
         });
 

@@ -53,6 +53,10 @@ class SalaryController extends Controller
 
     public function pay(Request $request, Penggajian $penggajian)
     {
+        if ($request->user()->role !== 'admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
         $penggajian->update(['status_bayar' => 'sudah_dibayar']);
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
@@ -60,12 +64,18 @@ class SalaryController extends Controller
 
     public function downloadPayslip(Penggajian $penggajian)
     {
+        $user = request()->user();
+        if ($user->role !== 'admin' && $user->guru_id !== $penggajian->guru_id) {
+            abort(403, 'Unauthorized access.');
+        }
+
         $penggajian->load('guru.grade', 'transport');
 
         $pdf = Pdf::loadView('pdf.payslip', ['penggajian' => $penggajian])
             ->setPaper('a5', 'portrait');
 
-        $filename = 'slip-gaji-'.$penggajian->guru->nama.'-'.$penggajian->periode.'.pdf';
+        $guruNama = preg_replace('/[^a-zA-Z0-9\s-]/', '', $penggajian->guru->nama ?? 'guru');
+        $filename = 'slip-gaji-'.$guruNama.'-'.$penggajian->periode.'.pdf';
 
         return $pdf->download($filename);
     }

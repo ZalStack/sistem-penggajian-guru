@@ -48,7 +48,7 @@ class Penggajian extends Model
     public static function calculateForGuru(Guru $guru, string $periode): void
     {
         [$year, $month] = explode('-', $periode);
-        $honorPerSesi = $guru->grade->honor_per_sesi ?? 0;
+        $honorPerSesi = $guru->grade?->honor_per_sesi ?? 0;
 
         $attendances = Attendance::with('session.transport')
             ->where('guru_id', $guru->id)

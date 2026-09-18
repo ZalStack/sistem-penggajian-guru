@@ -41,8 +41,9 @@ class TransportController extends Controller
 
     public function destroy(Transport $transport)
     {
-        if ($transport->penggajians()->exists()) {
-            return redirect()->route('transport.index')->with('error', 'Transport tidak dapat dihapus karena masih digunakan pada '.$transport->penggajians()->count().' riwayat penggajian.');
+        $penggajiansCount = $transport->penggajians()->count();
+        if ($penggajiansCount > 0) {
+            return redirect()->route('transport.index')->with('error', 'Transport tidak dapat dihapus karena masih digunakan pada '.$penggajiansCount.' riwayat penggajian.');
         }
 
         $transport->delete();

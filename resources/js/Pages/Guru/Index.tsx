@@ -35,7 +35,7 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [searchTerm]);
+    }, [searchTerm, filters]);
 
     const handleFilterGrade = (value: string) => {
         router.get(

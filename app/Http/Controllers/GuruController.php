@@ -6,6 +6,7 @@ use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -41,27 +42,31 @@ class GuruController extends Controller
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
-            'name' => $validated['nama'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
-            'role' => 'guru',
-        ]);
+        $generatedPassword = Str::random(16);
 
-        $guru = Guru::create([
-            'nama' => $validated['nama'],
-            'grade_id' => $validated['grade_id'],
-            'mapel' => $validated['mapel'],
-            'jenjang' => $validated['jenjang'] ?? null,
-            'user_id' => $user->id,
-        ]);
+        DB::transaction(function () use ($validated, $generatedPassword, &$guru) {
+            $user = User::create([
+                'name' => $validated['nama'],
+                'email' => $validated['email'],
+                'password' => Hash::make($generatedPassword),
+                'role' => 'guru',
+            ]);
 
-        $user->update(['guru_id' => $guru->id]);
+            $guru = Guru::create([
+                'nama' => $validated['nama'],
+                'grade_id' => $validated['grade_id'],
+                'mapel' => $validated['mapel'],
+                'jenjang' => $validated['jenjang'] ?? null,
+                'user_id' => $user->id,
+            ]);
 
-        return redirect()->route('guru.index')->with('success', 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$validated['password']);
+            $user->update(['guru_id' => $guru->id]);
+        });
+
+        return redirect()->route('guru.index')->with('success', 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$generatedPassword);
     }
 
     public function show(Guru $guru)
@@ -110,11 +115,12 @@ class GuruController extends Controller
 
     public function destroy(Guru $guru)
     {
-        if ($guru->user) {
-            $guru->user->delete();
-        }
-
-        $guru->delete();
+        DB::transaction(function () use ($guru) {
+            if ($guru->user) {
+                $guru->user->delete();
+            }
+            $guru->delete();
+        });
 
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus.');
     }
@@ -125,9 +131,9 @@ class GuruController extends Controller
             return back()->withErrors(['error' => 'Guru ini belum memiliki akun login.']);
         }
 
-        $newPassword = Str::lower(substr($guru->nama, 0, 4)).'123456';
+        $newPassword = Str::random(16);
 
-        $guru->user->update(['password' => $newPassword]);
+        $guru->user->update(['password' => Hash::make($newPassword)]);
 
         return back()->with('success', 'Password berhasil direset. Password baru: '.$newPassword);
     }

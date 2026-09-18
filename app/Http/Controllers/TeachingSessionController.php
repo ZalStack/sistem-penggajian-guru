@@ -38,8 +38,8 @@ class TeachingSessionController extends Controller
             'transport_id' => 'required|exists:transports,id',
             'mapel' => 'required|in:IPA,MTK',
             'tanggal' => 'required|date',
-            'jam_mulai' => 'required',
-            'jam_selesai' => 'required|after:jam_mulai',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',
         ]);
 
@@ -56,8 +56,8 @@ class TeachingSessionController extends Controller
             'transport_id' => 'required|exists:transports,id',
             'mapel' => 'required|in:IPA,MTK',
             'tanggal' => 'required|date',
-            'jam_mulai' => 'required',
-            'jam_selesai' => 'required|after:jam_mulai',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',
         ]);
 

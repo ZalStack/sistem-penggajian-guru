@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\Location;
-use App\Models\TeachingSession;
 use App\Models\Transport;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -61,7 +60,7 @@ class DatabaseSeeder extends Seeder
             ['nama' => 'Dewi Lestari', 'grade_id' => 4, 'mapel' => 'MTK', 'jenjang' => 'SD'],
         ];
 
-        foreach ($guruData as $i => $data) {    
+        foreach ($guruData as $i => $data) {
             $guru = Guru::create($data);
 
             $userGuru = User::create([
@@ -73,30 +72,6 @@ class DatabaseSeeder extends Seeder
             ]);
 
             $guru->update(['user_id' => $userGuru->id]);
-        }
-
-        $transports = Transport::all();
-        $gurus = Guru::all();
-        $locations = Location::all();
-
-        $today = now()->format('Y-m-d');
-        $yesterday = now()->subDay()->format('Y-m-d');
-
-        $sessions = [
-            ['guru_id' => 1, 'location_id' => 1, 'transport_id' => 2, 'mapel' => 'IPA', 'tanggal' => $yesterday, 'jam_mulai' => '08:00', 'jam_selesai' => '10:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 1, 'location_id' => 1, 'transport_id' => 2, 'mapel' => 'IPA', 'tanggal' => $today, 'jam_mulai' => '08:00', 'jam_selesai' => '10:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 1, 'location_id' => 2, 'transport_id' => 1, 'mapel' => 'IPA', 'tanggal' => $today, 'jam_mulai' => '13:00', 'jam_selesai' => '15:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 2, 'location_id' => 2, 'transport_id' => 1, 'mapel' => 'MTK', 'tanggal' => $yesterday, 'jam_mulai' => '10:00', 'jam_selesai' => '12:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 2, 'location_id' => 2, 'transport_id' => 1, 'mapel' => 'MTK', 'tanggal' => $today, 'jam_mulai' => '10:00', 'jam_selesai' => '12:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 2, 'location_id' => 1, 'transport_id' => 2, 'mapel' => 'MTK', 'tanggal' => $today, 'jam_mulai' => '13:00', 'jam_selesai' => '15:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 3, 'location_id' => 1, 'transport_id' => 3, 'mapel' => 'IPA', 'tanggal' => $yesterday, 'jam_mulai' => '09:00', 'jam_selesai' => '11:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 3, 'location_id' => 1, 'transport_id' => 3, 'mapel' => 'IPA', 'tanggal' => $today, 'jam_mulai' => '09:00', 'jam_selesai' => '11:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 4, 'location_id' => 2, 'transport_id' => 1, 'mapel' => 'MTK', 'tanggal' => $yesterday, 'jam_mulai' => '08:00', 'jam_selesai' => '10:00', 'jumlah_sesi' => 2],
-            ['guru_id' => 4, 'location_id' => 2, 'transport_id' => 1, 'mapel' => 'MTK', 'tanggal' => $today, 'jam_mulai' => '08:00', 'jam_selesai' => '10:00', 'jumlah_sesi' => 2],
-        ];
-
-        foreach ($sessions as $session) {
-            TeachingSession::create($session);
         }
     }
 }
