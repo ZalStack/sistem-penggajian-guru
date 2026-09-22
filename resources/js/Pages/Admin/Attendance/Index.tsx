@@ -5,12 +5,13 @@ import Input from '@/Components/ui/input';
 import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
+import Pagination from '@/Components/ui/pagination';
 import { Head, router, Link } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { Attendance, Guru, Grade } from '@/types';
+import { Attendance, Guru, Grade, PaginatedData } from '@/types';
 
 interface AttendanceIndexProps {
-    attendances: Attendance[];
+    attendances: PaginatedData<Attendance>;
     gurus: (Guru & { grade?: Grade })[];
     filters: {
         periode?: string;
@@ -50,11 +51,12 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
         );
     };
 
-    const totalHadir = attendances.filter((a) => a.status === 'valid').length;
-    const totalTidakHadir = attendances.filter(
+    const attendanceList = attendances.data;
+    const totalHadir = attendanceList.filter((a) => a.status === 'valid').length;
+    const totalTidakHadir = attendanceList.filter(
         (a) => a.status === 'belum_checkin' || a.status === 'belum_checkout'
     ).length;
-    const validAttendances = attendances.filter((a) => a.status === 'valid');
+    const validAttendances = attendanceList.filter((a) => a.status === 'valid');
     const avgDuration =
         validAttendances.length > 0
             ? Math.round(validAttendances.reduce((sum, a) => sum + a.durasi, 0) / validAttendances.length)
@@ -151,7 +153,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
             <div className="mt-6">
                 <Card
                     title="Daftar Absensi"
-                    description={`Menampilkan ${attendances.length} data kehadiran`}
+                    description={`Menampilkan ${attendances.total} data kehadiran`}
                 >
                     {/* Desktop Table */}
                     <div className="hidden lg:block">
@@ -171,7 +173,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {attendances.length === 0 ? (
+                                {attendanceList.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={10}>
                                             <div className="text-center py-12">
@@ -186,7 +188,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    attendances.map((att, index) => (
+                                    attendanceList.map((att, index) => (
                                         <TableRow key={att.id}>
                                             <TableCell className="font-medium text-slate-400">
                                                 {index + 1}
@@ -246,13 +248,13 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
 
                     {/* Mobile Cards */}
                     <div className="lg:hidden space-y-3">
-                        {attendances.length === 0 ? (
+                        {attendanceList.length === 0 ? (
                             <div className="text-center py-12">
                                 <Icon icon="lucide:inbox" className="text-4xl text-slate-300 mx-auto mb-3" />
                                 <p className="text-sm text-slate-500">Tidak ada data absensi ditemukan</p>
                             </div>
                         ) : (
-                            attendances.map((att, index) => (
+                            attendanceList.map((att, index) => (
                                 <div
                                     key={att.id}
                                     className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
@@ -321,6 +323,8 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                             ))
                         )}
                     </div>
+
+                    {attendances.links && <Pagination links={attendances.links} />}
                 </Card>
             </div>
         </AuthenticatedLayout>
