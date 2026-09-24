@@ -18,8 +18,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user()->load('guru.grade');
+
         return Inertia::render('Profile/Edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'guru' => $user->guru,
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
         ]);
@@ -30,13 +33,32 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+
+        // Jika role guru, update data guru terkait (tunjangan_khusus TIDAK boleh diubah guru)
+        if ($user->isGuru() && $user->guru) {
+            $guruData = $request->validate([
+                'domisili' => 'nullable|string|max:255',
+                'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
+                'bank' => 'nullable|string|max:50',
+                'nomor_rekening' => 'nullable|string|max:50',
+                'keterangan_mengajar' => 'nullable|string|max:1000',
+            ]);
+
+            // Sinkronkan nama guru dengan name user
+            $guruData['nama'] = $user->name;
+
+            $user->guru->update($guruData);
+        }
+
+        // Admin tidak memiliki data guru, jadi tidak perlu update tambahan
 
         return Redirect::route('profile.edit')->with('success', 'Profil berhasil diperbarui.');
     }

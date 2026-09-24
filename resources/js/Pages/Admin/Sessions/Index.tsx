@@ -132,10 +132,10 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         <AuthenticatedLayout>
             <Head title="Kelola Sesi Mengajar" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Sesi Mengajar</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+            <div className="page-header animate-fade-in flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+                <div className="min-w-0">
+                    <h1 className="page-title">Sesi Mengajar</h1>
+                    <p className="page-subtitle">
                         Kelola jadwal sesi mengajar guru beserta lokasi dan transport
                     </p>
                 </div>
@@ -144,14 +144,14 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm"
+                    className="shadow-sm shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Sesi Baru'}
                 </Button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
                 {showForm && (
                     <Card
                         title={editId ? 'Edit Sesi Mengajar' : 'Tambah Sesi Mengajar Baru'}
@@ -252,7 +252,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
 
                 <Card>
                     {/* Filter Bar */}
-                    <div className="flex flex-col md:flex-row gap-3 mb-6">
+                    <div className="flex flex-col md:flex-row gap-4 mb-8">
                         <div className="flex-1">
                             <Input
                                 label="Periode"
@@ -374,7 +374,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                 {sessions.map((session, index) => (
                                     <div
                                         key={session.id}
-                                        className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                        className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-3"
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex items-center gap-3">
@@ -391,7 +391,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                             </span>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="grid grid-cols-2 gap-3 text-xs">
                                             <div>
                                                 <span className="text-slate-400">Tanggal</span>
                                                 <p className="font-medium text-slate-700">{formatDate(session.tanggal)}</p>
@@ -439,7 +439,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                             <h3 className="text-base font-bold text-slate-900">
                                 {hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
                             </h3>
-                            <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                            <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
                                 {hasActiveFilters
                                     ? 'Coba ubah atau reset filter periode dan guru yang dipilih.'
                                     : 'Mulai dengan menambahkan sesi mengajar baru untuk memulai penjadwalan.'}

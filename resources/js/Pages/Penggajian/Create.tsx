@@ -71,16 +71,16 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
         <AuthenticatedLayout>
             <Head title="Input Penggajian" />
 
-            <div className="flex items-center gap-3 mb-6">
+            <div className="animate-fade-in page-header flex items-center gap-3 mb-8">
                 <Link
                     href={route('penggajian.index')}
-                    className="p-2 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                 >
                     <Icon icon="lucide:arrow-left" className="text-xl" />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Input Penggajian Baru</h1>
-                    <p className="text-sm text-gray-500">Hitung dan catat honor serta transport guru per periode</p>
+                    <h1 className="page-title text-2xl font-bold text-slate-900 tracking-tight">Input Penggajian Baru</h1>
+                    <p className="page-subtitle text-sm text-slate-500">Hitung dan catat honor serta transport guru per periode</p>
                 </div>
             </div>
 
@@ -88,7 +88,7 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         <Card title="Data Penggajian">
-                            <div className="space-y-5">
+                            <div className="space-y-6">
                                 <Select
                                     label="Guru"
                                     value={data.guru_id}
@@ -100,18 +100,18 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                                 />
 
                                 {selectedGuru && (
-                                    <div className="p-3.5 bg-blue-50/60 border border-blue-100 rounded-xl flex items-center justify-between text-xs sm:text-sm">
+                                    <div className="p-4 bg-sky-50/60 border border-sky-100 rounded-xl flex items-center justify-between text-xs sm:text-sm">
                                         <div className="flex items-center gap-2">
-                                            <Icon icon="lucide:user-check" className="text-blue-600 text-base" />
-                                            <span className="text-blue-900 font-medium">
+                                            <Icon icon="lucide:user-check" className="text-sky-600 text-base" />
+                                            <span className="text-slate-900 font-medium">
                                                 Grade: <strong className="font-semibold">{selectedGuru.grade?.kode_grade}</strong> &bull; Mapel: {selectedGuru.mapel}
                                             </span>
                                         </div>
-                                        <span className="text-blue-700 font-semibold">{formatCurrency(honorPerSesi)} / sesi</span>
+                                        <span className="text-sky-700 font-extrabold">{formatCurrency(honorPerSesi)} / sesi</span>
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <Input
                                         label="Periode (Bulan/Tahun)"
                                         type="month"
@@ -145,35 +145,35 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                         </Card>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <Card title="Simulasi Perhitungan">
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
-                                    <span className="text-gray-500">Honor / Sesi</span>
-                                    <span className="font-semibold text-gray-800">{formatCurrency(honorPerSesi)}</span>
+                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                    <span className="text-slate-500">Honor / Sesi</span>
+                                    <span className="font-extrabold text-slate-800">{formatCurrency(honorPerSesi)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
-                                    <span className="text-gray-500">Transport / Sesi</span>
-                                    <span className="font-semibold text-gray-800">{formatCurrency(biayaTransportPerSesi)}</span>
+                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                    <span className="text-slate-500">Transport / Sesi</span>
+                                    <span className="font-extrabold text-slate-800">{formatCurrency(biayaTransportPerSesi)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
-                                    <span className="text-gray-500">Jumlah Sesi</span>
-                                    <span className="font-bold text-gray-900">{sesi} sesi</span>
-                                </div>
-
-                                <hr className="border-gray-100 my-2" />
-
-                                <div className="flex items-center justify-between p-3 bg-blue-50/70 rounded-xl text-sm">
-                                    <span className="font-medium text-blue-800">Total Honor</span>
-                                    <span className="font-bold text-blue-800">{formatCurrency(totalHonor)}</span>
-                                </div>
-                                <div className="flex items-center justify-between p-3 bg-purple-50/70 rounded-xl text-sm">
-                                    <span className="font-medium text-purple-800">Total Transport</span>
-                                    <span className="font-bold text-purple-800">{formatCurrency(totalTransport)}</span>
+                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                    <span className="text-slate-500">Jumlah Sesi</span>
+                                    <span className="font-extrabold text-slate-900">{sesi} sesi</span>
                                 </div>
 
-                                <div className="p-4 bg-gray-900 rounded-xl text-white mt-3">
-                                    <span className="block text-xs uppercase tracking-wider text-gray-400 font-semibold mb-1">
+                                <hr className="border-slate-200 my-3" />
+
+                                <div className="flex items-center justify-between p-3.5 bg-sky-50/70 rounded-xl text-sm">
+                                    <span className="font-medium text-sky-700">Total Honor</span>
+                                    <span className="font-extrabold text-sky-700">{formatCurrency(totalHonor)}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-3.5 bg-sky-50/70 rounded-xl text-sm">
+                                    <span className="font-medium text-sky-700">Total Transport</span>
+                                    <span className="font-extrabold text-sky-700">{formatCurrency(totalTransport)}</span>
+                                </div>
+
+                                <div className="p-5 bg-slate-900 rounded-xl text-white mt-3">
+                                    <span className="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
                                         Grand Total Penggajian
                                     </span>
                                     <span className="text-2xl font-extrabold tracking-tight">
@@ -183,14 +183,14 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                             </div>
                         </Card>
 
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             <Button type="submit" processing={processing} className="w-full justify-center py-3">
                                 <Icon icon="lucide:save" className="text-base" />
                                 <span>Simpan Penggajian</span>
                             </Button>
                             <Link
                                 href={route('penggajian.index')}
-                                className="w-full inline-flex items-center justify-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                                className="w-full inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
                             >
                                 Batal
                             </Link>

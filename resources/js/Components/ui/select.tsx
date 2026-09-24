@@ -14,19 +14,17 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         return (
             <div className="space-y-1.5">
                 {label && (
-                    <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-                        {label} {props.required && <span className="text-red-500">*</span>}
+                    <label htmlFor={id} className="block text-[12.5px] font-[600] tracking-[-0.01em] text-slate-700">
+                        {label} {props.required && <span className="text-rose-500 font-bold">*</span>}
                     </label>
                 )}
-                <div className="relative">
+                <div className="relative group">
                     <select
                         ref={ref}
                         id={id}
                         className={cn(
-                            'w-full rounded-xl border border-gray-200 bg-white pl-4 pr-10 py-2.5 text-sm text-gray-900 appearance-none',
-                            'focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900',
-                            'transition-colors duration-200 shadow-sm cursor-pointer',
-                            error && 'border-red-300 focus:border-red-500 focus:ring-red-500/10',
+                            'select-modern pr-10',
+                            error && 'border-rose-300 focus:border-rose-400 focus:ring-rose-500/10 bg-rose-50/20',
                             className
                         )}
                         {...props}
@@ -36,11 +34,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
-                        <Icon icon="lucide:chevron-down" className="text-base" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 group-focus-within:text-slate-600 transition-colors">
+                        <Icon icon="lucide:chevron-down" className="text-[16px]" />
                     </div>
                 </div>
-                {error && <p className="text-xs text-red-500">{error}</p>}
+                {error && <p className="text-[11px] leading-4 text-rose-600 font-[600]">{error}</p>}
             </div>
         );
     }

@@ -18,6 +18,7 @@ class AttendanceController extends Controller
             'session_id' => 'required|exists:teaching_sessions,id',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
+            'accuracy' => 'required|numeric|min:0|max:300',
         ]);
 
         $user = $request->user();
@@ -58,30 +59,43 @@ class AttendanceController extends Controller
             return back()->with('error', 'Anda sudah melakukan check-in untuk sesi ini hari ini.');
         }
 
+        $gpsAccuracy = (float) $validated['accuracy'];
+
         $distance = Attendance::calculateDistance(
             $validated['latitude'], $validated['longitude'],
             (float) $session->location->latitude, (float) $session->location->longitude
         );
 
-        $isValid = $distance <= $session->location->radius;
+        $effectiveDistance = max(0, $distance - $gpsAccuracy);
+        $radius = $session->location->radius;
+        $isValid = $effectiveDistance <= $radius;
 
         if (! $isValid) {
-            return back()->with('error', 'Check-in gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m). Silakan mendekat ke lokasi mengajar.');
+            $msg = 'Check-in gagal! Anda berada di luar radius lokasi.';
+            $msg .= ' Jarak: '.number_format($distance, 0).'m.';
+            $msg .= ' Radius yang diizinkan: '.$radius.'m.';
+            if ($gpsAccuracy > 50) {
+                $msg .= ' (Akurasi lokasi: ±'.number_format($gpsAccuracy, 0).'m — disarankan di area terbuka untuk hasil lebih akurat).';
+            }
+
+            return back()->with('error', $msg);
         }
 
-        $attendance = DB::transaction(function () use ($guru, $session, $sessionDate, $validated) {
+        $attendance = DB::transaction(function () use ($guru, $session, $sessionDate, $validated, $gpsAccuracy) {
             return Attendance::updateOrCreate(
                 ['guru_id' => $guru->id, 'session_id' => $session->id, 'tanggal' => $sessionDate],
                 [
                     'checkin_time' => now(),
                     'checkin_lat' => $validated['latitude'],
                     'checkin_lng' => $validated['longitude'],
+                    'checkin_accuracy' => $gpsAccuracy,
                     'status' => 'belum_checkout',
                 ]
             );
         });
 
-        return back()->with('success', 'Check-in berhasil! Lokasi valid ('.number_format($distance, 0).'m dari lokasi tujuan).');
+        $accMsg = $gpsAccuracy <= 50 ? ' (GPS akurat)' : ' (WiFi/Jaringan)';
+        return back()->with('success', 'Check-in berhasil! Jarak: '.number_format($distance, 0).'m dari lokasi'.$accMsg.'.');
     }
 
     public function checkout(Request $request)
@@ -90,6 +104,7 @@ class AttendanceController extends Controller
             'session_id' => 'required|exists:teaching_sessions,id',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
+            'accuracy' => 'required|numeric|min:0|max:300',
         ]);
 
         $user = $request->user();
@@ -121,6 +136,8 @@ class AttendanceController extends Controller
             return back()->with('error', 'Durasi mengajar minimal 15 menit. Silakan check-out setelah minimal 15 menit check-in.');
         }
 
+        $gpsAccuracy = (float) $validated['accuracy'];
+
         $session = TeachingSession::with('location')->findOrFail($validated['session_id']);
 
         $distance = Attendance::calculateDistance(
@@ -128,17 +145,27 @@ class AttendanceController extends Controller
             (float) $session->location->latitude, (float) $session->location->longitude
         );
 
-        $isWithinRadius = $distance <= $session->location->radius;
+        $effectiveDistance = max(0, $distance - $gpsAccuracy);
+        $radius = $session->location->radius;
+        $isWithinRadius = $effectiveDistance <= $radius;
 
         if (! $isWithinRadius) {
-            return back()->with('error', 'Check-out gagal! Anda berada di luar radius lokasi ('.number_format($distance, 0).'m dari lokasi tujuan, maksimal '.$session->location->radius.'m).');
+            $msg = 'Check-out gagal! Anda berada di luar radius lokasi.';
+            $msg .= ' Jarak: '.number_format($distance, 0).'m.';
+            $msg .= ' Radius yang diizinkan: '.$radius.'m.';
+            if ($gpsAccuracy > 50) {
+                $msg .= ' (Akurasi lokasi: ±'.number_format($gpsAccuracy, 0).'m — disarankan di area terbuka untuk hasil lebih akurat).';
+            }
+
+            return back()->with('error', $msg);
         }
 
-        DB::transaction(function () use ($attendance, $validated, $durasi) {
+        DB::transaction(function () use ($attendance, $validated, $durasi, $gpsAccuracy) {
             $attendance->update([
                 'checkout_time' => now(),
                 'checkout_lat' => $validated['latitude'],
                 'checkout_lng' => $validated['longitude'],
+                'checkout_accuracy' => $gpsAccuracy,
                 'durasi' => $durasi,
                 'status' => 'valid',
             ]);
@@ -147,7 +174,8 @@ class AttendanceController extends Controller
         $periodo = $attendance->tanggal->format('Y-m');
         Penggajian::calculateForGuru($guru, $periodo);
 
-        return back()->with('success', 'Check-out berhasil! Lokasi valid ('.number_format($distance, 0).'m). Durasi mengajar: '.$durasi.' menit. Gaji sudah dihitung otomatis.');
+        $accMsg = $gpsAccuracy <= 50 ? ' (GPS akurat)' : ' (WiFi/Jaringan)';
+        return back()->with('success', 'Check-out berhasil! Jarak: '.number_format($distance, 0).'m'.$accMsg.'. Durasi mengajar: '.$durasi.' menit. Gaji sudah dihitung otomatis.');
     }
 
     public function guruAttendance(Request $request)

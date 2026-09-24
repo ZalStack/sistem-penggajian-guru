@@ -53,65 +53,71 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
 
     return (
         <AuthenticatedLayout>
-            <Head title="Kelola Penggajian" />
+            <Head title="Kelola Penggajian — SIGURU" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Penggajian Guru</h1>
-                    <p className="text-sm text-slate-500 mt-1">
-                        Hitung honor guru dan kelola status pembayaran gaji
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
+            {/* Header — spacious premium */}
+            <div className="mb-10">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                    <div className="space-y-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold tracking-wide uppercase text-slate-600 shadow-sm">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Keuangan • Live
+                        </div>
+                        <h1 className="text-3xl sm:text-[32px] font-bold tracking-tight text-slate-900 leading-tight">Penggajian Guru</h1>
+                        <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
+                            Hitung honor mengajar, kelola status pembayaran gaji, dan pantau realisasi dana secara transparan.
+                        </p>
+                    </div>
                     <Link
                         href={route('penggajian.index')}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors shadow-sm"
+                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all shadow-sm hover:shadow-md shrink-0"
                     >
-                        <Icon icon="lucide:sliders" className="text-base" />
-                        <span>Input Manual & Arsip</span>
+                        <Icon icon="lucide:archive" className="w-4 h-4" />
+                        Input Manual & Arsip
                     </Link>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            {/* Stats — generous gap */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-10">
                 <StatCard
                     title="Total Gaji"
                     value={formatCurrency(totalGaji)}
                     icon="lucide:wallet"
-                    color="blue"
-                    description="Seluruh periode"
+                    color="slate"
+                    description="Seluruh periode • Akumulasi"
                 />
                 <StatCard
                     title="Sudah Dibayar"
                     value={formatCurrency(sudahDibayar)}
                     icon="lucide:check-circle"
-                    color="green"
-                    description="Total pembayaran lunas"
+                    color="success"
+                    description="Pembayaran lunas"
                 />
                 <StatCard
                     title="Belum Dibayar"
                     value={formatCurrency(belumDibayar)}
                     icon="lucide:clock"
-                    color="amber"
+                    color="warning"
                     description="Menunggu pembayaran"
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <Card title="Filter Data" description="Saring data penggajian sesuai kebutuhan">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Filters — spacious */}
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8 mb-10">
+                <Card title="Filter Data" description="Saring data penggajian sesuai kebutuhan" className="xl:col-span-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <Input
                             label="Periode"
                             type="month"
                             value={filters.periode ?? ''}
                             onChange={(e) => handleFilterChange('periode', e.target.value)}
                         />
-                        <div className="space-y-1.5">
-                            <label className="block text-sm font-medium text-gray-700">Guru</label>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">Guru</label>
                             <select
                                 value={filters.filter_guru ?? ''}
                                 onChange={(e) => handleFilterChange('filter_guru', e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors duration-200 shadow-sm cursor-pointer"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 shadow-sm"
                             >
                                 <option value="">Semua Guru</option>
                                 {gurus.map((g) => (
@@ -121,12 +127,12 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                 ))}
                             </select>
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="block text-sm font-medium text-gray-700">Status Bayar</label>
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">Status Bayar</label>
                             <select
                                 value={filters.status_bayar ?? ''}
                                 onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors duration-200 shadow-sm cursor-pointer"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 shadow-sm"
                             >
                                 <option value="">Semua Status</option>
                                 <option value="belum_dibayar">Belum Dibayar</option>
@@ -136,35 +142,35 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                     </div>
                 </Card>
 
-                <Card title="Hitung Gaji" description="Masukkan periode untuk menghitung gaji guru">
-                    <form onSubmit={handleCalculate} className="flex items-end gap-4">
-                        <div className="flex-1">
-                            <Input
-                                label="Periode"
-                                type="month"
-                                value={calculateForm.data.periode}
-                                onChange={(e) => calculateForm.setData('periode', e.target.value)}
-                                required
-                            />
-                        </div>
-                        <Button type="submit" processing={calculateForm.processing} className="mb-0.5 shadow-sm">
-                            <Icon icon="lucide:calculator" className="text-base" />
-                            Hitung Gaji
+                <Card title="Hitung Gaji" description="Masukkan periode untuk menghitung otomatis" className="xl:col-span-2">
+                    <form onSubmit={handleCalculate} className="space-y-5">
+                        <Input
+                            label="Periode"
+                            type="month"
+                            value={calculateForm.data.periode}
+                            onChange={(e) => calculateForm.setData('periode', e.target.value)}
+                            required
+                        />
+                        <Button type="submit" processing={calculateForm.processing} className="w-full justify-center py-3">
+                            <Icon icon="lucide:calculator" className="w-4 h-4" />
+                            Hitung Gaji Sekarang
                         </Button>
+                        <p className="text-xs text-center text-slate-500">Perhitungan otomatis berdasarkan sesi hadir & grade</p>
                     </form>
                 </Card>
             </div>
 
+            {/* Table — spacious */}
             <Card
                 title="Daftar Penggajian"
-                description={`Menampilkan ${penggajians.length} data penggajian`}
+                description={`Menampilkan ${penggajians.length} data penggajian • Kelola pembayaran`}
             >
                 {/* Desktop Table */}
-                <div className="hidden xl:block">
+                <div className="hidden xl:block -mx-8">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-12">No</TableHead>
+                                <TableHead className="w-14">No</TableHead>
                                 <TableHead>Guru</TableHead>
                                 <TableHead>Grade</TableHead>
                                 <TableHead>Periode</TableHead>
@@ -182,29 +188,27 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                             {penggajians.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={12}>
-                                        <div className="text-center py-12">
-                                            <Icon
-                                                icon="lucide:inbox"
-                                                className="text-4xl text-slate-300 mx-auto mb-3"
-                                            />
-                                            <p className="text-sm text-slate-500">
-                                                Tidak ada data penggajian ditemukan
-                                            </p>
+                                        <div className="text-center py-20">
+                                            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                                                <Icon icon="lucide:inbox" className="text-2xl" />
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
+                                            <p className="text-xs text-slate-500 mt-1">Gunakan filter atau hitung gaji untuk periode baru</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 penggajians.map((p, index) => (
-                                    <TableRow key={p.id}>
+                                    <TableRow key={p.id} className="hover:bg-slate-50/50">
                                         <TableCell className="font-medium text-slate-400">
                                             {index + 1}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                                    <Icon icon="lucide:user" className="text-base" />
+                                                <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center flex-shrink-0 font-semibold text-xs">
+                                                    {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
                                                 </div>
-                                                <span className="font-medium text-slate-900">
+                                                <span className="font-semibold text-slate-900">
                                                     {p.guru?.nama ?? '-'}
                                                 </span>
                                             </div>
@@ -215,21 +219,21 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-700 font-mono text-xs">
+                                            <span className="text-slate-700 font-mono text-xs bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200">
                                                 {p.periode}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <span className="text-slate-700">{p.jumlah_sesi}</span>
+                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-xs font-bold">{p.jumlah_sesi}</span>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <span className="text-slate-700">{p.jumlah_hadir}</span>
+                                            <span className="text-slate-700 font-medium">{p.jumlah_hadir}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-700">{p.total_jam} jam</span>
+                                            <span className="text-slate-600 text-sm">{p.total_jam} jam</span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-medium text-slate-900">
+                                            <span className="font-semibold text-slate-900">
                                                 {formatCurrency(p.honor)}
                                             </span>
                                         </TableCell>
@@ -245,29 +249,29 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                         </TableCell>
                                         <TableCell>
                                             {p.status_bayar === 'sudah_dibayar' ? (
-                                                <Badge variant="success">Sudah Dibayar</Badge>
+                                                <Badge variant="success">Lunas</Badge>
                                             ) : (
-                                                <Badge variant="danger">Belum Dibayar</Badge>
+                                                <Badge variant="danger">Belum</Badge>
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <a
                                                     href={route('salary.payslip', p.id)}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors shadow-sm"
                                                     title="Download Slip Gaji PDF"
                                                 >
-                                                    <Icon icon="lucide:download" className="text-sm" />
-                                                    <span className="hidden sm:inline">PDF</span>
+                                                    <Icon icon="lucide:download" className="w-3.5 h-3.5" />
+                                                    PDF
                                                 </a>
                                                 {p.status_bayar === 'belum_dibayar' && (
                                                     <Button
                                                         variant="success"
                                                         size="sm"
                                                         onClick={() => handlePay(p.id)}
-                                                        className="shadow-sm"
+                                                        className="shadow-sm px-4"
                                                     >
-                                                        <Icon icon="lucide:credit-card" className="text-base" />
+                                                        <Icon icon="lucide:credit-card" className="w-4 h-4" />
                                                         Bayar
                                                     </Button>
                                                 )}
@@ -280,98 +284,76 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                     </Table>
                 </div>
 
-                {/* Mobile Cards */}
-                <div className="xl:hidden space-y-3">
+                {/* Mobile Cards — spacious */}
+                <div className="xl:hidden space-y-4">
                     {penggajians.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Icon icon="lucide:inbox" className="text-4xl text-slate-300 mx-auto mb-3" />
-                            <p className="text-sm text-slate-500">Tidak ada data penggajian ditemukan</p>
+                        <div className="text-center py-16">
+                            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                                <Icon icon="lucide:inbox" className="text-2xl" />
+                            </div>
+                            <p className="text-sm font-medium text-slate-900">Tidak ada data</p>
+                            <p className="text-xs text-slate-500 mt-1">Belum ada penggajian untuk periode ini</p>
                         </div>
                     ) : (
                         penggajians.map((p, index) => (
                             <div
                                 key={p.id}
-                                className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-shadow"
                             >
-                                <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                            <Icon icon="lucide:user" className="text-base" />
+                                        <div className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-xs">
+                                            {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-slate-900 text-sm">
+                                            <p className="font-bold text-slate-900">
                                                 {p.guru?.nama ?? '-'}
                                             </p>
-                                            <p className="text-xs text-slate-400">
-                                                Grade {p.guru?.grade?.kode_grade ?? '-'} &middot;{' '}
-                                                {p.periode}
+                                            <p className="text-xs text-slate-500 mt-0.5">
+                                                Grade {p.guru?.grade?.kode_grade ?? '-'} • {p.periode} • {p.jumlah_sesi} sesi
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-semibold text-slate-400">
-                                            #{index + 1}
-                                        </span>
-                                        {p.status_bayar === 'sudah_dibayar' ? (
-                                            <Badge variant="success">Dibayar</Badge>
-                                        ) : (
-                                            <Badge variant="danger">Belum</Badge>
-                                        )}
+                                    {p.status_bayar === 'sudah_dibayar' ? (
+                                        <Badge variant="success">Lunas</Badge>
+                                    ) : (
+                                        <Badge variant="danger">Belum</Badge>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hadir</p>
+                                        <p className="text-sm font-bold text-slate-900 mt-1">{p.jumlah_hadir} / {p.jumlah_sesi}</p>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Jam</p>
+                                        <p className="text-sm font-bold text-slate-900 mt-1">{p.total_jam} jam</p>
+                                    </div>
+                                    <div className="bg-slate-900 rounded-xl p-3 text-white">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Total</p>
+                                        <p className="text-sm font-bold mt-1">{formatCurrency(p.total)}</p>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div>
-                                        <p className="text-slate-400">Sesi / Hadir</p>
-                                        <p className="font-medium text-slate-700">
-                                            {p.jumlah_sesi} / {p.jumlah_hadir}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-400">Total Jam</p>
-                                        <p className="font-medium text-slate-700">{p.total_jam} jam</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-400">Transport</p>
-                                        <p className="font-medium text-slate-700">
-                                            {formatCurrency(p.total_transport)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                                    <div>
-                                        <p className="text-xs text-slate-400">Honor</p>
-                                        <p className="text-sm font-medium text-slate-900">
-                                            {formatCurrency(p.honor)}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-slate-400">Total</p>
-                                        <p className="text-sm font-bold text-slate-900">
-                                            {formatCurrency(p.total)}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={route('salary.payslip', p.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                <div className="flex items-center gap-2 pt-2">
+                                    <a
+                                        href={route('salary.payslip', p.id)}
+                                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
+                                    >
+                                        <Icon icon="lucide:download" className="w-4 h-4" />
+                                        Slip PDF
+                                    </a>
+                                    {p.status_bayar === 'belum_dibayar' && (
+                                        <Button
+                                            variant="success"
+                                            onClick={() => handlePay(p.id)}
+                                            className="flex-1 justify-center py-2.5"
                                         >
-                                            <Icon icon="lucide:download" className="text-xs" />
-                                            PDF
-                                        </a>
-                                        {p.status_bayar === 'belum_dibayar' && (
-                                            <Button
-                                                variant="success"
-                                                size="sm"
-                                                onClick={() => handlePay(p.id)}
-                                                className="shadow-sm"
-                                            >
-                                                <Icon icon="lucide:credit-card" className="text-base" />
-                                                Bayar
-                                            </Button>
-                                        )}
-                                    </div>
+                                            <Icon icon="lucide:credit-card" className="w-4 h-4" />
+                                            Bayar Sekarang
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         ))

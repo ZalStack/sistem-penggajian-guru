@@ -11,7 +11,23 @@ class Guru extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama', 'grade_id', 'mapel', 'jenjang', 'user_id'];
+    protected $fillable = [
+        'nama',
+        'grade_id',
+        'mapel',
+        'jenjang',
+        'user_id',
+        'domisili',
+        'nomor_telepon',
+        'tunjangan_khusus',
+        'bank',
+        'nomor_rekening',
+        'keterangan_mengajar',
+    ];
+
+    protected $casts = [
+        'tunjangan_khusus' => 'decimal:2',
+    ];
 
     public function grade(): BelongsTo
     {
@@ -36,5 +52,10 @@ class Guru extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function perizinan(): HasMany
+    {
+        return $this->hasMany(Perizinan::class);
     }
 }

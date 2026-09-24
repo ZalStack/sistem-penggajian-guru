@@ -46,37 +46,37 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
         <AuthenticatedLayout>
             <Head title="Penggajian" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="animate-fade-in page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Data Penggajian</h1>
-                    <p className="text-sm text-gray-500 mt-1">Kelola data honor dan penggajian guru per periode</p>
+                    <h1 className="page-title text-2xl font-bold text-slate-900 tracking-tight">Data Penggajian</h1>
+                    <p className="page-subtitle text-sm text-slate-500 mt-1">Kelola data honor dan penggajian guru per periode</p>
                 </div>
                 <Link
                     href={route('penggajian.create')}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-sm"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm hover:shadow-md"
                 >
                     <Icon icon="lucide:plus" className="text-base" />
                     <span>Input Penggajian</span>
                 </Link>
             </div>
 
-            <Card className="mb-6">
-                <div className="flex flex-col md:flex-row md:items-end gap-3">
+            <Card className="mb-8">
+                <div className="flex flex-col md:flex-row md:items-end gap-4">
                     <div className="flex-1">
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Periode (Bulan/Tahun)</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-2">Periode (Bulan/Tahun)</label>
                         <input
                             type="month"
                             value={filters.periode || ''}
                             onChange={(e) => updateFilter('periode', e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors"
                         />
                     </div>
                     <div className="w-full md:w-52">
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Filter Grade</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-2">Filter Grade</label>
                         <select
                             value={filters.filter_grade || ''}
                             onChange={(e) => updateFilter('filter_grade', e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors"
                         >
                             <option value="">Semua Grade</option>
                             {grades.map((g) => (
@@ -87,11 +87,11 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                         </select>
                     </div>
                     <div className="w-full md:w-52">
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Filter Transport</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-2">Filter Transport</label>
                         <select
                             value={filters.filter_transport || ''}
                             onChange={(e) => updateFilter('filter_transport', e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-colors"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors"
                         >
                             <option value="">Semua Transport</option>
                             {transports.map((t) => (
@@ -106,9 +106,9 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                             <button
                                 type="button"
                                 onClick={resetFilters}
-                                className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 border border-gray-200 text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 rounded-xl transition-colors"
+                                className="w-full md:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 rounded-xl transition-colors"
                             >
-                                <Icon icon="lucide:rotate-ccw" className="text-gray-400" />
+                                <Icon icon="lucide:rotate-ccw" className="text-slate-400" />
                                 <span>Reset</span>
                             </button>
                         </div>
@@ -119,7 +119,6 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
             <Card>
                 {penggajians.data.length > 0 ? (
                     <>
-                        {/* Desktop Table View */}
                         <div className="hidden lg:block overflow-x-auto">
                             <Table>
                                 <TableHeader>
@@ -138,10 +137,10 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                                 <TableBody>
                                     {penggajians.data.map((p, index) => (
                                         <TableRow key={p.id}>
-                                            <TableCell className="text-gray-400 font-mono text-xs">{penggajians.from + index}</TableCell>
+                                            <TableCell className="text-slate-400 font-mono text-xs">{penggajians.from + index}</TableCell>
                                             <TableCell>
-                                                <div className="font-medium text-gray-900">{p.guru?.nama ?? '-'}</div>
-                                                <div className="text-xs text-gray-400">{p.guru?.mapel ?? '-'}</div>
+                                                <div className="font-semibold text-slate-900">{p.guru?.nama ?? '-'}</div>
+                                                <div className="text-xs text-slate-400 mt-0.5">{p.guru?.mapel ?? '-'}</div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="purple">{p.guru?.grade?.kode_grade ?? '-'}</Badge>
@@ -150,27 +149,27 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                                                 <Badge variant="default">{p.periode}</Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="font-semibold text-gray-700">{p.jumlah_sesi}</span> sesi
+                                                <span className="font-extrabold text-slate-700">{p.jumlah_sesi}</span> <span className="text-xs text-slate-500">sesi</span>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-sm text-gray-600">{p.transport?.jenis ?? '-'}</span>
+                                                <span className="text-sm text-slate-600">{p.transport?.jenis ?? '-'}</span>
                                             </TableCell>
-                                            <TableCell>{formatCurrency(p.honor)}</TableCell>
+                                            <TableCell className="text-slate-600">{formatCurrency(p.honor)}</TableCell>
                                             <TableCell>
-                                                <span className="font-bold text-gray-900">{formatCurrency(p.total)}</span>
+                                                <span className="font-extrabold text-slate-900">{formatCurrency(p.total)}</span>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-end gap-1">
                                                     <Link
                                                         href={route('penggajian.show', p.id)}
-                                                        className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                                                         title="Lihat Detail Slip"
                                                     >
                                                         <Icon icon="lucide:eye" className="text-lg" />
                                                     </Link>
                                                     <Link
                                                         href={route('penggajian.edit', p.id)}
-                                                        className="p-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        className="p-2 text-sky-500 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors"
                                                         title="Edit Penggajian"
                                                     >
                                                         <Icon icon="lucide:pencil" className="text-lg" />
@@ -178,7 +177,7 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                                                     <button
                                                         type="button"
                                                         onClick={() => setDeleteId(p.id)}
-                                                        className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
                                                         title="Hapus Data"
                                                     >
                                                         <Icon icon="lucide:trash-2" className="text-lg" />
@@ -191,54 +190,53 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                             </Table>
                         </div>
 
-                        {/* Mobile & Tablet Card View */}
-                        <div className="lg:hidden space-y-3">
+                        <div className="lg:hidden space-y-3 p-4">
                             {penggajians.data.map((p) => (
-                                <div key={p.id} className="p-4 bg-white border border-gray-100 rounded-xl space-y-3 hover:border-gray-300 transition-colors">
+                                <div key={p.id} className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <div className="font-semibold text-gray-900">{p.guru?.nama ?? '-'}</div>
-                                            <div className="text-xs text-gray-500">{p.guru?.mapel} &bull; Periode: <span className="font-medium text-gray-800">{p.periode}</span></div>
+                                            <div className="font-semibold text-slate-900">{p.guru?.nama ?? '-'}</div>
+                                            <div className="text-xs text-slate-500 mt-0.5">{p.guru?.mapel} &bull; Periode: <span className="font-medium text-slate-800">{p.periode}</span></div>
                                         </div>
                                         <Badge variant="purple">{p.guru?.grade?.kode_grade ?? '-'}</Badge>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-2.5 rounded-lg">
+                                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
                                         <div>
-                                            <span className="text-gray-400">Jumlah Sesi:</span>{' '}
-                                            <span className="font-semibold text-gray-800">{p.jumlah_sesi} sesi</span>
+                                            <span className="text-slate-400">Jumlah Sesi:</span>{' '}
+                                            <span className="font-extrabold text-slate-800">{p.jumlah_sesi} sesi</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-400">Transport:</span>{' '}
-                                            <span className="font-medium text-gray-800">{p.transport?.jenis ?? '-'}</span>
+                                            <span className="text-slate-400">Transport:</span>{' '}
+                                            <span className="font-medium text-slate-800">{p.transport?.jenis ?? '-'}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-400">Honor:</span>{' '}
-                                            <span className="font-medium text-gray-800">{formatCurrency(p.honor)}</span>
+                                            <span className="text-slate-400">Honor:</span>{' '}
+                                            <span className="font-medium text-slate-800">{formatCurrency(p.honor)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-400">Total Gaji:</span>{' '}
-                                            <span className="font-bold text-gray-900">{formatCurrency(p.total)}</span>
+                                            <span className="text-slate-400">Total Gaji:</span>{' '}
+                                            <span className="font-extrabold text-slate-900">{formatCurrency(p.total)}</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-gray-100">
+                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                                         <Link
                                             href={route('penggajian.show', p.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                                         >
                                             <Icon icon="lucide:eye" /> Detail
                                         </Link>
                                         <Link
                                             href={route('penggajian.edit', p.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
                                         >
                                             <Icon icon="lucide:pencil" /> Edit
                                         </Link>
                                         <button
                                             type="button"
                                             onClick={() => setDeleteId(p.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors"
                                         >
                                             <Icon icon="lucide:trash-2" /> Hapus
                                         </button>
@@ -247,32 +245,32 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
                             ))}
                         </div>
 
-                        <div className="mt-4">
+                        <div className="mt-4 px-4 pb-4">
                             <Pagination links={penggajians.links} />
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-12">
-                        <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                            <Icon icon="lucide:calculator" className="text-2xl text-gray-400" />
+                    <div className="text-center py-20">
+                        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Icon icon="lucide:calculator" className="text-2xl text-slate-400" />
                         </div>
-                        <h3 className="text-sm font-semibold text-gray-900">Belum ada data penggajian</h3>
-                        <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                        <h3 className="text-sm font-semibold text-slate-900">Belum ada data penggajian</h3>
+                        <p className="text-xs text-slate-500 mt-1.5 w-full mx-auto leading-relaxed">
                             {hasActiveFilters ? 'Tidak ada data penggajian yang cocok dengan filter yang dipilih.' : 'Mulai dengan menginput data penggajian guru untuk periode ini.'}
                         </p>
-                        <div className="mt-4 flex items-center justify-center gap-2">
+                        <div className="mt-5 flex items-center justify-center gap-2">
                             {hasActiveFilters && (
                                 <button
                                     type="button"
                                     onClick={resetFilters}
-                                    className="px-3.5 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50"
+                                    className="px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                                 >
                                     Reset Filter
                                 </button>
                             )}
                             <Link
                                 href={route('penggajian.create')}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-white bg-gray-900 rounded-xl hover:bg-gray-800"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors"
                             >
                                 <Icon icon="lucide:plus" /> Input Penggajian
                             </Link>
@@ -282,12 +280,12 @@ export default function PenggajianIndex({ penggajians, grades, transports, filte
             </Card>
 
             <Modal show={deleteId !== null} onClose={() => setDeleteId(null)}>
-                <div className="p-6 text-center">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon icon="lucide:alert-triangle" className="text-red-600 text-xl" />
+                <div className="p-8 text-center">
+                    <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                        <Icon icon="lucide:alert-triangle" className="text-rose-600 text-2xl" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">Hapus Data Penggajian?</h3>
-                    <p className="text-sm text-gray-500 mb-6">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">Hapus Data Penggajian?</h3>
+                    <p className="text-sm text-slate-500 mb-8 leading-relaxed">
                         Data penggajian yang dihapus tidak dapat dipulihkan kembali.
                     </p>
                     <div className="flex gap-3 justify-center">

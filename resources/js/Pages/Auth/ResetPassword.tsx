@@ -31,8 +31,8 @@ export default function ResetPassword({ token, email }: Props) {
             <Head title="Atur Ulang Kata Sandi" />
 
             <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Atur Kata Sandi Baru</h2>
-                <p className="text-xs text-gray-500 mt-1">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Atur Kata Sandi Baru</h2>
+                <p className="text-xs text-slate-500 mt-1">
                     Silakan buat kata sandi baru untuk mengamankan akun Anda
                 </p>
             </div>

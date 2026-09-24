@@ -7,6 +7,8 @@ use App\Http\Controllers\GuruController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PenggajianController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PerizinanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\TeachingSessionController;
@@ -14,11 +16,18 @@ use App\Http\Controllers\TransportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
+
+Route::get('/welcome', function () {
     return inertia('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => false,
     ]);
-});
+})->name('welcome');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -32,8 +41,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('checkin', [AttendanceController::class, 'checkin'])->name('checkin')->middleware('throttle:10,1');
     Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
+    Route::get('my-perizinan', [PerizinanController::class, 'guruIndex'])->name('my-perizinan');
+    Route::post('my-perizinan', [PerizinanController::class, 'guruStore'])->name('my-perizinan.store');
     Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
     Route::get('my-salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('my-salary.payslip');
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 
     Route::middleware('role:admin')->group(function () {
         Route::resource('guru', GuruController::class)->except(['edit']);
@@ -61,6 +77,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('session/{session}', [TeachingSessionController::class, 'destroy'])->name('session.destroy');
 
         Route::get('attendance', [AttendanceController::class, 'adminRecap'])->name('attendance.index');
+
+        Route::get('perizinan', [PerizinanController::class, 'adminIndex'])->name('perizinan.index');
+        Route::put('perizinan/{perizinan}', [PerizinanController::class, 'adminUpdate'])->name('perizinan.update');
 
         Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
         Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate')->middleware('throttle:1,60');

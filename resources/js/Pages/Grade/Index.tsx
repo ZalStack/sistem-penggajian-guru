@@ -66,10 +66,10 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
         <AuthenticatedLayout>
             <Head title="Grade & Honorarium" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="animate-fade-in page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Grade & Honor Guru</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="page-title text-2xl font-bold tracking-tight text-slate-900">Grade & Honor Guru</h1>
+                    <p className="page-subtitle text-sm text-slate-500 mt-1">
                         Atur tingkatan grade guru dan besaran nominal honorarium per sesi mengajar
                     </p>
                 </div>
@@ -91,8 +91,8 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                         title={editId ? 'Edit Data Grade' : 'Tambah Grade Baru'}
                         description="Pastikan kode grade unik dan nominal honor per sesi telah sesuai"
                     >
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <Input
                                     label="Kode Grade"
                                     value={data.kode_grade}
@@ -128,7 +128,6 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                     title="Daftar Grade Guru"
                     description={`Tersedia ${grades.length} kategori grade aktif pada sistem`}
                 >
-                    {/* Desktop / Tablet Table */}
                     <div className="hidden md:block">
                         <Table>
                             <TableHeader>
@@ -146,14 +145,14 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                         <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-xs">
+                                                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-xs">
                                                     {grade.kode_grade}
                                                 </div>
                                                 <span className="font-bold text-slate-900">Grade {grade.kode_grade}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-bold text-slate-900 text-base">
+                                            <span className="font-extrabold text-slate-900 text-base">
                                                 {formatCurrency(grade.honor_per_sesi)}
                                             </span>
                                             <span className="text-xs text-slate-400 ml-1">/ sesi</span>
@@ -189,16 +188,15 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                         </Table>
                     </div>
 
-                    {/* Mobile Cards View */}
-                    <div className="md:hidden space-y-3">
+                    <div className="md:hidden space-y-3 p-4">
                         {grades.map((grade, index) => (
                             <div
                                 key={grade.id}
-                                className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-sm">
+                                        <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-extrabold text-sm">
                                             {grade.kode_grade}
                                         </div>
                                         <div>
@@ -235,22 +233,21 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                 </Card>
             </div>
 
-            {/* Modal Konfirmasi Hapus */}
             <Modal show={gradeToDelete !== null} onClose={() => setGradeToDelete(null)}>
-                <div className="p-6 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="p-8 text-center">
+                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Icon icon="lucide:alert-triangle" className="text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">Hapus Grade {gradeToDelete?.kode_grade}?</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">Hapus Grade {gradeToDelete?.kode_grade}?</h3>
                     {gradeToDelete && gradeToDelete.gurus_count > 0 ? (
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-5 text-left flex gap-2.5">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-6 text-left flex gap-2.5">
                             <Icon icon="lucide:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
                             <span>
                                 <strong>Perhatian:</strong> Grade ini saat ini sedang digunakan oleh <strong>{gradeToDelete.gurus_count} orang guru</strong>. Sistem akan menolak penghapusan untuk melindungi integritas data guru.
                             </span>
                         </div>
                     ) : (
-                        <p className="text-sm text-slate-500 mb-6">
+                        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
                             Apakah Anda yakin ingin menghapus grade ini? Tindakan ini tidak dapat dibatalkan.
                         </p>
                     )}

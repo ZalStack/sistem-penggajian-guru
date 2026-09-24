@@ -18,7 +18,11 @@ class GuruController extends Controller
         $query = Guru::with(['grade', 'user'])
             ->when($request->search, function ($q, $s) {
                 $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                return $q->where('nama', 'like', "%{$safe}%", '\\');
+                return $q->where(function ($w) use ($safe) {
+                    $w->where('nama', 'like', "%{$safe}%", '\\')
+                        ->orWhere('domisili', 'like', "%{$safe}%", '\\')
+                        ->orWhere('nomor_telepon', 'like', "%{$safe}%", '\\');
+                });
             })
             ->when($request->filter_grade, fn ($q, $g) => $q->where('grade_id', $g))
             ->when($request->filter_mapel, fn ($q, $m) => $q->where('mapel', $m));
@@ -44,16 +48,24 @@ class GuruController extends Controller
             'grade_id' => 'required|exists:grades,id',
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
+            'domisili' => 'nullable|string|max:255',
+            'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
+            'tunjangan_khusus' => 'nullable|numeric|min:0|max:9999999999',
+            'bank' => 'nullable|string|max:50',
+            'nomor_rekening' => 'nullable|string|max:50',
+            'keterangan_mengajar' => 'nullable|string|max:1000',
             'email' => 'required|email|unique:users,email',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        $generatedPassword = Str::random(16);
+        $passwordToUse = $validated['password'] ?? Str::random(16);
+        $isGenerated = ! isset($validated['password']);
 
-        DB::transaction(function () use ($validated, $generatedPassword, &$guru) {
+        DB::transaction(function () use ($validated, $passwordToUse, &$guru) {
             $user = User::create([
                 'name' => $validated['nama'],
                 'email' => $validated['email'],
-                'password' => Hash::make($generatedPassword),
+                'password' => Hash::make($passwordToUse),
             ]);
 
             $user->forceFill(['role' => 'guru'])->save();
@@ -63,13 +75,23 @@ class GuruController extends Controller
                 'grade_id' => $validated['grade_id'],
                 'mapel' => $validated['mapel'],
                 'jenjang' => $validated['jenjang'] ?? null,
+                'domisili' => $validated['domisili'] ?? null,
+                'nomor_telepon' => $validated['nomor_telepon'] ?? null,
+                'tunjangan_khusus' => $validated['tunjangan_khusus'] ?? 0,
+                'bank' => $validated['bank'] ?? null,
+                'nomor_rekening' => $validated['nomor_rekening'] ?? null,
+                'keterangan_mengajar' => $validated['keterangan_mengajar'] ?? null,
                 'user_id' => $user->id,
             ]);
 
             $user->forceFill(['guru_id' => $guru->id])->save();
         });
 
-        return redirect()->route('guru.index')->with('success', 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$generatedPassword);
+        $msg = $isGenerated
+            ? 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$passwordToUse
+            : 'Akun guru berhasil dibuat. Email: '.$validated['email'];
+
+        return redirect()->route('guru.index')->with('success', $msg);
     }
 
     public function show(Guru $guru)
@@ -96,6 +118,12 @@ class GuruController extends Controller
             'grade_id' => 'required|exists:grades,id',
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
+            'domisili' => 'nullable|string|max:255',
+            'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
+            'tunjangan_khusus' => 'nullable|numeric|min:0|max:9999999999',
+            'bank' => 'nullable|string|max:50',
+            'nomor_rekening' => 'nullable|string|max:50',
+            'keterangan_mengajar' => 'nullable|string|max:1000',
             'email' => 'required|email|unique:users,email,'.$guru->user_id,
         ]);
 
@@ -104,6 +132,12 @@ class GuruController extends Controller
             'grade_id' => $validated['grade_id'],
             'mapel' => $validated['mapel'],
             'jenjang' => $validated['jenjang'] ?? null,
+            'domisili' => $validated['domisili'] ?? null,
+            'nomor_telepon' => $validated['nomor_telepon'] ?? null,
+            'tunjangan_khusus' => $validated['tunjangan_khusus'] ?? 0,
+            'bank' => $validated['bank'] ?? null,
+            'nomor_rekening' => $validated['nomor_rekening'] ?? null,
+            'keterangan_mengajar' => $validated['keterangan_mengajar'] ?? null,
         ]);
 
         if ($guru->user) {

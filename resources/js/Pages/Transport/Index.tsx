@@ -72,10 +72,10 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
         <AuthenticatedLayout>
             <Head title="Kategori Transport" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="animate-fade-in page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Biaya Transport</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="page-title text-2xl font-bold tracking-tight text-slate-900">Biaya Transport</h1>
+                    <p className="page-subtitle text-sm text-slate-500 mt-1">
                         Kelola komponen biaya transport kehadiran per sesi (Online, Dalam Kota, Luar Kota)
                     </p>
                 </div>
@@ -97,8 +97,8 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                         title={editId ? 'Edit Biaya Transport' : 'Tambah Kategori Transport Baru'}
                         description="Atur nama jenis transport dan tarif per sesi kehadiran guru"
                     >
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <Input
                                     label="Jenis Transport"
                                     value={data.jenis}
@@ -134,7 +134,6 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                     title="Daftar Kategori Transport"
                     description={`Tersedia ${transports.length} skema transport pada penggajian`}
                 >
-                    {/* Desktop / Tablet Table */}
                     <div className="hidden md:block">
                         <Table>
                             <TableHeader>
@@ -159,7 +158,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-bold text-slate-900 text-base">
+                                            <span className="font-extrabold text-slate-900 text-base">
                                                 {formatCurrency(transport.biaya)}
                                             </span>
                                             <span className="text-xs text-slate-400 ml-1">/ sesi</span>
@@ -195,12 +194,11 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                         </Table>
                     </div>
 
-                    {/* Mobile Cards View */}
-                    <div className="md:hidden space-y-3">
+                    <div className="md:hidden space-y-3 p-4">
                         {transports.map((transport, index) => (
                             <div
                                 key={transport.id}
-                                className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -241,24 +239,23 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                 </Card>
             </div>
 
-            {/* Modal Konfirmasi Hapus */}
             <Modal show={transportToDelete !== null} onClose={() => setTransportToDelete(null)}>
-                <div className="p-6 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="p-8 text-center">
+                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Icon icon="lucide:alert-triangle" className="text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">
                         Hapus Transport {transportToDelete?.jenis}?
                     </h3>
                     {transportToDelete && transportToDelete.penggajians_count > 0 ? (
-                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-5 text-left flex gap-2.5">
+                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-6 text-left flex gap-2.5">
                             <Icon icon="lucide:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
                             <span>
                                 <strong>Perhatian:</strong> Transport ini telah digunakan pada <strong>{transportToDelete.penggajians_count} riwayat penggajian</strong>. Sistem akan menolak penghapusan untuk melindungi integritas rekap penggajian.
                             </span>
                         </div>
                     ) : (
-                        <p className="text-sm text-slate-500 mb-6">
+                        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
                             Apakah Anda yakin ingin menghapus kategori transport ini? Tindakan ini tidak dapat dibatalkan.
                         </p>
                     )}

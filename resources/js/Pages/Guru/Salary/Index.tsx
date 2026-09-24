@@ -28,17 +28,17 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
         <AuthenticatedLayout>
             <Head title="Penggajian" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Penggajian</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="page-title">Penggajian</h1>
+                    <p className="page-subtitle">
                         Ringkasan penggajian dan riwayat pembayaran Anda
                     </p>
                 </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
                     title="Total Gaji"
                     value={formatCurrency(totalGaji)}
@@ -110,7 +110,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                                 <span className="text-sm text-slate-900">{formatCurrency(pg.total_transport)}</span>
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <span className="text-sm font-semibold text-slate-900">{formatCurrency(pg.total)}</span>
+                                                <span className="text-sm font-extrabold text-slate-900">{formatCurrency(pg.total)}</span>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={statusConfig[pg.status_bayar]?.variant || 'default'}>
@@ -120,7 +120,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                             <TableCell className="text-right">
                                                 <a
                                                     href={route('my-salary.payslip', pg.id)}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
                                                     title="Download Slip Gaji PDF"
                                                 >
                                                     <Icon icon="lucide:download" className="text-sm" />
@@ -131,16 +131,16 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                     ))}
                                     {/* Grand Total Row */}
                                     <TableRow className="bg-slate-50">
-                                        <TableCell colSpan={4} className="font-bold text-slate-900 text-right">
+                                        <TableCell colSpan={4} className="font-extrabold text-slate-900 text-right">
                                             Grand Total
                                         </TableCell>
-                                        <TableCell className="text-right font-bold text-slate-900">
+                                        <TableCell className="text-right font-extrabold text-slate-900">
                                             {formatCurrency(penggajians.reduce((sum, pg) => sum + pg.honor, 0))}
                                         </TableCell>
-                                        <TableCell className="text-right font-bold text-slate-900">
+                                        <TableCell className="text-right font-extrabold text-slate-900">
                                             {formatCurrency(penggajians.reduce((sum, pg) => sum + pg.total_transport, 0))}
                                         </TableCell>
-                                        <TableCell className="text-right font-bold text-slate-900">
+                                        <TableCell className="text-right font-extrabold text-slate-900">
                                             {formatCurrency(totalGaji)}
                                         </TableCell>
                                         <TableCell />
@@ -151,11 +151,11 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                         </div>
 
                         {/* Mobile Cards */}
-                        <div className="md:hidden space-y-3">
+                        <div className="md:hidden space-y-4">
                             {penggajians.map((pg, index) => (
                                 <div
                                     key={pg.id}
-                                    className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                    className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
@@ -167,7 +167,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         <span className="text-xs font-semibold text-slate-400">#{index + 1}</span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div>
                                             <p className="text-xs text-slate-400">Honor</p>
                                             <p className="text-slate-700">{formatCurrency(pg.honor)}</p>
@@ -178,7 +178,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-400">Total</p>
-                                            <p className="font-semibold text-slate-900">{formatCurrency(pg.total)}</p>
+                                            <p className="font-extrabold text-slate-900">{formatCurrency(pg.total)}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-400">Status</p>
@@ -188,10 +188,10 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         </div>
                                     </div>
 
-                                    <div className="pt-2 border-t border-slate-200/60">
+                                    <div className="pt-2 border-t border-slate-100">
                                         <a
                                             href={route('my-salary.payslip', pg.id)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
                                         >
                                             <Icon icon="lucide:download" className="text-xs" />
                                             Download Slip Gaji
@@ -201,32 +201,32 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                             ))}
 
                             {/* Mobile Grand Total */}
-                            <div className="p-4 bg-slate-900 rounded-2xl text-white space-y-2">
+                            <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white space-y-3 shadow-lg">
                                 <p className="text-sm font-semibold">Grand Total</p>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>
                                         <p className="text-slate-300 text-xs">Honor</p>
-                                        <p>{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.honor, 0))}</p>
+                                        <p className="font-extrabold">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.honor, 0))}</p>
                                     </div>
                                     <div>
                                         <p className="text-slate-300 text-xs">Transport</p>
-                                        <p>{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.total_transport, 0))}</p>
+                                        <p className="font-extrabold">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.total_transport, 0))}</p>
                                     </div>
                                 </div>
-                                <div className="pt-2 border-t border-slate-700">
+                                <div className="pt-3 border-t border-slate-700">
                                     <p className="text-xs text-slate-300">Total Keseluruhan</p>
-                                    <p className="text-lg font-bold">{formatCurrency(totalGaji)}</p>
+                                    <p className="text-lg font-extrabold">{formatCurrency(totalGaji)}</p>
                                 </div>
                             </div>
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-16">
+                    <div className="text-center py-20">
                         <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
                             <Icon icon="lucide:wallet" className="text-3xl" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">Belum ada data penggajian</h3>
-                        <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                        <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
                             Data penggajian akan muncul setelah Anda memiliki riwayat mengajar.
                         </p>
                     </div>

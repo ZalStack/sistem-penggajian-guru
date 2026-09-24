@@ -49,17 +49,17 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
         <AuthenticatedLayout>
             <Head title="Riwayat Absensi" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Riwayat Absensi</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h1 className="page-title">Riwayat Absensi</h1>
+                    <p className="page-subtitle">
                         Pantau kehadiran Anda selama mengajar
                     </p>
                 </div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 <StatCard
                     title="Total Hadir"
                     value={`${totalHadir} kali`}
@@ -75,7 +75,7 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
             </div>
 
             {/* Filter */}
-            <Card className="mb-6">
+            <Card className="mb-8">
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex items-center gap-3">
                         <Icon icon="lucide:calendar" className="text-slate-400 text-base" />
@@ -84,7 +84,7 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
                             type="month"
                             value={filters.bulan || ''}
                             onChange={(e) => handleFilterBulan(e.target.value)}
-                            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-2xs"
+                            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-sm"
                         />
                     </div>
                     {filters.bulan && (
@@ -171,11 +171,11 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
                         </div>
 
                         {/* Mobile Cards */}
-                        <div className="md:hidden space-y-3">
+                        <div className="md:hidden space-y-4">
                             {attendances.map((att, index) => (
                                 <div
                                     key={att.id}
-                                    className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                    className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
@@ -194,7 +194,7 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
                                         <span className="text-xs font-semibold text-slate-400">#{index + 1}</span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
                                         <div>
                                             <p className="text-xs text-slate-400">Lokasi</p>
                                             <p className="text-slate-700">{att.session?.location?.nama_lokasi || '-'}</p>
@@ -213,7 +213,7 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
                                         </div>
                                     </div>
 
-                                    <div className="pt-2 border-t border-slate-200/60">
+                                    <div className="pt-2 border-t border-slate-100">
                                         <Badge variant={statusConfig[att.status]?.variant || 'default'}>
                                             {statusConfig[att.status]?.label || att.status}
                                         </Badge>
@@ -223,12 +223,12 @@ export default function AttendanceIndex({ attendances, totalHadir, totalJam, gur
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-16">
+                    <div className="text-center py-20">
                         <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
                             <Icon icon="lucide:clipboard-check" className="text-3xl" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">Belum ada data absensi</h3>
-                        <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                        <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
                             {filters.bulan
                                 ? 'Tidak ada data absensi untuk bulan yang dipilih.'
                                 : 'Data absensi akan muncul setelah Anda melakukan check-in.'}

@@ -1,34 +1,42 @@
 import { cn } from '@/lib/utils';
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
-    icon?: string;
+    icon?: ReactNode;
+    hint?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ className, label, error, icon, id, ...props }, ref) => {
+    ({ className, label, error, icon, hint, id, ...props }, ref) => {
         return (
             <div className="space-y-1.5">
                 {label && (
-                    <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-                        {label} {props.required && <span className="text-red-500">*</span>}
+                    <label htmlFor={id} className="block text-[12.5px] font-[600] tracking-[-0.01em] text-slate-700">
+                        {label} {props.required && <span className="text-rose-500 font-bold">*</span>}
                     </label>
                 )}
-                <input
-                    ref={ref}
-                    id={id}
-                    className={cn(
-                        'w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400',
-                        'focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900',
-                        'transition-colors duration-200',
-                        error && 'border-red-300 focus:ring-red-500/10 focus:border-red-500',
-                        className
+                <div className="relative group">
+                    {icon && (
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-slate-600 transition-colors">
+                            {icon}
+                        </div>
                     )}
-                    {...props}
-                />
-                {error && <p className="text-xs text-red-500">{error}</p>}
+                    <input
+                        ref={ref}
+                        id={id}
+                        className={cn(
+                            'input-modern',
+                            icon && 'pl-10',
+                            error && 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-400 bg-rose-50/20',
+                            className
+                        )}
+                        {...props}
+                    />
+                </div>
+                {hint && !error && <p className="text-[11px] leading-4 text-slate-500 font-[450]">{hint}</p>}
+                {error && <p className="text-[11px] leading-4 text-rose-600 font-[600] flex items-center gap-1">{error}</p>}
             </div>
         );
     }

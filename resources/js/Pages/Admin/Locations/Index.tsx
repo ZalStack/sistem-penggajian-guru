@@ -72,10 +72,10 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
         <AuthenticatedLayout>
             <Head title="Kelola Lokasi" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Lokasi Mengajar</h1>
-                    <p className="text-sm text-slate-500 mt-1">
+            <div className="page-header animate-fade-in flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+                <div className="min-w-0">
+                    <h1 className="page-title">Lokasi Mengajar</h1>
+                    <p className="page-subtitle">
                         Kelola daftar lokasi tempat sesi mengajar guru dilaksanakan
                     </p>
                 </div>
@@ -84,14 +84,14 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm"
+                    className="shadow-sm shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Lokasi Baru'}
                 </Button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
                 {showForm && (
                     <Card
                         title={editId ? 'Edit Data Lokasi' : 'Tambah Lokasi Baru'}
@@ -114,9 +114,13 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                     onChange={(e) => setData('radius', Number(e.target.value))}
                                     error={errors.radius}
                                     placeholder="100"
-                                    min={1}
+                                    min={10}
+                                    max={1000}
                                     required
                                 />
+                                <p className="text-xs text-slate-400 mt-1">
+                                    Luar ruangan: 50-100m &bull; Dalam ruangan: 100-300m &bull; Laptop/WiFi: 150-300m
+                                </p>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Input
@@ -227,7 +231,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                         {locations.map((location, index) => (
                             <div
                                 key={location.id}
-                                className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3"
+                                className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-3"
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex items-center gap-3">

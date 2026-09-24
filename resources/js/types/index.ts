@@ -33,9 +33,15 @@ export interface Guru {
     grade_id: number;
     mapel: 'IPA' | 'MTK';
     jenjang: string | null;
+    domisili: string | null;
+    nomor_telepon: string | null;
+    tunjangan_khusus: number | string;
+    bank: string | null;
+    nomor_rekening: string | null;
+    keterangan_mengajar: string | null;
     user_id: number | null;
     grade?: Grade;
-    user?: { id: number; email: string } | null;
+    user?: { id: number; email: string; name: string } | null;
     penggajians?: Penggajian[];
     created_at: string;
     updated_at: string;
@@ -94,14 +100,43 @@ export interface Attendance {
     checkin_time: string | null;
     checkin_lat: number | null;
     checkin_lng: number | null;
+    checkin_accuracy: number | null;
     checkout_time: string | null;
     checkout_lat: number | null;
     checkout_lng: number | null;
+    checkout_accuracy: number | null;
     durasi: number;
     status: 'valid' | 'tidak_valid' | 'belum_checkin' | 'belum_checkout';
     tanggal: string;
     guru?: Guru;
     session?: TeachingSession;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Perizinan {
+    id: number;
+    guru_id: number;
+    jenis: 'izin' | 'sakit' | 'cuti';
+    tanggal_mulai: string;
+    tanggal_selesai: string;
+    alasan: string;
+    status: 'pending' | 'disetujui' | 'ditolak';
+    catatan_admin: string | null;
+    guru?: Guru;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Notification {
+    id: number;
+    user_id: number;
+    judul: string;
+    pesan: string;
+    tipe: 'info' | 'success' | 'warning' | 'error';
+    kategori: 'sistem' | 'absensi' | 'perizinan' | 'gaji' | 'sesi';
+    dibaca: boolean;
+    dibaca_pada: string | null;
     created_at: string;
     updated_at: string;
 }

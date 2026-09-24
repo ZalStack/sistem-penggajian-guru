@@ -24,8 +24,8 @@ export default function ForgotPassword({ status }: Props) {
             <Head title="Lupa Kata Sandi" />
 
             <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900 tracking-tight">Reset Kata Sandi</h2>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Reset Kata Sandi</h2>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                     Masukkan alamat email terdaftar Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi akun Anda.
                 </p>
             </div>
@@ -62,10 +62,10 @@ export default function ForgotPassword({ status }: Props) {
                     </Button>
                 </div>
 
-                <div className="pt-4 border-t border-gray-100 text-center">
+                <div className="pt-4 border-t border-slate-100 text-center">
                     <Link
                         href={route('login')}
-                        className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors"
                     >
                         <Icon icon="lucide:arrow-left" />
                         <span>Kembali ke halaman Masuk</span>
