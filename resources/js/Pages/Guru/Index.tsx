@@ -86,55 +86,69 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                     <h1 className="page-title">Data Guru</h1>
                     <p className="page-subtitle">Kelola data guru, domisili, kontak, rekening & tunjangan khusus</p>
                 </div>
-                <Link
-                    href={route('guru.create')}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-md hover:shadow-lg active:scale-98 w-full sm:w-auto"
-                >
-                    <Icon icon="lucide:plus" className="text-base" /> Tambah Guru Baru
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <a
+                        href={route('guru.exportCredentialsPdf', { search: filters.search, filter_grade: filters.filter_grade, filter_mapel: filters.filter_mapel })}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow active:scale-98 w-full sm:w-auto"
+                    >
+                        <Icon icon="lucide:file-down" className="text-base text-rose-600" /> Download PDF Login
+                    </a>
+                    <Link
+                        href={route('guru.create')}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-md hover:shadow-lg active:scale-98 w-full sm:w-auto"
+                    >
+                        <Icon icon="lucide:plus" className="text-base" /> Tambah Guru Baru
+                    </Link>
+                </div>
             </div>
 
             <Card>
-                <div className="flex flex-col md:flex-row gap-3 mb-6 sm:mb-8">
-                    <div className="flex-1 relative">
-                        <Icon icon="lucide:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 mb-6 sm:mb-8 items-stretch lg:items-center">
+                    <div className="flex-1 relative min-w-0">
+                        <Icon icon="lucide:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
                         <input
                             type="search"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Cari nama, domisili, atau nomor telepon..."
-                            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-sm"
+                            className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all shadow-sm"
                         />
                     </div>
-                    <div className="flex flex-wrap sm:flex-nowrap gap-3">
-                        <select
-                            value={filters.filter_grade || ''}
-                            onChange={(e) => handleFilterGrade(e.target.value)}
-                            className="w-full sm:w-auto flex-1 sm:flex-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-sm"
-                        >
-                            <option value="">Semua Grade</option>
-                            {grades.map((g) => (
-                                <option key={g.id} value={g.id}>
-                                    Grade {g.kode_grade}
-                                </option>
-                            ))}
-                        </select>
-                        <select
-                            value={filters.filter_mapel || ''}
-                            onChange={(e) => handleFilterMapel(e.target.value)}
-                            className="w-full sm:w-auto flex-1 sm:flex-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-sm"
-                        >
-                            <option value="">Semua Mapel</option>
-                            <option value="IPA">IPA</option>
-                            <option value="MTK">MTK</option>
-                        </select>
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 lg:flex-nowrap flex-wrap">
+                        <div className="relative flex-1 lg:flex-none lg:w-[176px] min-w-0">
+                            <select
+                                value={filters.filter_grade || ''}
+                                onChange={(e) => handleFilterGrade(e.target.value)}
+                                className="w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all shadow-sm cursor-pointer truncate"
+                            >
+                                <option value="">Semua Grade</option>
+                                {grades.map((g) => (
+                                    <option key={g.id} value={g.id}>
+                                        Grade {g.kode_grade}
+                                    </option>
+                                ))}
+                            </select>
+                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                        </div>
+                        <div className="relative flex-1 lg:flex-none lg:w-[164px] min-w-0">
+                            <select
+                                value={filters.filter_mapel || ''}
+                                onChange={(e) => handleFilterMapel(e.target.value)}
+                                className="w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-all shadow-sm cursor-pointer truncate"
+                            >
+                                <option value="">Semua Mapel</option>
+                                <option value="IPA">IPA</option>
+                                <option value="MTK">MTK</option>
+                            </select>
+                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                        </div>
                         {hasActiveFilters && (
                             <button
                                 type="button"
                                 onClick={resetFilters}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors whitespace-nowrap"
+                                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-colors whitespace-nowrap shrink-0"
                             >
-                                <Icon icon="lucide:rotate-ccw" /> Reset
+                                <Icon icon="lucide:rotate-ccw" className="text-sm" /> Reset
                             </button>
                         )}
                     </div>

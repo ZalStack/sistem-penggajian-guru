@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -173,5 +174,24 @@ class GuruController extends Controller
         $guru->user->update(['password' => Hash::make($newPassword)]);
 
         return back()->with('success', 'Password berhasil direset. Password baru: '.$newPassword);
+    }
+
+    public function exportCredentialsPdf(Request $request)
+    {
+        $gurus = Guru::with(['grade', 'user'])
+            ->when($request->search, function ($q, $s) {
+                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                return $q->where('nama', 'like', "%{$safe}%", '\\');
+            })
+            ->when($request->filter_grade, fn ($q, $g) => $q->where('grade_id', $g))
+            ->orderBy('nama')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.guru-credentials', ['gurus' => $gurus])
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'data-login-guru-'.now()->format('Ymd_His').'.pdf';
+
+        return $pdf->download($filename);
     }
 }

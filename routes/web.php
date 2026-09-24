@@ -52,6 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 
     Route::middleware('role:admin')->group(function () {
+        Route::get('guru/export-credentials-pdf', [GuruController::class, 'exportCredentialsPdf'])->name('guru.exportCredentialsPdf');
         Route::resource('guru', GuruController::class)->except(['edit']);
         Route::get('guru/{guru}/edit', [GuruController::class, 'edit'])->name('guru.edit');
         Route::post('guru/{guru}/reset-password', [GuruController::class, 'resetPassword'])->name('guru.resetPassword');

@@ -225,13 +225,6 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         </div>
 
                         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                            {/* Search - desktop */}
-                            <div className="hidden xl:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl bg-slate-100 border border-slate-200/60 text-slate-500">
-                                <Icon icon="lucide:search" className="text-[14px]" />
-                                <span className="text-[12.5px] font-[500] pr-8">Cari guru, grade...</span>
-                                <span className="text-[11px] font-[600] bg-white border border-slate-200 px-1.5 py-0.5 rounded-md">⌘K</span>
-                            </div>
-
                             <Link href={route('notifications.index')} className="relative w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm hover:shadow transition-all">
                                 <Icon icon="lucide:bell" className="text-[18px]" />
                                 {unreadCount > 0 && (
