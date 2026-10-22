@@ -24,7 +24,7 @@ class OpenApiSpec
                 'description' => str_replace('{BASE_URL}', self::baseUrl(), self::description()),
                 'contact' => [
                     'name' => 'Sistem Penggajian Guru',
-                    'url' => 'http://localhost:8000',
+                    'url' => config('app.url'),
                 ],
                 'license' => [
                     'name' => 'Proprietary',

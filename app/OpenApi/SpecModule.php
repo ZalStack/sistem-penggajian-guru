@@ -95,13 +95,16 @@ abstract class SpecModule
     /**
      * Merge standard error responses into a response map.
      *
+     * The union operator is used instead of array_merge() so that numeric
+     * status-code keys ("200", "401", …) are preserved.
+     *
      * @param  array<string, array>  $responses
      * @param  array<string, string>  $errors
      * @return array<string, array>
      */
     protected function withErrors(array $responses, array $errors): array
     {
-        return array_merge($responses, $this->errors($errors));
+        return $responses + $this->errors($errors);
     }
 
     protected function ref(string $schema): array
