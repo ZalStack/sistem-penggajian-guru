@@ -20,6 +20,9 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
         mapel: guru.mapel,
         jenjang: guru.jenjang || '',
         domisili: guru.domisili || '',
+        alamat: guru.alamat || '',
+        riwayat_pendidikan: guru.riwayat_pendidikan || '',
+        tanggal_bergabung: guru.tanggal_bergabung || '',
         nomor_telepon: guru.nomor_telepon || '',
         tunjangan_khusus: String(guru.tunjangan_khusus ?? 0),
         bank: guru.bank || '',
@@ -61,11 +64,11 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
         <AuthenticatedLayout>
             <Head title={`Edit Guru - ${guru.nama}`} />
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8 animate-fade-in">
-                <div className="flex items-center gap-3 flex-1">
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Link
                         href={route('guru.index')}
-                        className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
+                        className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
                     >
                         <Icon icon="lucide:arrow-left" className="text-lg" />
                     </Link>
@@ -77,7 +80,7 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
                 {guru.user && (
                     <button
                         onClick={handleResetPassword}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-sm w-full sm:w-auto"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)] w-full sm:w-auto"
                     >
                         <Icon icon="lucide:key-round" /> Reset Password
                     </button>
@@ -121,19 +124,64 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
-                                label="Jenjang / Kelas"
+                                label="Kelas yang Diajar"
                                 value={data.jenjang}
                                 onChange={(e) => setData('jenjang', e.target.value)}
                                 placeholder="Contoh: SMP / SMA / KPM Pusat"
                                 error={errors.jenjang}
                             />
                             <Input
-                                label="Domisili"
+                                label="Kota Domisili"
                                 value={data.domisili}
                                 onChange={(e) => setData('domisili', e.target.value)}
                                 placeholder="Contoh: Jakarta Selatan"
                                 error={errors.domisili}
                             />
+                        </div>
+
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Alamat Lengkap
+                                </label>
+                                <textarea
+                                    value={data.alamat}
+                                    onChange={(e) => setData('alamat', e.target.value)}
+                                    placeholder="Contoh: Jl. Melati No. 12, RT 03/RW 05, Kec. Cibinong, Kab. Bogor"
+                                    rows={2}
+                                    className="input-modern resize-none"
+                                />
+                                {errors.alamat && (
+                                    <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.alamat}</p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                        Riwayat Pendidikan
+                                    </label>
+                                    <textarea
+                                        value={data.riwayat_pendidikan}
+                                        onChange={(e) => setData('riwayat_pendidikan', e.target.value)}
+                                        placeholder={'Contoh:\nS1 Pendidikan IPA — UNJ\nS2 Pendidikan Dasar — UI'}
+                                        rows={3}
+                                        className="input-modern resize-none leading-6"
+                                    />
+                                    {errors.riwayat_pendidikan && (
+                                        <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.riwayat_pendidikan}</p>
+                                    )}
+                                    <p className="text-xs text-slate-400 mt-1">Tulis satu pendidikan per baris</p>
+                                </div>
+                                <Input
+                                    label="Tanggal Bergabung di KPM"
+                                    type="date"
+                                    value={data.tanggal_bergabung}
+                                    onChange={(e) => setData('tanggal_bergabung', e.target.value)}
+                                    error={errors.tanggal_bergabung}
+                                    hint="Kapan guru bergabung mengajar di KPM"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -157,7 +205,7 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
                 <Card title="Kontak & Akun Login" description="Email dan nomor telepon guru">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Input
-                            label="Nomor Telepon / WhatsApp"
+                            label="Nomor WA"
                             value={data.nomor_telepon}
                             onChange={(e) => setData('nomor_telepon', e.target.value)}
                             placeholder="081234567890"
@@ -218,11 +266,11 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
                 <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                     <Link
                         href={route('guru.index')}
-                        className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors text-center"
+                        className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50/50 hover:border-indigo-200 hover:text-indigo-700 text-sm font-medium transition-colors text-center"
                     >
                         Batal
                     </Link>
-                    <Button type="submit" processing={processing} className="shadow-sm w-full sm:w-auto">
+                    <Button type="submit" processing={processing} className="w-full sm:w-auto">
                         <Icon icon="lucide:save" /> Simpan Perubahan
                     </Button>
                 </div>

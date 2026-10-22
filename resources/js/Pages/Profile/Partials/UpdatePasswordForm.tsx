@@ -4,6 +4,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
+import { Icon } from '@iconify/react';
 import { useRef, FormEventHandler } from 'react';
 
 interface UpdatePasswordFormProps {
@@ -49,19 +50,25 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
     };
 
     return (
-        <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-slate-900">
-                    Update Password
-                </h2>
+        <section className={`card-modern overflow-hidden ${className}`}>
+            <header className="px-5 sm:px-7 py-5 sm:py-6 border-b border-indigo-100/70 bg-gradient-to-r from-indigo-50/60 via-white to-violet-50/40 flex items-start gap-3">
+                <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)] shrink-0">
+                    <Icon icon="lucide:lock-keyhole" className="text-lg" />
+                </span>
+                <div className="min-w-0">
+                    <h2 className="text-[15px] font-bold tracking-[-0.015em] text-slate-900 leading-5">
+                        Update Password
+                    </h2>
 
-                <p className="mt-1 text-sm text-slate-600">
-                    Ensure your account is using a long, random password to stay
-                    secure.
-                </p>
+                    <p className="mt-1 text-[13px] leading-5 text-slate-500 font-medium break-words">
+                        Ensure your account is using a long, random password to
+                        stay secure.
+                    </p>
+                </div>
             </header>
 
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
+            <div className="p-5 sm:p-7">
+            <form onSubmit={updatePassword} className="space-y-6">
                 <div>
                     <InputLabel
                         htmlFor="current_password"
@@ -76,7 +83,7 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
                             setData('current_password', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full input-modern"
                         autoComplete="current-password"
                     />
 
@@ -95,7 +102,7 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full input-modern"
                         autoComplete="new-password"
                     />
 
@@ -115,7 +122,7 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
                             setData('password_confirmation', e.target.value)
                         }
                         type="password"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full input-modern"
                         autoComplete="new-password"
                     />
 
@@ -125,7 +132,7 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
                     />
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <PrimaryButton disabled={processing}>Save</PrimaryButton>
 
                     <Transition
@@ -135,12 +142,14 @@ export default function UpdatePasswordForm({ className = '' }: UpdatePasswordFor
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-slate-600">
+                        <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+                            <Icon icon="lucide:check-circle-2" className="text-base" />
                             Saved.
                         </p>
                     </Transition>
                 </div>
             </form>
+            </div>
         </section>
     );
 }

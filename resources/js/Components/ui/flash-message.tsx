@@ -53,10 +53,10 @@ export default function FlashMessage({ type, message, onClose }: FlashMessagePro
             title: 'Perhatian',
         },
         info: {
-            container: 'bg-white border-sky-200 text-slate-900 shadow-float',
-            accent: 'bg-sky-500',
+            container: 'bg-white border-indigo-200 text-slate-900 shadow-float',
+            accent: 'bg-gradient-to-b from-indigo-500 to-violet-500',
             icon: 'lucide:info',
-            iconBg: 'bg-sky-50 text-sky-600 ring-sky-200',
+            iconBg: 'bg-indigo-50 text-indigo-600 ring-indigo-200',
             title: 'Info',
         },
     }[type];

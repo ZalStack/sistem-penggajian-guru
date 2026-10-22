@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\BahanAjarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\GuruController;
+use App\Http\Controllers\JadwalBulananController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PenggajianController;
@@ -51,7 +53,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 
+    // Bahan Ajar — akses guru (lihat & unduh)
+    Route::get('my-bahan-ajar', [BahanAjarController::class, 'guruIndex'])->name('my-bahan-ajar.index');
+    Route::get('my-bahan-ajar/{bahanAjar}/download', [BahanAjarController::class, 'download'])->name('my-bahan-ajar.download');
+
+    // Jadwal Bulanan — admin & guru (role-aware)
+    Route::get('jadwal-bulanan', [JadwalBulananController::class, 'index'])->name('jadwal.bulanan');
+
     Route::middleware('role:admin')->group(function () {
+        // Bahan Ajar — kelola admin (upload/edit/hapus/unduh)
+        Route::get('bahan-ajar', [BahanAjarController::class, 'index'])->name('bahan-ajar.index');
+        Route::post('bahan-ajar', [BahanAjarController::class, 'store'])->name('bahan-ajar.store');
+        Route::put('bahan-ajar/{bahanAjar}', [BahanAjarController::class, 'update'])->name('bahan-ajar.update');
+        Route::delete('bahan-ajar/{bahanAjar}', [BahanAjarController::class, 'destroy'])->name('bahan-ajar.destroy');
+        Route::get('bahan-ajar/{bahanAjar}/download', [BahanAjarController::class, 'download'])->name('bahan-ajar.download');
+
         Route::get('guru/export-credentials-pdf', [GuruController::class, 'exportCredentialsPdf'])->name('guru.exportCredentialsPdf');
         Route::resource('guru', GuruController::class)->except(['edit']);
         Route::get('guru/{guru}/edit', [GuruController::class, 'edit'])->name('guru.edit');

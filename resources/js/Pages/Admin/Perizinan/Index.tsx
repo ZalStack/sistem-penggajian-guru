@@ -84,8 +84,8 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
         <AuthenticatedLayout>
             <Head title="Perizinan Guru" />
 
-            <div className="page-header animate-fade-in">
-                <div>
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                     <h1 className="page-title">Perizinan Guru</h1>
                     <p className="page-subtitle">
                         Kelola pengajuan perizinan dari seluruh guru
@@ -94,36 +94,36 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-fade-in mt-2">
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 animate-fade-in mb-8">
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(245,158,11,0.7)]">
                             <Icon icon="lucide:clock" className="text-xl" />
                         </div>
                         <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{pendingCount}</p>
+                            <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{pendingCount}</p>
                             <p className="text-xs text-slate-500">Menunggu Review</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(16,185,129,0.7)]">
                             <Icon icon="lucide:check-circle" className="text-xl" />
                         </div>
                         <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{approvedCount}</p>
+                            <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{approvedCount}</p>
                             <p className="text-xs text-slate-500">Disetujui</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
                             <Icon icon="lucide:x-circle" className="text-xl" />
                         </div>
                         <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{rejectedCount}</p>
+                            <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{rejectedCount}</p>
                             <p className="text-xs text-slate-500">Ditolak</p>
                         </div>
                     </div>
@@ -131,14 +131,14 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
             </div>
 
             {/* Filters */}
-            <Card title="Filter" description="Gunakan filter untuk mencari data perizinan" className="mt-8">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <Card title="Filter" description="Gunakan filter untuk mencari data perizinan">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-slate-700">Status</label>
                         <select
                             value={filters.status ?? ''}
                             onChange={(e) => handleFilterChange('status', e.target.value)}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors duration-200 shadow-sm cursor-pointer"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 transition-colors duration-200 shadow-sm cursor-pointer"
                         >
                             <option value="">Semua Status</option>
                             <option value="pending">Menunggu</option>
@@ -151,7 +151,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                         <select
                             value={filters.filter_guru ?? ''}
                             onChange={(e) => handleFilterChange('filter_guru', e.target.value)}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors duration-200 shadow-sm cursor-pointer"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 transition-colors duration-200 shadow-sm cursor-pointer"
                         >
                             <option value="">Semua Guru</option>
                             {gurus.map((g) => (
@@ -198,13 +198,13 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                    <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                         <Icon icon="lucide:user" className="text-base" />
                                                     </div>
                                                     <div>
                                                         <span className="font-medium text-slate-900">{p.guru?.nama ?? '-'}</span>
                                                         {p.guru?.grade && (
-                                                            <p className="text-xs text-slate-400">{p.guru.grade.kode_grade}</p>
+                                                            <p className="text-xs text-slate-500">{p.guru.grade.kode_grade}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -212,9 +212,9 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                        p.jenis === 'izin' ? 'bg-sky-50 text-sky-600' :
-                                                        p.jenis === 'sakit' ? 'bg-rose-50 text-rose-600' :
-                                                        'bg-sky-50 text-sky-600'
+                                                        p.jenis === 'izin' ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100' :
+                                                        p.jenis === 'sakit' ? 'bg-rose-50 text-rose-600 ring-1 ring-rose-100' :
+                                                        'bg-violet-50 text-violet-600 ring-1 ring-violet-100'
                                                     }`}>
                                                         <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-sm" />
                                                     </div>
@@ -240,7 +240,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                             <TableCell>
                                                 {p.catatan_admin ? (
                                                     <div className="flex items-start gap-2 max-w-[200px]">
-                                                        <Icon icon="lucide:message-square" className="text-slate-400 text-xs mt-0.5 flex-shrink-0" />
+                                                        <Icon icon="lucide:message-square" className="text-indigo-400 text-xs mt-0.5 flex-shrink-0" />
                                                         <p className="text-sm text-slate-600" title={p.catatan_admin}>{p.catatan_admin}</p>
                                                     </div>
                                                 ) : (
@@ -252,14 +252,14 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                                     <div className="flex items-center justify-end gap-1">
                                                         <button
                                                             onClick={() => openActionModal('disetujui', p)}
-                                                            className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                                                            className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
                                                             title="Setujui"
                                                         >
                                                             <Icon icon="lucide:check" className="text-base" />
                                                         </button>
                                                         <button
                                                             onClick={() => openActionModal('ditolak', p)}
-                                                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                             title="Tolak"
                                                         >
                                                             <Icon icon="lucide:x" className="text-base" />
@@ -275,7 +275,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                             </Table>
                         ) : (
                             <div className="text-center py-16">
-                                <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
                                     <Icon icon="lucide:shield-check" className="text-3xl" />
                                 </div>
                                 <h3 className="text-base font-bold text-slate-900">Tidak ada data perizinan</h3>
@@ -288,21 +288,21 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                     <div className="lg:hidden space-y-3">
                         {perizinan.data.length > 0 ? (
                             perizinan.data.map((p, index) => (
-                                <div key={p.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                                <div key={p.id} className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3">
                                     <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                 <Icon icon="lucide:user" className="text-base" />
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-slate-900 text-sm">{p.guru?.nama ?? '-'}</p>
-                                                <p className="text-xs text-slate-400">
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-slate-900 text-sm truncate">{p.guru?.nama ?? '-'}</p>
+                                                <p className="text-xs text-slate-500 break-words">
                                                     {jenisConfig[p.jenis]?.label ?? p.jenis} &bull; {formatDate(p.tanggal_mulai)}
                                                     {p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-shrink-0">
                                             <span className="text-xs font-semibold text-slate-400">#{(perizinan.current_page - 1) * perizinan.per_page + index + 1}</span>
                                             <Badge variant={statusConfig[p.status]?.variant ?? 'default'}>
                                                 {statusConfig[p.status]?.label ?? p.status}
@@ -311,22 +311,22 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                     </div>
 
                                     <div>
-                                        <p className="text-xs text-slate-400">Alasan</p>
-                                        <p className="text-sm text-slate-700">{p.alasan}</p>
+                                        <p className="text-xs text-slate-500">Alasan</p>
+                                        <p className="text-sm text-slate-700 break-words">{p.alasan}</p>
                                     </div>
 
                                     {p.catatan_admin && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Icon icon="lucide:message-square" className="text-slate-400 text-xs" />
-                                                <p className="text-xs font-medium text-slate-500">Catatan Admin</p>
+                                                <Icon icon="lucide:message-square" className="text-indigo-500 text-xs" />
+                                                <p className="text-xs font-medium text-slate-600">Catatan Admin</p>
                                             </div>
-                                            <p className="text-sm text-slate-700">{p.catatan_admin}</p>
+                                            <p className="text-sm text-slate-700 break-words">{p.catatan_admin}</p>
                                         </div>
                                     )}
 
                                     {p.status === 'pending' && (
-                                        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
                                             <Button
                                                 variant="success"
                                                 size="sm"
@@ -349,7 +349,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                             ))
                         ) : (
                             <div className="text-center py-16">
-                                <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
                                     <Icon icon="lucide:shield-check" className="text-3xl" />
                                 </div>
                                 <p className="text-sm text-slate-500">Tidak ada data perizinan</p>
@@ -366,8 +366,10 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                 {actionModal && (
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                actionModal.type === 'disetujui' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                actionModal.type === 'disetujui'
+                                    ? 'bg-gradient-to-br from-emerald-400 to-emerald-500 text-white shadow-[0_6px_16px_-6px_rgba(16,185,129,0.7)]'
+                                    : 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]'
                             }`}>
                                 <Icon icon={actionModal.type === 'disetujui' ? 'lucide:check-circle' : 'lucide:x-circle'} className="text-lg" />
                             </div>
@@ -381,10 +383,10 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                             </div>
                         </div>
 
-                        <div className="p-3 bg-slate-50 rounded-xl mb-4">
-                            <p className="text-xs text-slate-400 mb-1">Alasan Pengajuan</p>
-                            <p className="text-sm text-slate-700">{actionModal.item.alasan}</p>
-                            <p className="text-xs text-slate-400 mt-2">
+                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100 mb-4">
+                            <p className="text-xs text-slate-500 mb-1">Alasan Pengajuan</p>
+                            <p className="text-sm text-slate-700 break-words">{actionModal.item.alasan}</p>
+                            <p className="text-xs text-slate-500 mt-2">
                                 Periode: {formatDate(actionModal.item.tanggal_mulai)}
                                 {actionModal.item.tanggal_mulai !== actionModal.item.tanggal_selesai
                                     ? ` s/d ${formatDate(actionModal.item.tanggal_selesai)}`
@@ -401,7 +403,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                     value={data.catatan_admin}
                                     onChange={(e) => setData('catatan_admin', e.target.value)}
                                     rows={3}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors duration-200 shadow-sm resize-none"
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 transition-colors duration-200 shadow-sm resize-none"
                                     placeholder={actionModal.type === 'disetujui'
                                         ? 'Tulis catatan persetujuan (contoh: Disetujui, silakan izin sesuai jadwal)'
                                         : 'Tulis alasan penolakan (contoh: Berkas tidak lengkap)'}
@@ -410,7 +412,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                 {errors.catatan_admin && <p className="text-xs text-rose-500">{errors.catatan_admin}</p>}
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                                 <Button
                                     type="submit"
                                     variant={actionModal.type === 'disetujui' ? 'success' : 'danger'}

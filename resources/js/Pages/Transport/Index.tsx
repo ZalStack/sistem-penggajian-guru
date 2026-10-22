@@ -72,10 +72,10 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
         <AuthenticatedLayout>
             <Head title="Kategori Transport" />
 
-            <div className="animate-fade-in page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="page-title text-2xl font-bold tracking-tight text-slate-900">Biaya Transport</h1>
-                    <p className="page-subtitle text-sm text-slate-500 mt-1">
+            <div className="animate-fade-in page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                    <h1 className="page-title">Biaya Transport</h1>
+                    <p className="page-subtitle">
                         Kelola komponen biaya transport kehadiran per sesi (Online, Dalam Kota, Luar Kota)
                     </p>
                 </div>
@@ -84,7 +84,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm"
+                    className="shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Transport Baru'}
@@ -118,8 +118,8 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                     required
                                 />
                             </div>
-                            <div className="flex items-center gap-3 pt-2">
-                                <Button type="submit" processing={processing} className="shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
+                                <Button type="submit" processing={processing}>
                                     <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Transport'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
@@ -151,7 +151,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                         <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center text-lg shadow-2xs">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center text-lg shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                     <Icon icon={transportIcons[transport.jenis] || 'lucide:car'} />
                                                 </div>
                                                 <span className="font-bold text-slate-900">{transport.jenis}</span>
@@ -173,7 +173,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEdit(transport)}
-                                                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Edit Transport"
                                                 >
                                                     <Icon icon="lucide:pencil" className="text-base" />
@@ -181,7 +181,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => openDeleteModal(transport)}
-                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                     title="Hapus Transport"
                                                 >
                                                     <Icon icon="lucide:trash-2" className="text-base" />
@@ -194,20 +194,20 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                         </Table>
                     </div>
 
-                    <div className="md:hidden space-y-3 p-4">
+                    <div className="md:hidden space-y-3">
                         {transports.map((transport, index) => (
                             <div
                                 key={transport.id}
-                                className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                                className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center text-lg">
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                             <Icon icon={transportIcons[transport.jenis] || 'lucide:car'} />
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900 text-sm">{transport.jenis}</p>
-                                            <p className="text-xs text-slate-500">
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-900 text-sm truncate">{transport.jenis}</p>
+                                            <p className="text-xs text-slate-500 break-words">
                                                 {formatCurrency(transport.biaya)} / sesi
                                             </p>
                                         </div>
@@ -217,11 +217,11 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                     </Badge>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
                                     <button
                                         type="button"
                                         onClick={() => handleEdit(transport)}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1"
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
                                     >
                                         <Icon icon="lucide:pencil" /> Edit
                                     </button>
@@ -241,10 +241,10 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
 
             <Modal show={transportToDelete !== null} onClose={() => setTransportToDelete(null)}>
                 <div className="p-8 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                    <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
                         <Icon icon="lucide:alert-triangle" className="text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 break-words">
                         Hapus Transport {transportToDelete?.jenis}?
                     </h3>
                     {transportToDelete && transportToDelete.penggajians_count > 0 ? (
@@ -259,7 +259,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                             Apakah Anda yakin ingin menghapus kategori transport ini? Tindakan ini tidak dapat dibatalkan.
                         </p>
                     )}
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center">
                         <Button variant="secondary" onClick={() => setTransportToDelete(null)}>
                             Batal
                         </Button>

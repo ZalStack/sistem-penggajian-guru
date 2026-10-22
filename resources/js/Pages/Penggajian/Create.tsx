@@ -74,18 +74,18 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
             <div className="animate-fade-in page-header flex items-center gap-3 mb-8">
                 <Link
                     href={route('penggajian.index')}
-                    className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    className="shrink-0 p-2.5 rounded-xl text-slate-500 bg-white border border-slate-200 hover:text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-colors"
                 >
                     <Icon icon="lucide:arrow-left" className="text-xl" />
                 </Link>
-                <div>
-                    <h1 className="page-title text-2xl font-bold text-slate-900 tracking-tight">Input Penggajian Baru</h1>
-                    <p className="page-subtitle text-sm text-slate-500">Hitung dan catat honor serta transport guru per periode</p>
+                <div className="min-w-0">
+                    <h1 className="page-title">Input Penggajian Baru</h1>
+                    <p className="page-subtitle">Hitung dan catat honor serta transport guru per periode</p>
                 </div>
             </div>
 
             <form onSubmit={submit}>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
                     <div className="lg:col-span-2 space-y-6">
                         <Card title="Data Penggajian">
                             <div className="space-y-6">
@@ -100,14 +100,16 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                                 />
 
                                 {selectedGuru && (
-                                    <div className="p-4 bg-sky-50/60 border border-sky-100 rounded-xl flex items-center justify-between text-xs sm:text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <Icon icon="lucide:user-check" className="text-sky-600 text-base" />
-                                            <span className="text-slate-900 font-medium">
+                                    <div className="p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white shrink-0">
+                                                <Icon icon="lucide:user-check" className="text-base" />
+                                            </span>
+                                            <span className="text-slate-900 font-medium break-words">
                                                 Grade: <strong className="font-semibold">{selectedGuru.grade?.kode_grade}</strong> &bull; Mapel: {selectedGuru.mapel}
                                             </span>
                                         </div>
-                                        <span className="text-sky-700 font-extrabold">{formatCurrency(honorPerSesi)} / sesi</span>
+                                        <span className="text-indigo-700 font-extrabold break-words">{formatCurrency(honorPerSesi)} / sesi</span>
                                     </div>
                                 )}
 
@@ -148,35 +150,35 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                     <div className="space-y-6">
                         <Card title="Simulasi Perhitungan">
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                <div className="flex items-center justify-between gap-3 p-3.5 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 border border-indigo-100/70 rounded-xl text-sm">
                                     <span className="text-slate-500">Honor / Sesi</span>
-                                    <span className="font-extrabold text-slate-800">{formatCurrency(honorPerSesi)}</span>
+                                    <span className="font-extrabold text-slate-800 break-words text-right">{formatCurrency(honorPerSesi)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                <div className="flex items-center justify-between gap-3 p-3.5 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 border border-indigo-100/70 rounded-xl text-sm">
                                     <span className="text-slate-500">Transport / Sesi</span>
-                                    <span className="font-extrabold text-slate-800">{formatCurrency(biayaTransportPerSesi)}</span>
+                                    <span className="font-extrabold text-slate-800 break-words text-right">{formatCurrency(biayaTransportPerSesi)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl text-sm">
+                                <div className="flex items-center justify-between gap-3 p-3.5 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 border border-indigo-100/70 rounded-xl text-sm">
                                     <span className="text-slate-500">Jumlah Sesi</span>
-                                    <span className="font-extrabold text-slate-900">{sesi} sesi</span>
+                                    <span className="font-extrabold text-slate-900 break-words text-right">{sesi} sesi</span>
                                 </div>
 
-                                <hr className="border-slate-200 my-3" />
+                                <hr className="border-indigo-100 my-3" />
 
-                                <div className="flex items-center justify-between p-3.5 bg-sky-50/70 rounded-xl text-sm">
-                                    <span className="font-medium text-sky-700">Total Honor</span>
-                                    <span className="font-extrabold text-sky-700">{formatCurrency(totalHonor)}</span>
+                                <div className="flex items-center justify-between gap-3 p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm">
+                                    <span className="font-medium text-indigo-700">Total Honor</span>
+                                    <span className="font-extrabold text-indigo-700 break-words text-right">{formatCurrency(totalHonor)}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3.5 bg-sky-50/70 rounded-xl text-sm">
-                                    <span className="font-medium text-sky-700">Total Transport</span>
-                                    <span className="font-extrabold text-sky-700">{formatCurrency(totalTransport)}</span>
+                                <div className="flex items-center justify-between gap-3 p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm">
+                                    <span className="font-medium text-indigo-700">Total Transport</span>
+                                    <span className="font-extrabold text-indigo-700 break-words text-right">{formatCurrency(totalTransport)}</span>
                                 </div>
 
-                                <div className="p-5 bg-slate-900 rounded-xl text-white mt-3">
-                                    <span className="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
+                                <div className="p-5 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl text-white mt-3 shadow-brand">
+                                    <span className="block text-[11px] sm:text-xs uppercase tracking-wider text-indigo-100 font-semibold mb-2">
                                         Grand Total Penggajian
                                     </span>
-                                    <span className="text-2xl font-extrabold tracking-tight">
+                                    <span className="text-xl sm:text-2xl font-extrabold tracking-tight break-words">
                                         {formatCurrency(grandTotal)}
                                     </span>
                                 </div>
@@ -190,7 +192,7 @@ export default function PenggajianCreate({ gurus, transports }: PenggajianCreate
                             </Button>
                             <Link
                                 href={route('penggajian.index')}
-                                className="w-full inline-flex items-center justify-center px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
+                                className="btn-secondary w-full justify-center"
                             >
                                 Batal
                             </Link>

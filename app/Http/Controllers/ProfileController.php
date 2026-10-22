@@ -46,6 +46,8 @@ class ProfileController extends Controller
         if ($user->isGuru() && $user->guru) {
             $guruData = $request->validate([
                 'domisili' => 'nullable|string|max:255',
+                'alamat' => 'nullable|string|max:1000',
+                'riwayat_pendidikan' => 'nullable|string|max:2000',
                 'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
                 'bank' => 'nullable|string|max:50',
                 'nomor_rekening' => 'nullable|string|max:50',

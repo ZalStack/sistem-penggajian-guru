@@ -34,6 +34,9 @@ export interface Guru {
     mapel: 'IPA' | 'MTK';
     jenjang: string | null;
     domisili: string | null;
+    alamat: string | null;
+    riwayat_pendidikan: string | null;
+    tanggal_bergabung: string | null;
     nomor_telepon: string | null;
     tunjangan_khusus: number | string;
     bank: string | null;

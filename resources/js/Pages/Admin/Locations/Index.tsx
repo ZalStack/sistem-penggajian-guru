@@ -72,7 +72,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
         <AuthenticatedLayout>
             <Head title="Kelola Lokasi" />
 
-            <div className="page-header animate-fade-in flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                     <h1 className="page-title">Lokasi Mengajar</h1>
                     <p className="page-subtitle">
@@ -84,7 +84,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm shrink-0"
+                    className="shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Lokasi Baru'}
@@ -118,7 +118,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                     max={1000}
                                     required
                                 />
-                                <p className="text-xs text-slate-400 mt-1">
+                                <p className="text-xs text-slate-500 mt-1 sm:col-span-2">
                                     Luar ruangan: 50-100m &bull; Dalam ruangan: 100-300m &bull; Laptop/WiFi: 150-300m
                                 </p>
                             </div>
@@ -144,8 +144,8 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                     required
                                 />
                             </div>
-                            <div className="flex items-center gap-3 pt-2">
-                                <Button type="submit" processing={processing} className="shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
+                                <Button type="submit" processing={processing}>
                                     <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Lokasi'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
@@ -180,7 +180,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                         <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shadow-2xs">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                     <Icon icon="lucide:map-pin" className="text-lg" />
                                                 </div>
                                                 <span className="font-bold text-slate-900">{location.nama_lokasi}</span>
@@ -205,7 +205,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEdit(location)}
-                                                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Edit Lokasi"
                                                 >
                                                     <Icon icon="lucide:pencil" className="text-base" />
@@ -213,7 +213,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => openDeleteModal(location)}
-                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                     title="Hapus Lokasi"
                                                 >
                                                     <Icon icon="lucide:trash-2" className="text-base" />
@@ -231,37 +231,37 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                         {locations.map((location, index) => (
                             <div
                                 key={location.id}
-                                className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-3"
+                                className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
                             >
                                 <div className="flex items-start justify-between gap-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                             <Icon icon="lucide:map-pin" className="text-lg" />
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900 text-sm">{location.nama_lokasi}</p>
-                                            <p className="text-xs text-slate-400 font-mono">
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-900 text-sm truncate">{location.nama_lokasi}</p>
+                                            <p className="text-xs text-slate-500 font-mono break-all">
                                                 {Number(location.latitude).toFixed(4)}, {Number(location.longitude).toFixed(4)}
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-xs font-semibold text-slate-400">
+                                    <span className="text-xs font-semibold text-slate-400 flex-shrink-0">
                                         #{index + 1}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <Badge variant="info">{location.radius} m radius</Badge>
                                     <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
                                         {location.sessions_count} sesi
                                     </Badge>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
                                     <button
                                         type="button"
                                         onClick={() => handleEdit(location)}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1"
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
                                     >
                                         <Icon icon="lucide:pencil" /> Edit
                                     </button>
@@ -282,10 +282,10 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
             {/* Modal Konfirmasi Hapus */}
             <Modal show={locationToDelete !== null} onClose={() => setLocationToDelete(null)}>
                 <div className="p-6 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
                         <Icon icon="lucide:alert-triangle" className="text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">
+                    <h3 className="text-lg font-bold text-slate-900 mb-1 break-words">
                         Hapus Lokasi {locationToDelete?.nama_lokasi}?
                     </h3>
                     {locationToDelete && locationToDelete.sessions_count > 0 ? (
@@ -300,7 +300,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                             Apakah Anda yakin ingin menghapus lokasi ini? Tindakan ini tidak dapat dibatalkan.
                         </p>
                     )}
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center">
                         <Button variant="secondary" onClick={() => setLocationToDelete(null)}>
                             Batal
                         </Button>

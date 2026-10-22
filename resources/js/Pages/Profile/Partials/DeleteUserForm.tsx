@@ -5,6 +5,7 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
+import { Icon } from '@iconify/react';
 import { useRef, useState, FormEventHandler } from 'react';
 
 interface DeleteUserFormProps {
@@ -50,36 +51,51 @@ export default function DeleteUserForm({ className = '' }: DeleteUserFormProps) 
     };
 
     return (
-        <section className={`space-y-6 ${className}`}>
-            <header>
-                <h2 className="text-lg font-medium text-slate-900">
-                    Delete Account
-                </h2>
+        <section className={`card-modern overflow-hidden border-rose-200 ${className}`}>
+            <header className="px-5 sm:px-7 py-5 sm:py-6 border-b border-rose-200 bg-rose-50 flex items-start gap-3">
+                <span className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 ring-1 ring-rose-200 flex items-center justify-center shrink-0">
+                    <Icon icon="lucide:triangle-alert" className="text-lg" />
+                </span>
+                <div className="min-w-0">
+                    <h2 className="text-[15px] font-bold tracking-[-0.015em] text-rose-800 leading-5">
+                        Delete Account
+                    </h2>
 
-                <p className="mt-1 text-sm text-slate-600">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Before deleting your account,
-                    please download any data or information that you wish to
-                    retain.
-                </p>
+                    <p className="mt-1 text-[13px] leading-5 text-rose-600/90 font-medium break-words">
+                        Once your account is deleted, all of its resources and
+                        data will be permanently deleted. Before deleting your
+                        account, please download any data or information that
+                        you wish to retain.
+                    </p>
+                </div>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>
-                Delete Account
-            </DangerButton>
+            <div className="p-5 sm:p-7 bg-white">
+                <DangerButton className="gap-2" onClick={confirmUserDeletion}>
+                    <Icon icon="lucide:trash-2" className="text-base" />
+                    Delete Account
+                </DangerButton>
+            </div>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
                 <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-slate-900">
-                        Are you sure you want to delete your account?
-                    </h2>
+                    <div className="flex items-start gap-3">
+                        <span className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 ring-1 ring-rose-200 flex items-center justify-center shrink-0">
+                            <Icon icon="lucide:triangle-alert" className="text-xl" />
+                        </span>
+                        <div className="min-w-0">
+                            <h2 className="text-lg font-bold text-slate-900">
+                                Are you sure you want to delete your account?
+                            </h2>
 
-                    <p className="mt-1 text-sm text-slate-600">
-                        Once your account is deleted, all of its resources and
-                        data will be permanently deleted. Please enter your
-                        password to confirm you would like to permanently delete
-                        your account.
-                    </p>
+                            <p className="mt-1 text-sm text-slate-600">
+                                Once your account is deleted, all of its
+                                resources and data will be permanently deleted.
+                                Please enter your password to confirm you would
+                                like to permanently delete your account.
+                            </p>
+                        </div>
+                    </div>
 
                     <div className="mt-6">
                         <InputLabel
@@ -97,7 +113,7 @@ export default function DeleteUserForm({ className = '' }: DeleteUserFormProps) 
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
+                            className="mt-1 block w-full sm:w-3/4 input-modern"
                             isFocused
                             placeholder="Password"
                         />
@@ -108,12 +124,13 @@ export default function DeleteUserForm({ className = '' }: DeleteUserFormProps) 
                         />
                     </div>
 
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
                         <SecondaryButton onClick={closeModal}>
                             Cancel
                         </SecondaryButton>
 
-                        <DangerButton className="ms-3" disabled={processing}>
+                        <DangerButton className="gap-2" disabled={processing}>
+                            <Icon icon="lucide:trash-2" className="text-base" />
                             Delete Account
                         </DangerButton>
                     </div>

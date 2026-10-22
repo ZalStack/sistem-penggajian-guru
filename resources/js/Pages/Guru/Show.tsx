@@ -22,11 +22,11 @@ export default function GuruShow({ guru }: GuruShowProps) {
         <AuthenticatedLayout>
             <Head title={`Detail Guru - ${guru.nama}`} />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 animate-fade-in">
-                <div className="flex items-center gap-3">
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3 min-w-0">
                     <Link
                         href={route('guru.index')}
-                        className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm"
+                        className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
                     >
                         <Icon icon="lucide:arrow-left" className="text-lg" />
                     </Link>
@@ -35,18 +35,18 @@ export default function GuruShow({ guru }: GuruShowProps) {
                         <p className="page-subtitle">Informasi lengkap penugasan, kontak & keuangan</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     {guru.user && (
                         <button
                             onClick={handleResetPassword}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-sm"
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)]"
                         >
                             <Icon icon="lucide:key-round" /> Reset Password
                         </button>
                     )}
                     <Link
                         href={route('guru.edit', guru.id)}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)]"
                     >
                         <Icon icon="lucide:pencil" /> Edit Data
                     </Link>
@@ -57,7 +57,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                 {/* Left Profile */}
                 <Card className="lg:col-span-1 h-fit">
                     <div className="text-center pb-2">
-                        <div className="w-24 h-24 bg-gradient-to-br from-slate-900 to-slate-700 text-white rounded-3xl flex items-center justify-center mx-auto mb-5 font-bold text-3xl shadow-lg">
+                        <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-5 font-bold text-3xl shadow-[0_12px_28px_-10px_rgba(99,102,241,0.8)]">
                             {guru.nama.substring(0, 2).toUpperCase()}
                         </div>
                         <h3 className="text-xl font-bold text-slate-900">{guru.nama}</h3>
@@ -71,7 +71,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
 
                         <div className="mt-6 space-y-2.5 text-left">
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0">
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                     <Icon icon="lucide:book-open" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
@@ -85,8 +85,22 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                     <Icon icon="lucide:layers" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Jenjang</p>
+                                    <p className="text-[11px] font-medium text-slate-400">Kelas yang Diajar</p>
                                     <p className="text-sm font-semibold text-slate-900">{guru.jenjang ?? '-'}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
+                                    <Icon icon="lucide:calendar-heart" className="text-base" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[11px] font-medium text-slate-400">Bergabung di KPM</p>
+                                    <p className="text-sm font-semibold text-slate-900">
+                                        {guru.tanggal_bergabung
+                                            ? new Date(guru.tanggal_bergabung).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                                            : '-'}
+                                    </p>
                                 </div>
                             </div>
 
@@ -100,15 +114,15 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-3.5 bg-sky-50 rounded-xl border border-sky-100">
-                                <div className="w-9 h-9 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center flex-shrink-0">
+                            <div className="flex items-center gap-3 p-3.5 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                     <Icon icon="lucide:gift" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-sky-500">Tunjangan Khusus</p>
-                                    <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1">
+                                    <p className="text-[11px] font-medium text-indigo-500">Tunjangan Khusus</p>
+                                    <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1 flex-wrap">
                                         {Number(guru.tunjangan_khusus) > 0 ? formatCurrency(Number(guru.tunjangan_khusus)) : 'Rp 0'}
-                                        <span className="text-[9px] bg-sky-200 text-sky-700 px-1.5 py-0.5 rounded font-bold uppercase">Admin Only</span>
+                                        <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase">Admin Only</span>
                                     </p>
                                 </div>
                             </div>
@@ -124,7 +138,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Icon icon="lucide:map-pin" className="text-slate-500 text-base" />
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Domisili</span>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kota Domisili</span>
                                 </div>
                                 <p className="text-sm font-semibold text-slate-900">{guru.domisili || '-'}</p>
                                 {!guru.domisili && <p className="text-xs text-slate-400">Belum diisi</p>}
@@ -132,7 +146,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Icon icon="lucide:phone" className="text-emerald-600 text-base" />
-                                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">No. Telepon / WA</span>
+                                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Nomor WA</span>
                                 </div>
                                 <p className="text-sm font-bold text-emerald-900">{guru.nomor_telepon || '-'}</p>
                                 {guru.nomor_telepon && (
@@ -141,27 +155,45 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                     </a>
                                 )}
                             </div>
-                            <div className="p-4 bg-sky-50 rounded-xl border border-sky-200">
+                            <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:mail" className="text-sky-600 text-base" />
-                                    <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Email Login</span>
+                                    <Icon icon="lucide:mail" className="text-indigo-600 text-base" />
+                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Email Login</span>
                                 </div>
                                 <p className="text-sm font-bold text-slate-900 break-all">{guru.user?.email ?? '-'}</p>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Icon icon="lucide:graduation-cap" className="text-slate-600 text-base" />
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Jenjang</span>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas yang Diajar</span>
                                 </div>
                                 <p className="text-sm font-semibold text-slate-900">{guru.jenjang || '-'}</p>
                             </div>
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 sm:col-span-2">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Icon icon="lucide:home" className="text-slate-600 text-base" />
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Alamat Lengkap</span>
+                                </div>
+                                <p className="text-sm font-semibold text-slate-900 leading-relaxed">{guru.alamat || '-'}</p>
+                                {!guru.alamat && <p className="text-xs text-slate-400">Belum diisi</p>}
+                            </div>
                         </div>
 
-                        {guru.keterangan_mengajar && (
-                            <div className="mt-4 p-4 bg-sky-50/50 rounded-xl border border-sky-100">
+                        {guru.riwayat_pendidikan && (
+                            <div className="mt-4 p-4 bg-violet-50/60 rounded-xl border border-violet-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:info" className="text-sky-600" />
-                                    <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Keterangan Mengajar</span>
+                                    <Icon icon="lucide:graduation-cap" className="text-violet-600" />
+                                    <span className="text-xs font-bold text-violet-700 uppercase tracking-wider">Riwayat Pendidikan</span>
+                                </div>
+                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_pendidikan}</p>
+                            </div>
+                        )}
+
+                        {guru.keterangan_mengajar && (
+                            <div className="mt-4 p-4 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 rounded-xl border border-indigo-100">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Icon icon="lucide:info" className="text-indigo-500" />
+                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Keterangan Mengajar</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.keterangan_mengajar}</p>
                             </div>
@@ -171,20 +203,20 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     {/* Keuangan */}
                     <Card title="Informasi Rekening" description="Data bank untuk penyaluran honor">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="p-4 bg-slate-900 text-white rounded-xl">
+                            <div className="p-4 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl shadow-[0_8px_20px_-8px_rgba(99,102,241,0.7)]">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:building-2" className="text-slate-300" />
-                                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Bank</span>
+                                    <Icon icon="lucide:building-2" className="text-indigo-200" />
+                                    <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Bank</span>
                                 </div>
-                                <p className="text-lg font-extrabold">{guru.bank || '-'}</p>
-                                <p className="text-xs text-slate-400 mt-1">Nama bank penerima</p>
+                                <p className="text-lg font-extrabold break-words">{guru.bank || '-'}</p>
+                                <p className="text-xs text-indigo-200/80 mt-1">Nama bank penerima</p>
                             </div>
-                            <div className="p-4 bg-white border-2 border-slate-200 rounded-xl">
+                            <div className="p-4 bg-white border-2 border-indigo-100 rounded-xl">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:credit-card" className="text-slate-500" />
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nomor Rekening</span>
+                                    <Icon icon="lucide:credit-card" className="text-indigo-500" />
+                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Rekening</span>
                                 </div>
-                                <p className="text-lg font-mono font-bold text-slate-900 tracking-wide">{guru.nomor_rekening || '-'}</p>
+                                <p className="text-lg font-mono font-bold text-slate-900 tracking-wide break-all">{guru.nomor_rekening || '-'}</p>
                                 <p className="text-xs text-slate-400 mt-1">Pastikan nomor benar sebelum pembayaran</p>
                             </div>
                         </div>
@@ -207,10 +239,10 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                     </div>
                                     <p className="text-sm font-extrabold text-emerald-900 break-all">{guru.user.email}</p>
                                 </div>
-                                <div className="p-4 bg-sky-50 rounded-xl border border-sky-200">
+                                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Icon icon="lucide:shield" className="text-sky-600 text-base" />
-                                        <span className="text-xs font-semibold text-sky-700">Role</span>
+                                        <Icon icon="lucide:shield" className="text-indigo-600 text-base" />
+                                        <span className="text-xs font-semibold text-indigo-700">Role</span>
                                     </div>
                                     <p className="text-sm font-extrabold text-slate-900">Guru</p>
                                 </div>
@@ -225,7 +257,9 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     ) : (
                         <Card>
                             <div className="text-center py-8">
-                                <Icon icon="lucide:alert-circle" className="text-3xl text-amber-400 mx-auto mb-2" />
+                                <div className="empty-state-icon !w-14 !h-14 !rounded-2xl">
+                                    <Icon icon="lucide:alert-circle" className="text-2xl text-amber-500" />
+                                </div>
                                 <p className="text-sm font-semibold text-slate-800">Belum Memiliki Akun Login</p>
                                 <p className="text-xs text-slate-500 mt-1">Edit data guru untuk menambahkan akun login.</p>
                             </div>
@@ -235,43 +269,41 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     {/* Salary History */}
                     <Card title="Riwayat Penggajian Guru" description="Daftar seluruh sesi dan honor yang telah disalurkan">
                         {guru.penggajians && guru.penggajians.length > 0 ? (
-                            <div className="overflow-x-auto -mx-6 px-6">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Periode</TableHead>
-                                            <TableHead>Sesi</TableHead>
-                                            <TableHead>Transport</TableHead>
-                                            <TableHead>Honor</TableHead>
-                                            <TableHead>Total Diterima</TableHead>
-                                            <TableHead className="text-right">Aksi</TableHead>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Periode</TableHead>
+                                        <TableHead>Sesi</TableHead>
+                                        <TableHead>Transport</TableHead>
+                                        <TableHead>Honor</TableHead>
+                                        <TableHead>Total Diterima</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {guru.penggajians.map((p) => (
+                                        <TableRow key={p.id}>
+                                            <TableCell>
+                                                <Badge>{p.periode}</Badge>
+                                            </TableCell>
+                                            <TableCell className="font-semibold text-slate-700">{p.jumlah_sesi} sesi</TableCell>
+                                            <TableCell className="text-slate-600">{p.transport?.jenis ?? '-'}</TableCell>
+                                            <TableCell className="text-slate-600">{formatCurrency(p.honor)}</TableCell>
+                                            <TableCell>
+                                                <span className="font-extrabold text-slate-900">{formatCurrency(p.total)}</span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Link href={route('penggajian.show', p.id)} className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-block" title="Lihat Slip">
+                                                    <Icon icon="lucide:eye" className="text-base" />
+                                                </Link>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {guru.penggajians.map((p) => (
-                                            <TableRow key={p.id}>
-                                                <TableCell>
-                                                    <Badge>{p.periode}</Badge>
-                                                </TableCell>
-                                                <TableCell className="font-semibold text-slate-700">{p.jumlah_sesi} sesi</TableCell>
-                                                <TableCell className="text-slate-600">{p.transport?.jenis ?? '-'}</TableCell>
-                                                <TableCell className="text-slate-600">{formatCurrency(p.honor)}</TableCell>
-                                                <TableCell>
-                                                    <span className="font-extrabold text-slate-900">{formatCurrency(p.total)}</span>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Link href={route('penggajian.show', p.id)} className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors inline-block" title="Lihat Slip">
-                                                        <Icon icon="lucide:eye" className="text-base" />
-                                                    </Link>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         ) : (
                             <div className="text-center py-12">
-                                <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3 text-slate-400">
+                                <div className="empty-state-icon !w-14 !h-14 !rounded-2xl">
                                     <Icon icon="lucide:file-text" className="text-2xl" />
                                 </div>
                                 <p className="text-sm font-semibold text-slate-800">Belum Ada Riwayat Penggajian</p>

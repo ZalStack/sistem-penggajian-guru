@@ -37,8 +37,8 @@ export default function Pagination({ links, from, to, total }: PaginationProps) 
                             href={link.url}
                             className={`min-w-[36px] h-9 inline-flex items-center justify-center px-2.5 text-[13px] font-[600] rounded-xl transition-all duration-200 ${
                                 link.active
-                                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10 scale-105'
-                                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 hover:shadow-sm'
+                                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)] scale-105'
+                                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 hover:shadow-sm'
                             }`}
                             preserveScroll
                         >

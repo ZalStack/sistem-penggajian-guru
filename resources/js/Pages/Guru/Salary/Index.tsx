@@ -28,12 +28,18 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
         <AuthenticatedLayout>
             <Head title="Penggajian" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
-                <div>
-                    <h1 className="page-title">Penggajian</h1>
-                    <p className="page-subtitle">
-                        Ringkasan penggajian dan riwayat pembayaran Anda
-                    </p>
+            {/* Page header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 animate-fade-in">
+                <div className="flex items-start gap-3.5 min-w-0">
+                    <span className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(99,102,241,0.7)]">
+                        <Icon icon="lucide:wallet" className="text-xl" />
+                    </span>
+                    <div className="min-w-0">
+                        <h1 className="page-title">Penggajian</h1>
+                        <p className="page-subtitle">
+                            Ringkasan penggajian dan riwayat pembayaran Anda
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -89,7 +95,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                 <TableBody>
                                     {penggajians.map((pg, index) => (
                                         <TableRow key={pg.id}>
-                                            <TableCell className="font-medium text-slate-400">
+                                            <TableCell className="font-semibold text-indigo-500">
                                                 {index + 1}
                                             </TableCell>
                                             <TableCell>
@@ -120,7 +126,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                             <TableCell className="text-right">
                                                 <a
                                                     href={route('my-salary.payslip', pg.id)}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Download Slip Gaji PDF"
                                                 >
                                                     <Icon icon="lucide:download" className="text-sm" />
@@ -130,7 +136,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         </TableRow>
                                     ))}
                                     {/* Grand Total Row */}
-                                    <TableRow className="bg-slate-50">
+                                    <TableRow className="bg-gradient-to-r from-indigo-50/80 to-violet-50/60">
                                         <TableCell colSpan={4} className="font-extrabold text-slate-900 text-right">
                                             Grand Total
                                         </TableCell>
@@ -155,45 +161,52 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                             {penggajians.map((pg, index) => (
                                 <div
                                     key={pg.id}
-                                    className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                                    className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all space-y-3"
                                 >
                                     <div className="flex items-start justify-between gap-2">
-                                        <div>
-                                            <p className="font-semibold text-slate-900 text-sm">{pg.periode}</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">
-                                                {pg.jumlah_sesi} sesi &middot; {pg.jumlah_hadir} hadir
-                                            </p>
+                                        <div className="flex items-start gap-3 min-w-0">
+                                            <span className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
+                                                <Icon icon="lucide:receipt-text" className="text-lg" />
+                                            </span>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-slate-900 text-sm break-words">{pg.periode}</p>
+                                                <p className="text-xs text-slate-500 mt-0.5 break-words">
+                                                    {pg.jumlah_sesi} sesi &middot; {pg.jumlah_hadir} hadir
+                                                </p>
+                                            </div>
                                         </div>
-                                        <span className="text-xs font-semibold text-slate-400">#{index + 1}</span>
+                                        <span className="shrink-0 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
+                                            #{index + 1}
+                                        </span>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                            <p className="text-xs text-slate-400">Honor</p>
-                                            <p className="text-slate-700">{formatCurrency(pg.honor)}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-slate-500">Honor</p>
+                                            <p className="text-slate-700 font-medium break-words">{formatCurrency(pg.honor)}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400">Transport</p>
-                                            <p className="text-slate-700">{formatCurrency(pg.total_transport)}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-slate-500">Transport</p>
+                                            <p className="text-slate-700 font-medium break-words">{formatCurrency(pg.total_transport)}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400">Total</p>
-                                            <p className="font-extrabold text-slate-900">{formatCurrency(pg.total)}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-slate-500">Total</p>
+                                            <p className="font-extrabold text-slate-900 break-words">{formatCurrency(pg.total)}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-slate-400">Status</p>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-slate-500">Status</p>
                                             <Badge variant={statusConfig[pg.status_bayar]?.variant || 'default'}>
                                                 {statusConfig[pg.status_bayar]?.label || pg.status_bayar}
                                             </Badge>
                                         </div>
                                     </div>
 
-                                    <div className="pt-2 border-t border-slate-100">
+                                    <div className="pt-3 border-t border-indigo-100/70">
                                         <a
                                             href={route('my-salary.payslip', pg.id)}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors"
+                                            className="flex w-full items-center justify-center gap-1.5 px-3 py-2.5 min-h-[42px] text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25 break-words"
                                         >
-                                            <Icon icon="lucide:download" className="text-xs" />
+                                            <Icon icon="lucide:download" className="text-sm shrink-0" />
                                             Download Slip Gaji
                                         </a>
                                     </div>
@@ -201,32 +214,32 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                             ))}
 
                             {/* Mobile Grand Total */}
-                            <div className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white space-y-3 shadow-lg">
+                            <div className="p-5 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl text-white space-y-3 shadow-brand-lg overflow-hidden">
                                 <p className="text-sm font-semibold">Grand Total</p>
-                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>
-                                        <p className="text-slate-300 text-xs">Honor</p>
-                                        <p className="font-extrabold">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.honor, 0))}</p>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div className="min-w-0">
+                                        <p className="text-white/70 text-xs">Honor</p>
+                                        <p className="font-extrabold break-words">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.honor, 0))}</p>
                                     </div>
-                                    <div>
-                                        <p className="text-slate-300 text-xs">Transport</p>
-                                        <p className="font-extrabold">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.total_transport, 0))}</p>
+                                    <div className="min-w-0">
+                                        <p className="text-white/70 text-xs">Transport</p>
+                                        <p className="font-extrabold break-words">{formatCurrency(penggajians.reduce((sum, pg) => sum + pg.total_transport, 0))}</p>
                                     </div>
                                 </div>
-                                <div className="pt-3 border-t border-slate-700">
-                                    <p className="text-xs text-slate-300">Total Keseluruhan</p>
-                                    <p className="text-lg font-extrabold">{formatCurrency(totalGaji)}</p>
+                                <div className="pt-3 border-t border-white/20">
+                                    <p className="text-xs text-white/70">Total Keseluruhan</p>
+                                    <p className="text-lg sm:text-xl font-extrabold break-words">{formatCurrency(totalGaji)}</p>
                                 </div>
                             </div>
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-20">
-                        <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <div className="text-center py-16 sm:py-20 px-2">
+                        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
                             <Icon icon="lucide:wallet" className="text-3xl" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">Belum ada data penggajian</h3>
-                        <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
+                        <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">
                             Data penggajian akan muncul setelah Anda memiliki riwayat mengajar.
                         </p>
                     </div>

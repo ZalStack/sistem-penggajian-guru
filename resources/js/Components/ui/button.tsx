@@ -4,13 +4,13 @@ import { ButtonHTMLAttributes, forwardRef, AnchorHTMLAttributes } from 'react';
 const baseStyles = 'inline-flex items-center justify-center gap-2 font-[600] tracking-[-0.01em] rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] select-none whitespace-nowrap';
 
 const variantStyles: Record<string, string> = {
-    default: 'bg-slate-900 text-white hover:bg-slate-800 focus:ring-slate-900/20 shadow-[0_1px_2px_rgba(0,0,0,0.05),0_4px_12px_rgba(15,23,42,0.12)] hover:shadow-[0_6px_16px_rgba(15,23,42,0.14)] hover:-translate-y-[1px]',
-    secondary: 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 focus:ring-slate-900/10 shadow-sm hover:shadow',
-    outline: 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 focus:ring-slate-900/10 shadow-sm',
-    ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-900/10 active:bg-slate-200/70',
-    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-600/20 shadow-sm hover:shadow-md hover:-translate-y-px',
-    success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-600/20 shadow-sm hover:shadow-md hover:-translate-y-px',
-    warning: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500/20 shadow-sm hover:shadow-md',
+    default: 'text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 focus:ring-indigo-500/40 shadow-[0_6px_16px_-6px_rgba(79,70,229,0.6)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)] hover:-translate-y-[1px]',
+    secondary: 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 focus:ring-indigo-500/30 shadow-sm hover:shadow',
+    outline: 'border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 focus:ring-indigo-500/30 shadow-sm',
+    ghost: 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:ring-indigo-500/25 active:bg-indigo-100',
+    danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-600/30 shadow-[0_6px_16px_-8px_rgba(225,29,72,0.8)] hover:shadow-[0_10px_22px_-8px_rgba(225,29,72,0.9)] hover:-translate-y-px',
+    success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-600/30 shadow-[0_6px_16px_-8px_rgba(5,150,105,0.8)] hover:shadow-[0_10px_22px_-8px_rgba(5,150,105,0.9)] hover:-translate-y-px',
+    warning: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500/30 shadow-[0_6px_16px_-8px_rgba(217,119,6,0.8)] hover:shadow-md',
 };
 
 const sizeStyles: Record<string, string> = {

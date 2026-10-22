@@ -50,15 +50,18 @@
     <table>
         <thead>
             <tr>
-                <th class="center" style="width:22px;">No</th>
-                <th style="width:24%;">Nama Guru</th>
-                <th class="center" style="width:38px;">Grade</th>
-                <th style="width:10%;">Domisili</th>
-                <th class="center" style="width:52px;">Tunjangan</th>
-                <th style="width:12%;">No Rekening</th>
-                <th style="width:14%;">Ket Mengajar</th>
-                <th style="width:18%;">Email Login</th>
-                <th style="width:58px;" class="center">Password</th>
+                <th class="center" style="width:20px;">No</th>
+                <th style="width:13%;">Nama Guru</th>
+                <th class="center" style="width:34px;">Grade</th>
+                <th style="width:7%;">Kota Domisili</th>
+                <th style="width:11%;">Alamat</th>
+                <th class="center" style="width:56px;">Tgl Bergabung</th>
+                <th style="width:12%;">Riwayat Pendidikan</th>
+                <th class="center" style="width:48px;">Tunjangan</th>
+                <th style="width:9%;">No Rekening</th>
+                <th style="width:10%;">Ket Mengajar</th>
+                <th style="width:13%;">Email Login</th>
+                <th style="width:52px;" class="center">Password</th>
             </tr>
         </thead>
         <tbody>
@@ -68,6 +71,9 @@
                     <td class="font-bold">{{ $g->nama }}</td>
                     <td class="text-center"><span class="badge badge-grade">{{ $g->grade->kode_grade ?? '-' }}</span></td>
                     <td>{{ $g->domisili ?? '-' }}</td>
+                    <td style="font-size:7px; line-height:1.2;">{{ $g->alamat ?? '-' }}</td>
+                    <td class="text-center">{{ $g->tanggal_bergabung ? $g->tanggal_bergabung->format('d/m/Y') : '-' }}</td>
+                    <td style="font-size:7px; line-height:1.2;">{!! nl2br(e($g->riwayat_pendidikan ?? '-')) !!}</td>
                     <td class="text-center">@if($g->tunjangan_khusus > 0) Rp{{ number_format($g->tunjangan_khusus, 0, ',', '.') }} @else - @endif</td>
                     <td class="mono">{{ $g->nomor_rekening ?? '-' }}</td>
                     <td style="font-size:7px; line-height:1.2;">{{ $g->keterangan_mengajar ?? '-' }}</td>

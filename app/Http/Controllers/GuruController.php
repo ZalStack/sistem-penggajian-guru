@@ -22,6 +22,7 @@ class GuruController extends Controller
                 return $q->where(function ($w) use ($safe) {
                     $w->where('nama', 'like', "%{$safe}%", '\\')
                         ->orWhere('domisili', 'like', "%{$safe}%", '\\')
+                        ->orWhere('alamat', 'like', "%{$safe}%", '\\')
                         ->orWhere('nomor_telepon', 'like', "%{$safe}%", '\\');
                 });
             })
@@ -50,6 +51,9 @@ class GuruController extends Controller
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:1000',
+            'riwayat_pendidikan' => 'nullable|string|max:2000',
+            'tanggal_bergabung' => 'nullable|date',
             'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
             'tunjangan_khusus' => 'nullable|numeric|min:0|max:9999999999',
             'bank' => 'nullable|string|max:50',
@@ -77,6 +81,9 @@ class GuruController extends Controller
                 'mapel' => $validated['mapel'],
                 'jenjang' => $validated['jenjang'] ?? null,
                 'domisili' => $validated['domisili'] ?? null,
+                'alamat' => $validated['alamat'] ?? null,
+                'riwayat_pendidikan' => $validated['riwayat_pendidikan'] ?? null,
+                'tanggal_bergabung' => $validated['tanggal_bergabung'] ?? null,
                 'nomor_telepon' => $validated['nomor_telepon'] ?? null,
                 'tunjangan_khusus' => $validated['tunjangan_khusus'] ?? 0,
                 'bank' => $validated['bank'] ?? null,
@@ -120,6 +127,9 @@ class GuruController extends Controller
             'mapel' => 'required|in:IPA,MTK',
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:1000',
+            'riwayat_pendidikan' => 'nullable|string|max:2000',
+            'tanggal_bergabung' => 'nullable|date',
             'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
             'tunjangan_khusus' => 'nullable|numeric|min:0|max:9999999999',
             'bank' => 'nullable|string|max:50',
@@ -134,6 +144,9 @@ class GuruController extends Controller
             'mapel' => $validated['mapel'],
             'jenjang' => $validated['jenjang'] ?? null,
             'domisili' => $validated['domisili'] ?? null,
+            'alamat' => $validated['alamat'] ?? null,
+            'riwayat_pendidikan' => $validated['riwayat_pendidikan'] ?? null,
+            'tanggal_bergabung' => $validated['tanggal_bergabung'] ?? null,
             'nomor_telepon' => $validated['nomor_telepon'] ?? null,
             'tunjangan_khusus' => $validated['tunjangan_khusus'] ?? 0,
             'bank' => $validated['bank'] ?? null,

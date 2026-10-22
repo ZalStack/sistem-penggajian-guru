@@ -57,51 +57,57 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
         <AuthenticatedLayout>
             <Head title="Perizinan Saya" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-fade-in">
-                <div>
-                    <h1 className="page-title">Perizinan Saya</h1>
-                    <p className="page-subtitle">
-                        Ajukan izin, sakit, atau cuti dan pantau status pengajuan Anda
-                    </p>
+            {/* Page header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 animate-fade-in">
+                <div className="flex items-start gap-3.5 min-w-0">
+                    <span className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(99,102,241,0.7)]">
+                        <Icon icon="lucide:shield-check" className="text-xl" />
+                    </span>
+                    <div className="min-w-0">
+                        <h1 className="page-title">Perizinan Saya</h1>
+                        <p className="page-subtitle">
+                            Ajukan izin, sakit, atau cuti dan pantau status pengajuan Anda
+                        </p>
+                    </div>
                 </div>
-                <Button onClick={() => setShowForm(!showForm)}>
+                <Button onClick={() => setShowForm(!showForm)} className="w-full sm:w-auto">
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup' : 'Ajukan Perizinan'}
                 </Button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(245,158,11,0.7)]">
                             <Icon icon="lucide:clock" className="text-lg" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{pendingCount}</p>
-                            <p className="text-xs text-slate-500">Menunggu</p>
+                        <div className="min-w-0">
+                            <p className="text-2xl font-extrabold text-slate-900 leading-none">{pendingCount}</p>
+                            <p className="text-xs text-slate-500 mt-1.5">Menunggu</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(16,185,129,0.7)]">
                             <Icon icon="lucide:check-circle" className="text-lg" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{approvedCount}</p>
-                            <p className="text-xs text-slate-500">Disetujui</p>
+                        <div className="min-w-0">
+                            <p className="text-2xl font-extrabold text-slate-900 leading-none">{approvedCount}</p>
+                            <p className="text-xs text-slate-500 mt-1.5">Disetujui</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(244,63,94,0.7)]">
                             <Icon icon="lucide:x-circle" className="text-lg" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-extrabold text-slate-900">{rejectedCount}</p>
-                            <p className="text-xs text-slate-500">Ditolak</p>
+                        <div className="min-w-0">
+                            <p className="text-2xl font-extrabold text-slate-900 leading-none">{rejectedCount}</p>
+                            <p className="text-xs text-slate-500 mt-1.5">Ditolak</p>
                         </div>
                     </div>
                 </div>
@@ -114,16 +120,16 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="block text-sm font-medium text-slate-700">Jenis Perizinan</label>
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     {Object.entries(jenisConfig).map(([key, config]) => (
                                         <button
                                             key={key}
                                             type="button"
                                             onClick={() => setData('jenis', key)}
-                                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                                            className={`flex items-center justify-center gap-2 px-4 py-3 min-h-[46px] rounded-xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/25 ${
                                                 data.jenis === key
-                                                    ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                                                    ? 'border-transparent bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]'
+                                                    : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700 active:bg-indigo-100'
                                             }`}
                                         >
                                             <Icon icon={config.icon} className="text-base" />
@@ -159,18 +165,18 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                 value={data.alasan}
                                 onChange={(e) => setData('alasan', e.target.value)}
                                 rows={3}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-colors duration-200 shadow-sm resize-none"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 hover:border-indigo-200 transition-colors duration-200 shadow-sm resize-none break-words"
                                 placeholder="Tuliskan alasan pengajuan perizinan..."
                                 required
                             />
                             {errors.alasan && <p className="text-xs text-rose-500">{errors.alasan}</p>}
                         </div>
-                        <div className="flex items-center gap-3 pt-2">
-                            <Button type="submit" processing={processing}>
+                        <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
+                            <Button type="submit" processing={processing} className="w-full sm:w-auto">
                                 <Icon icon="lucide:send" className="text-base" />
                                 Kirim Pengajuan
                             </Button>
-                            <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
+                            <Button variant="secondary" type="button" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
                                 Batal
                             </Button>
                         </div>
@@ -198,13 +204,13 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                 <TableBody>
                                     {perizinan.map((p, index) => (
                                         <TableRow key={p.id}>
-                                            <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
+                                            <TableCell className="font-semibold text-indigo-500">{index + 1}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                        p.jenis === 'izin' ? 'bg-sky-50 text-sky-600' :
-                                                        p.jenis === 'sakit' ? 'bg-rose-50 text-rose-600' :
-                                                        'bg-sky-50 text-sky-600'
+                                                    <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center ${
+                                                        p.jenis === 'izin' ? 'bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_6px_14px_-6px_rgba(99,102,241,0.6)]' :
+                                                        p.jenis === 'sakit' ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_14px_-6px_rgba(244,63,94,0.5)]' :
+                                                        'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-[0_6px_14px_-6px_rgba(139,92,246,0.5)]'
                                                     }`}>
                                                         <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-sm" />
                                                     </div>
@@ -230,7 +236,7 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                             <TableCell>
                                                 {p.catatan_admin ? (
                                                     <div className="flex items-start gap-2 max-w-[250px]">
-                                                        <Icon icon="lucide:message-square" className="text-slate-400 text-xs mt-0.5 flex-shrink-0" />
+                                                        <Icon icon="lucide:message-square" className="text-indigo-500 text-xs mt-0.5 flex-shrink-0" />
                                                         <p className="text-sm text-slate-600" title={p.catatan_admin}>{p.catatan_admin}</p>
                                                     </div>
                                                 ) : (
@@ -242,12 +248,12 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                 </TableBody>
                             </Table>
                         ) : (
-                            <div className="text-center py-20">
-                                <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <div className="text-center py-16 sm:py-20 px-2">
+                                <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
                                     <Icon icon="lucide:shield-check" className="text-3xl" />
                                 </div>
                                 <h3 className="text-base font-bold text-slate-900">Belum ada pengajuan perizinan</h3>
-                                <p className="text-sm text-slate-500 mt-1">Klik tombol "Ajukan Perizinan" untuk membuat pengajuan baru</p>
+                                <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">Klik tombol "Ajukan Perizinan" untuk membuat pengajuan baru</p>
                             </div>
                         )}
                     </div>
@@ -256,46 +262,48 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                     <div className="md:hidden space-y-4">
                         {perizinan.length > 0 ? (
                             perizinan.map((p, index) => (
-                                <div key={p.id} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3">
+                                <div key={p.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all space-y-3">
                                     <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                                                p.jenis === 'izin' ? 'bg-sky-50 text-sky-600' :
-                                                p.jenis === 'sakit' ? 'bg-rose-50 text-rose-600' :
-                                                'bg-sky-50 text-sky-600'
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${
+                                                p.jenis === 'izin' ? 'bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_6px_14px_-6px_rgba(99,102,241,0.6)]' :
+                                                p.jenis === 'sakit' ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_14px_-6px_rgba(244,63,94,0.5)]' :
+                                                'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-[0_6px_14px_-6px_rgba(139,92,246,0.5)]'
                                             }`}>
                                                 <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-lg" />
                                             </div>
-                                            <div>
+                                            <div className="min-w-0">
                                                 <p className="font-bold text-slate-900 text-sm">{jenisConfig[p.jenis]?.label ?? p.jenis}</p>
-                                                <p className="text-xs text-slate-400">{formatDate(p.tanggal_mulai)}{p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}</p>
+                                                <p className="text-xs text-slate-500 break-words">{formatDate(p.tanggal_mulai)}{p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-semibold text-slate-400">#{index + 1}</span>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">#{index + 1}</span>
                                             <Badge variant={statusConfig[p.status]?.variant ?? 'default'}>
                                                 {statusConfig[p.status]?.label ?? p.status}
                                             </Badge>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-slate-400">Alasan</p>
-                                        <p className="text-sm text-slate-700">{p.alasan}</p>
+                                        <p className="text-xs text-slate-500">Alasan</p>
+                                        <p className="text-sm text-slate-700 break-words">{p.alasan}</p>
                                     </div>
                                     {p.catatan_admin && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Icon icon="lucide:message-square" className="text-slate-400 text-xs" />
-                                                <p className="text-xs font-medium text-slate-500">Catatan Admin</p>
+                                                <Icon icon="lucide:message-square" className="text-indigo-500 text-xs" />
+                                                <p className="text-xs font-medium text-indigo-700">Catatan Admin</p>
                                             </div>
-                                            <p className="text-sm text-slate-700">{p.catatan_admin}</p>
+                                            <p className="text-sm text-slate-700 break-words">{p.catatan_admin}</p>
                                         </div>
                                     )}
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-12">
-                                <Icon icon="lucide:shield-check" className="text-4xl text-slate-300 mx-auto mb-3" />
+                            <div className="text-center py-12 px-2">
+                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-3 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.6)]">
+                                    <Icon icon="lucide:shield-check" className="text-2xl" />
+                                </div>
                                 <p className="text-sm text-slate-500">Belum ada pengajuan perizinan</p>
                             </div>
                         )}

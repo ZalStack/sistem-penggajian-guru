@@ -132,7 +132,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         <AuthenticatedLayout>
             <Head title="Kelola Sesi Mengajar" />
 
-            <div className="page-header animate-fade-in flex flex-col sm:flex-row sm:items-start justify-between gap-5">
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                     <h1 className="page-title">Sesi Mengajar</h1>
                     <p className="page-subtitle">
@@ -144,7 +144,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm shrink-0"
+                    className="shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Sesi Baru'}
@@ -238,8 +238,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     required
                                 />
                             </div>
-                            <div className="flex items-center gap-3 pt-2">
-                                <Button type="submit" processing={processing} className="shadow-sm">
+                            <div className="flex flex-wrap items-center gap-3 pt-2">
+                                <Button type="submit" processing={processing}>
                                     <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Sesi'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
@@ -252,7 +252,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
 
                 <Card>
                     {/* Filter Bar */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-8">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end mb-8">
                         <div className="flex-1">
                             <Input
                                 label="Periode"
@@ -305,10 +305,10 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     <TableBody>
                                         {sessions.map((session, index) => (
                                             <TableRow key={session.id}>
-                                                <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
+                                                <TableCell className="font-medium text-slate-500">{index + 1}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 bg-slate-900/5 text-slate-800 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                             {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
                                                         </div>
                                                         <span className="font-semibold text-slate-900 text-sm">
@@ -348,7 +348,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                                         <button
                                                             type="button"
                                                             onClick={() => handleEdit(session)}
-                                                            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                                            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                                             title="Edit Sesi"
                                                         >
                                                             <Icon icon="lucide:pencil" className="text-base" />
@@ -374,30 +374,30 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                 {sessions.map((session, index) => (
                                     <div
                                         key={session.id}
-                                        className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-3"
+                                        className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                     {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-slate-900 text-sm">{session.guru?.nama ?? '-'}</p>
-                                                    <p className="text-xs text-slate-400">{session.location?.nama_lokasi ?? '-'}</p>
+                                                    <p className="text-xs text-slate-500">{session.location?.nama_lokasi ?? '-'}</p>
                                                 </div>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-400">
+                                            <span className="text-xs font-semibold text-slate-500">
                                                 #{index + 1}
                                             </span>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3 text-xs">
                                             <div>
-                                                <span className="text-slate-400">Tanggal</span>
+                                                <span className="text-slate-500">Tanggal</span>
                                                 <p className="font-medium text-slate-700">{formatDate(session.tanggal)}</p>
                                             </div>
                                             <div>
-                                                <span className="text-slate-400">Jam</span>
+                                                <span className="text-slate-500">Jam</span>
                                                 <p className="font-medium text-slate-700">
                                                     {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
                                                 </p>
@@ -415,7 +415,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                             <button
                                                 type="button"
                                                 onClick={() => handleEdit(session)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1"
+                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1"
                                             >
                                                 <Icon icon="lucide:pencil" /> Edit
                                             </button>
@@ -433,7 +433,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                         </>
                     ) : (
                         <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                 <Icon icon="lucide:calendar-x" className="text-3xl" />
                             </div>
                             <h3 className="text-base font-bold text-slate-900">
@@ -449,7 +449,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     <button
                                         type="button"
                                         onClick={resetFilters}
-                                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
                                     >
                                         <Icon icon="lucide:rotate-ccw" /> Reset Semua Filter
                                     </button>

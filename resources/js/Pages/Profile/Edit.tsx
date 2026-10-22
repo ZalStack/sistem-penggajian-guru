@@ -31,6 +31,8 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
         name: user.name,
         email: user.email,
         domisili: guru?.domisili ?? '',
+        alamat: guru?.alamat ?? '',
+        riwayat_pendidikan: guru?.riwayat_pendidikan ?? '',
         nomor_telepon: guru?.nomor_telepon ?? '',
         bank: guru?.bank ?? '',
         nomor_rekening: guru?.nomor_rekening ?? '',
@@ -98,32 +100,35 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
             </div>
 
             {/* Header Profile Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 mb-6 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white font-bold text-xl flex items-center justify-center shadow-md flex-shrink-0">
-                    {initials}
-                </div>
-                <div className="text-center sm:text-left flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-                        <h2 className="text-lg font-bold text-slate-900 truncate">{user.name}</h2>
-                        <Badge variant={isGuru ? 'info' : 'purple'}>{isGuru ? 'Guru' : 'Administrator'}</Badge>
-                        {isGuru && guru?.grade && <Badge variant="purple">Grade {guru.grade.kode_grade}</Badge>}
+            <div className="card-modern-hover overflow-hidden mb-6">
+                <div className="h-1.5 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-500" />
+                <div className="p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-xl flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(99,102,241,0.6)] flex-shrink-0">
+                        {initials}
                     </div>
-                    <p className="text-sm text-slate-500 mt-0.5 break-all">{user.email}</p>
-                    {isGuru ? (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            <span className="inline-flex items-center gap-1.5 text-slate-500">
-                                <Icon icon="lucide:map-pin" className="text-slate-400" /> {guru?.domisili || 'Domisili belum diisi'}
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 text-slate-500">
-                                <Icon icon="lucide:phone" className="text-slate-400" /> {guru?.nomor_telepon || 'Telepon belum diisi'}
-                            </span>
+                    <div className="text-center sm:text-left flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
+                            <h2 className="text-lg font-bold text-slate-900 truncate">{user.name}</h2>
+                            <Badge variant={isGuru ? 'info' : 'purple'}>{isGuru ? 'Guru' : 'Administrator'}</Badge>
+                            {isGuru && guru?.grade && <Badge variant="purple">Grade {guru.grade.kode_grade}</Badge>}
                         </div>
-                    ) : (
-                        <p className="text-xs text-slate-400 mt-2 flex items-center justify-center sm:justify-start gap-1">
-                            <Icon icon="lucide:shield-check" className="text-emerald-500" />
-                            Akses Penuh Pengelolaan Sistem Penggajian KPM Pusat
-                        </p>
-                    )}
+                        <p className="text-sm text-slate-500 mt-0.5 break-all">{user.email}</p>
+                        {isGuru ? (
+                            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                <span className="inline-flex items-center gap-1.5 text-slate-600">
+                                    <Icon icon="lucide:map-pin" className="text-indigo-500" /> {guru?.domisili || 'Domisili belum diisi'}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 text-slate-600">
+                                    <Icon icon="lucide:phone" className="text-indigo-500" /> {guru?.nomor_telepon || 'Nomor WA belum diisi'}
+                                </span>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-500 mt-2 flex items-center justify-center sm:justify-start gap-1">
+                                <Icon icon="lucide:shield-check" className="text-emerald-500" />
+                                Akses Penuh Pengelolaan Sistem Penggajian KPM Pusat
+                            </p>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -159,18 +164,52 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                         {isGuru && (
                             <>
                                 <div className="pt-4 border-t border-slate-100 space-y-4">
-                                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Icon icon="lucide:map-pin" className="text-slate-500" /> Domisili & Kontak
+                                    <h4 className="section-title flex items-center gap-2.5">
+                                        <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)] shrink-0">
+                                            <Icon icon="lucide:map-pin" className="text-sm" />
+                                        </span>
+                                        Domisili & Kontak
                                     </h4>
                                     <Input
-                                        label="Domisili"
+                                        label="Kota Domisili"
                                         value={profileData.domisili}
                                         onChange={(e) => setProfileData('domisili', e.target.value)}
                                         error={profileErrors.domisili}
                                         placeholder="Contoh: Jakarta Selatan, Bogor"
                                     />
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                            Alamat Lengkap
+                                        </label>
+                                        <textarea
+                                            value={profileData.alamat}
+                                            onChange={(e) => setProfileData('alamat', e.target.value)}
+                                            placeholder="Contoh: Jl. Melati No. 12, RT 03/RW 05, Kec. Cibinong, Kab. Bogor"
+                                            rows={2}
+                                            className="input-modern resize-none"
+                                        />
+                                        {profileErrors.alamat && (
+                                            <p className="text-xs text-rose-500 font-medium mt-1.5">{profileErrors.alamat}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                            Riwayat Pendidikan
+                                        </label>
+                                        <textarea
+                                            value={profileData.riwayat_pendidikan}
+                                            onChange={(e) => setProfileData('riwayat_pendidikan', e.target.value)}
+                                            placeholder={'Contoh:\nS1 Pendidikan IPA — UNJ\nS2 Pendidikan Dasar — UI'}
+                                            rows={3}
+                                            className="input-modern resize-none leading-6"
+                                        />
+                                        {profileErrors.riwayat_pendidikan && (
+                                            <p className="text-xs text-rose-500 font-medium mt-1.5">{profileErrors.riwayat_pendidikan}</p>
+                                        )}
+                                        <p className="text-xs text-slate-400 mt-1">Tulis satu pendidikan per baris</p>
+                                    </div>
                                     <Input
-                                        label="Nomor Telepon / WhatsApp"
+                                        label="Nomor WA"
                                         value={profileData.nomor_telepon}
                                         onChange={(e) => setProfileData('nomor_telepon', e.target.value)}
                                         error={profileErrors.nomor_telepon}
@@ -180,8 +219,11 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                                 </div>
 
                                 <div className="pt-4 border-t border-slate-100 space-y-4">
-                                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                        <Icon icon="lucide:building-2" className="text-slate-500" /> Informasi Rekening
+                                    <h4 className="section-title flex items-center gap-2.5">
+                                        <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)] shrink-0">
+                                            <Icon icon="lucide:building-2" className="text-sm" />
+                                        </span>
+                                        Informasi Rekening
                                     </h4>
 
                                     {/* Tunjangan Khusus - READ ONLY untuk guru */}
@@ -243,7 +285,7 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                             </>
                         )}
 
-                        <div className="flex justify-end pt-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                             <Button type="submit" processing={profileProcessing}>
                                 <Icon icon="lucide:save" className="text-base" />
                                 <span>Simpan Profil</span>
@@ -285,7 +327,7 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                                 placeholder="••••••••"
                                 required
                             />
-                            <div className="flex justify-end pt-2">
+                            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                                 <Button type="submit" processing={passwordProcessing}>
                                     <Icon icon="lucide:key-round" className="text-base" />
                                     <span>Perbarui Sandi</span>
@@ -297,15 +339,15 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                     {isGuru && guru && (
                         <Card title="Ringkasan Data Guru" description="Informasi yang terhubung dengan akun Anda">
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                     <span className="text-xs font-bold text-slate-500 uppercase">Mata Pelajaran</span>
                                     <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'}>{guru.mapel}</Badge>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Jenjang</span>
+                                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
+                                    <span className="text-xs font-bold text-slate-500 uppercase">Kelas yang Diajar</span>
                                     <span className="text-sm font-semibold text-slate-800">{guru.jenjang || '-'}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                     <span className="text-xs font-bold text-slate-500 uppercase">Grade</span>
                                     <span className="text-sm font-semibold text-slate-800">Grade {guru.grade?.kode_grade ?? '-'}</span>
                                 </div>
@@ -314,7 +356,7 @@ export default function ProfileEdit({ user, guru: guruProp }: ProfileProps) {
                                         <Icon icon="lucide:info" /> Catatan
                                     </p>
                                     <p className="text-xs text-amber-700 mt-1 leading-relaxed">
-                                        Untuk perubahan <b>Grade, Mata Pelajaran, Jenjang & Tunjangan Khusus</b>, silakan hubungi Admin.
+                                        Untuk perubahan <b>Grade, Mata Pelajaran, Kelas yang Diajar & Tunjangan Khusus</b>, silakan hubungi Admin.
                                     </p>
                                 </div>
                             </div>

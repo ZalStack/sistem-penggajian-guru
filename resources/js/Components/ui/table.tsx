@@ -12,7 +12,7 @@ export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>)
 }
 
 export function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-    return <thead className={cn('bg-slate-50/70 border-y border-slate-200/70', className)} {...props} />;
+    return <thead className={cn('bg-gradient-to-r from-indigo-50/70 to-violet-50/50 border-y border-indigo-100/70', className)} {...props} />;
 }
 
 export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
@@ -20,11 +20,11 @@ export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSecti
 }
 
 export function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-    return <tr className={cn('group/row hover:bg-slate-50/60 transition-colors duration-200', className)} {...props} />;
+    return <tr className={cn('group/row hover:bg-indigo-50/40 transition-colors duration-200', className)} {...props} />;
 }
 
 export function TableHead({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
-    return <th className={cn('px-6 py-4 text-left text-[11px] font-[700] tracking-[0.06em] text-slate-500 uppercase whitespace-nowrap', className)} {...props} />;
+    return <th className={cn('px-6 py-4 text-left text-[11px] font-bold tracking-[0.06em] text-indigo-900/70 uppercase whitespace-nowrap', className)} {...props} />;
 }
 
 export function TableCell({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {

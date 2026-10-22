@@ -66,10 +66,10 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
         <AuthenticatedLayout>
             <Head title="Grade & Honorarium" />
 
-            <div className="animate-fade-in page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="page-title text-2xl font-bold tracking-tight text-slate-900">Grade & Honor Guru</h1>
-                    <p className="page-subtitle text-sm text-slate-500 mt-1">
+            <div className="animate-fade-in page-header flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                    <h1 className="page-title">Grade & Honor Guru</h1>
+                    <p className="page-subtitle">
                         Atur tingkatan grade guru dan besaran nominal honorarium per sesi mengajar
                     </p>
                 </div>
@@ -78,7 +78,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                         resetForm();
                         setShowForm(!showForm);
                     }}
-                    className="shadow-sm"
+                    className="shrink-0"
                 >
                     <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Grade Baru'}
@@ -112,8 +112,8 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                     required
                                 />
                             </div>
-                            <div className="flex items-center gap-3 pt-2">
-                                <Button type="submit" processing={processing} className="shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
+                                <Button type="submit" processing={processing}>
                                     <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Grade'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
@@ -145,7 +145,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                         <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-xs">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                                     {grade.kode_grade}
                                                 </div>
                                                 <span className="font-bold text-slate-900">Grade {grade.kode_grade}</span>
@@ -167,7 +167,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleEdit(grade)}
-                                                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Edit Grade"
                                                 >
                                                     <Icon icon="lucide:pencil" className="text-base" />
@@ -175,7 +175,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => openDeleteModal(grade)}
-                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                     title="Hapus Grade"
                                                 >
                                                     <Icon icon="lucide:trash-2" className="text-base" />
@@ -188,20 +188,20 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                         </Table>
                     </div>
 
-                    <div className="md:hidden space-y-3 p-4">
+                    <div className="md:hidden space-y-3">
                         {grades.map((grade, index) => (
                             <div
                                 key={grade.id}
-                                className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                                className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-extrabold text-sm">
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl flex items-center justify-center font-extrabold text-sm flex-shrink-0 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                             {grade.kode_grade}
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900 text-sm">Grade {grade.kode_grade}</p>
-                                            <p className="text-xs text-slate-500">
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-900 text-sm truncate">Grade {grade.kode_grade}</p>
+                                            <p className="text-xs text-slate-500 break-words">
                                                 {formatCurrency(grade.honor_per_sesi)} / sesi
                                             </p>
                                         </div>
@@ -211,11 +211,11 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                     </Badge>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
                                     <button
                                         type="button"
                                         onClick={() => handleEdit(grade)}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1"
+                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
                                     >
                                         <Icon icon="lucide:pencil" /> Edit
                                     </button>
@@ -235,10 +235,10 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
 
             <Modal show={gradeToDelete !== null} onClose={() => setGradeToDelete(null)}>
                 <div className="p-8 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                    <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
                         <Icon icon="lucide:alert-triangle" className="text-2xl" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Hapus Grade {gradeToDelete?.kode_grade}?</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 break-words">Hapus Grade {gradeToDelete?.kode_grade}?</h3>
                     {gradeToDelete && gradeToDelete.gurus_count > 0 ? (
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-6 text-left flex gap-2.5">
                             <Icon icon="lucide:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
@@ -251,7 +251,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                             Apakah Anda yakin ingin menghapus grade ini? Tindakan ini tidak dapat dibatalkan.
                         </p>
                     )}
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex flex-wrap gap-3 justify-center">
                         <Button variant="secondary" onClick={() => setGradeToDelete(null)}>
                             Batal
                         </Button>

@@ -57,9 +57,9 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
 
             {/* Header — spacious premium */}
             <div className="mb-10">
-                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold tracking-wide uppercase text-slate-600 shadow-sm">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-semibold tracking-wide uppercase text-indigo-700">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Keuangan • Live
                         </div>
                         <h1 className="text-3xl sm:text-[32px] font-bold tracking-tight text-slate-900 leading-tight">Penggajian Guru</h1>
@@ -69,7 +69,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                     </div>
                     <Link
                         href={route('penggajian.index')}
-                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-all shadow-sm hover:shadow-md shrink-0"
+                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-all shadow-sm hover:shadow shrink-0"
                     >
                         <Icon icon="lucide:archive" className="w-4 h-4" />
                         Input Manual & Arsip
@@ -117,7 +117,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                             <select
                                 value={filters.filter_guru ?? ''}
                                 onChange={(e) => handleFilterChange('filter_guru', e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 shadow-sm"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 shadow-sm cursor-pointer"
                             >
                                 <option value="">Semua Guru</option>
                                 {gurus.map((g) => (
@@ -132,7 +132,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                             <select
                                 value={filters.status_bayar ?? ''}
                                 onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 shadow-sm"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 shadow-sm cursor-pointer"
                             >
                                 <option value="">Semua Status</option>
                                 <option value="belum_dibayar">Belum Dibayar</option>
@@ -189,7 +189,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                 <TableRow>
                                     <TableCell colSpan={12}>
                                         <div className="text-center py-20">
-                                            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                                 <Icon icon="lucide:inbox" className="text-2xl" />
                                             </div>
                                             <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
@@ -199,13 +199,13 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                 </TableRow>
                             ) : (
                                 penggajians.map((p, index) => (
-                                    <TableRow key={p.id} className="hover:bg-slate-50/50">
-                                        <TableCell className="font-medium text-slate-400">
+                                    <TableRow key={p.id} className="hover:bg-indigo-50/40">
+                                        <TableCell className="font-medium text-slate-500">
                                             {index + 1}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center flex-shrink-0 font-semibold text-xs">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                     {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
                                                 </div>
                                                 <span className="font-semibold text-slate-900">
@@ -219,12 +219,12 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-700 font-mono text-xs bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200">
+                                            <span className="text-slate-700 font-mono text-xs bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
                                                 {p.periode}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-900 text-white text-xs font-bold">{p.jumlah_sesi}</span>
+                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-bold shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{p.jumlah_sesi}</span>
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <span className="text-slate-700 font-medium">{p.jumlah_hadir}</span>
@@ -258,7 +258,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             <div className="flex items-center justify-end gap-2">
                                                 <a
                                                     href={route('salary.payslip', p.id)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors shadow-sm"
+                                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors shadow-sm"
                                                     title="Download Slip Gaji PDF"
                                                 >
                                                     <Icon icon="lucide:download" className="w-3.5 h-3.5" />
@@ -288,7 +288,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 <div className="xl:hidden space-y-4">
                     {penggajians.length === 0 ? (
                         <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                 <Icon icon="lucide:inbox" className="text-2xl" />
                             </div>
                             <p className="text-sm font-medium text-slate-900">Tidak ada data</p>
@@ -298,11 +298,11 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                         penggajians.map((p, index) => (
                             <div
                                 key={p.id}
-                                className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:shadow-md transition-shadow"
+                                className="p-5 bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all space-y-4"
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-11 h-11 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-xs">
+                                        <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                             {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
                                         </div>
                                         <div>
@@ -330,16 +330,16 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                         <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Jam</p>
                                         <p className="text-sm font-bold text-slate-900 mt-1">{p.total_jam} jam</p>
                                     </div>
-                                    <div className="bg-slate-900 rounded-xl p-3 text-white">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Total</p>
+                                    <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Total</p>
                                         <p className="text-sm font-bold mt-1">{formatCurrency(p.total)}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 pt-2">
+                                <div className="flex flex-wrap items-center gap-2 pt-2">
                                     <a
                                         href={route('salary.payslip', p.id)}
-                                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors"
+                                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
                                     >
                                         <Icon icon="lucide:download" className="w-4 h-4" />
                                         Slip PDF

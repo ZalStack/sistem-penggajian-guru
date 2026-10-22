@@ -18,6 +18,9 @@ class Guru extends Model
         'jenjang',
         'user_id',
         'domisili',
+        'alamat',
+        'riwayat_pendidikan',
+        'tanggal_bergabung',
         'nomor_telepon',
         'tunjangan_khusus',
         'bank',
@@ -27,6 +30,7 @@ class Guru extends Model
 
     protected $casts = [
         'tunjangan_khusus' => 'decimal:2',
+        'tanggal_bergabung' => 'date',
     ];
 
     public function grade(): BelongsTo

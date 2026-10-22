@@ -24,13 +24,14 @@ export default function Modal({ show, onClose, maxWidth = 'md', children }: Moda
                     enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100"
                     leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-[8px]" />
+                    <div className="fixed inset-0 bg-indigo-950/40 backdrop-blur-[8px]" />
                 </TransitionChild>
                 <TransitionChild
                     enter="ease-out duration-300" enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-[0.96]" enterTo="opacity-100 translate-y-0 sm:scale-100"
                     leave="ease-in duration-200" leaveFrom="opacity-100 translate-y-0 sm:scale-100" leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-[0.96]"
                 >
-                    <DialogPanel className={`relative w-full bg-white rounded-[20px] shadow-float max-h-[90vh] overflow-auto overscroll-contain ${maxWidths[maxWidth]} animate-scale-in`}>
+                    <DialogPanel className={`relative w-full bg-white rounded-[20px] border border-indigo-100/70 shadow-float max-h-[90vh] overflow-auto overscroll-contain ${maxWidths[maxWidth]} animate-scale-in`}>
+                        <div className="absolute top-0 inset-x-0 h-1 bg-brand-gradient rounded-t-[20px]" />
                         {children}
                     </DialogPanel>
                 </TransitionChild>
