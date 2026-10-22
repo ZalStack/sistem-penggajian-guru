@@ -31,6 +31,7 @@ class SiguruFeatureTest extends TestCase
 
         $this->user = User::factory()->create([
             'email' => 'admin@siguru.com',
+            'role' => 'admin',
         ]);
 
         $this->grade = Grade::create([
