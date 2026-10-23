@@ -17,6 +17,9 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
+            // Entry offline @iconify/react: tidak ada kode fetch API sama sekali,
+            // sehingga tidak mungkin melanggar CSP connect-src 'self'.
+            '@iconify/react': '@iconify/react/offline',
         },
     },
 });

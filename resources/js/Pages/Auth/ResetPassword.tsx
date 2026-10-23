@@ -81,7 +81,7 @@ export default function ResetPassword({ token, email }: Props) {
                     error={errors.password_confirmation}
                     placeholder="••••••••"
                     required
-                    icon={<Icon icon="lucide:lock-check" className="text-base" />}
+                    icon={<Icon icon="lucide:lock-keyhole" className="text-base" />}
                 />
 
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100">

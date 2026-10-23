@@ -22,7 +22,7 @@ interface PerizinanIndexProps {
 const jenisConfig: Record<string, { label: string; icon: string; color: string }> = {
     izin: { label: 'Izin', icon: 'lucide:calendar-minus', color: 'blue' },
     sakit: { label: 'Sakit', icon: 'lucide:thermometer', color: 'red' },
-    cuti: { label: 'Cuti', icon: 'lucide:palm-tree', color: 'purple' },
+    cuti: { label: 'Cuti', icon: 'lucide:tree-palm', color: 'purple' },
 };
 
 const statusConfig: Record<string, { label: string; variant: 'success' | 'danger' | 'warning' | 'default' }> = {

@@ -6,9 +6,7 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800|jetbrains-mono:400,500&display=swap" rel="stylesheet" />
+        <!-- Fonts: self-hosted via @fontsource (lihat resources/css/app.css) agar kompatibel CSP -->
 
         <!-- Scripts -->
         @routes
