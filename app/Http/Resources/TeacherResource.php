@@ -9,6 +9,8 @@ class TeacherResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $isAdmin = ($request->user() ?? auth('sanctum')->user())?->isAdmin();
+
         return [
             'id' => $this->id,
             'nama' => $this->nama,
@@ -19,7 +21,7 @@ class TeacherResource extends JsonResource
             'keterangan_mengajar' => $this->keterangan_mengajar,
             'grade' => new GradeResource($this->whenLoaded('grade')),
             // Sensitive fields are only exposed to admin accounts.
-            $this->mergeWhen($request->user()?->isAdmin(), [
+            $this->mergeWhen($isAdmin, [
                 'user_id' => $this->user_id,
                 'email' => $this->whenLoaded('user', fn () => $this->user?->email),
                 'nomor_telepon' => $this->nomor_telepon,
