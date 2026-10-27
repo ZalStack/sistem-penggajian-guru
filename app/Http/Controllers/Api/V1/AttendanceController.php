@@ -7,8 +7,14 @@ use App\Http\Resources\AttendanceResource;
 use App\Http\Resources\TeacherResource;
 use App\Models\Attendance;
 use App\Models\Guru;
+use App\Models\Location;
+use App\Models\Penggajian;
+use App\Models\TeachingSession;
+use App\Models\Transport;
+use App\Models\User;
 use App\Services\AttendanceResult;
 use App\Services\AttendanceService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -129,6 +135,176 @@ class AttendanceController extends ApiController
             'accurate_gps' => $result->context['accuracy'] <= 50,
             'duration_minutes' => $result->context['duration'],
         ], 'Check-out successful. Salary has been recalculated.');
+    }
+
+    /**
+     * External Sync: Check-in / Check-out / Delete attendance from SI ADIK-KK.
+     */
+    public function syncFromAdik(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'action' => 'nullable|string|in:checkin,checkout,delete',
+            'guru_id' => 'nullable|integer',
+            'teacher_name' => 'nullable|string',
+            'teacher_email' => 'nullable|string',
+            'nip' => 'nullable|string',
+            'session_id' => 'nullable|integer',
+            'siguru_session_id' => 'nullable|integer',
+            'session_date' => 'required|date',
+            'session_number' => 'nullable|integer',
+            'role_type' => 'nullable|string|in:guru,asisten_guru',
+            'subject' => 'nullable|string',
+            'level' => 'nullable|string',
+            'check_in_time' => 'nullable|string',
+            'check_out_time' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        // 1. Resolve Guru
+        $guru = null;
+        if (! empty($validated['guru_id'])) {
+            $guru = Guru::with('grade')->find($validated['guru_id']);
+        }
+        if (! $guru && ! empty($validated['teacher_email'])) {
+            $user = User::where('email', $validated['teacher_email'])->first();
+            $guru = $user?->guru ?? Guru::with('grade')->where('email', $validated['teacher_email'])->first();
+        }
+        if (! $guru && ! empty($validated['nip'])) {
+            $parsedId = (int) preg_replace('/\D/', '', $validated['nip']);
+            if ($parsedId > 0) {
+                $guru = Guru::with('grade')->find($parsedId);
+            }
+        }
+        if (! $guru && ! empty($validated['teacher_name'])) {
+            $guru = Guru::with('grade')->where('nama', $validated['teacher_name'])->first()
+                ?? Guru::with('grade')->where('nama', 'like', '%' . $validated['teacher_name'] . '%')->first();
+        }
+
+        if (! $guru) {
+            return $this->errorResponse('Data guru tidak ditemukan di SiGuru.', 404);
+        }
+
+        $sessionDate = Carbon::parse($validated['session_date'])->toDateString();
+        $sessionId = $validated['session_id'] ?? $validated['siguru_session_id'] ?? null;
+
+        // 2. Resolve TeachingSession
+        $session = null;
+        if ($sessionId) {
+            $session = TeachingSession::with(['location', 'transport'])->find($sessionId);
+        }
+        if (! $session) {
+            $session = TeachingSession::with(['location', 'transport'])
+                ->where('guru_id', $guru->id)
+                ->whereDate('tanggal', $sessionDate)
+                ->first();
+        }
+
+        // If no session exists for this date, create a fallback session
+        if (! $session) {
+            $locationId = Location::first()?->id ?? 1;
+            $transportId = Transport::first()?->id ?? 1;
+            $mapel = (! empty($validated['subject']) && str_contains(strtoupper($validated['subject']), 'IPA')) ? 'IPA' : 'MTK';
+            $jamMulai = $validated['check_in_time'] ?: '08:00';
+            $jamSelesai = $validated['check_out_time'] ?: '10:00';
+
+            $session = TeachingSession::create([
+                'guru_id' => $guru->id,
+                'location_id' => $locationId,
+                'transport_id' => $transportId,
+                'mapel' => $mapel,
+                'tanggal' => $sessionDate,
+                'jam_mulai' => $jamMulai,
+                'jam_selesai' => $jamSelesai,
+                'jumlah_sesi' => 1,
+            ]);
+            $session->load(['location', 'transport']);
+        }
+
+        // 3. Handle Delete Action
+        if (($validated['action'] ?? '') === 'delete') {
+            $attendance = Attendance::where('guru_id', $guru->id)
+                ->where('session_id', $session->id)
+                ->whereDate('tanggal', $sessionDate)
+                ->first();
+
+            if ($attendance) {
+                $attendance->delete();
+                Penggajian::calculateForGuru($guru, Carbon::parse($sessionDate)->format('Y-m'));
+            }
+
+            return $this->successResponse(null, 'Catatan kehadiran berhasil dihapus dari SiGuru.');
+        }
+
+        // 4. Find or create Attendance
+        $attendance = Attendance::where('guru_id', $guru->id)
+            ->where('session_id', $session->id)
+            ->whereDate('tanggal', $sessionDate)
+            ->first();
+
+        if (! $attendance) {
+            $attendance = new Attendance([
+                'guru_id' => $guru->id,
+                'session_id' => $session->id,
+                'tanggal' => $sessionDate,
+            ]);
+        }
+
+        $locLat = $session->location?->latitude ?? -6.5868733;
+        $locLng = $session->location?->longitude ?? 106.7590024;
+
+        // Check-in handling
+        if (! empty($validated['check_in_time'])) {
+            $inTime = $validated['check_in_time'];
+            $checkinDateTime = str_contains($inTime, 'T') || str_contains($inTime, '-')
+                ? Carbon::parse($inTime)
+                : Carbon::parse("{$sessionDate} {$inTime}");
+
+            $attendance->checkin_time = $checkinDateTime;
+            $attendance->checkin_lat = $attendance->checkin_lat ?: $locLat;
+            $attendance->checkin_lng = $attendance->checkin_lng ?: $locLng;
+            $attendance->checkin_accuracy = $attendance->checkin_accuracy ?: 25.0;
+            $attendance->status = 'belum_checkout';
+        }
+
+        // Check-out handling
+        if (! empty($validated['check_out_time'])) {
+            $outTime = $validated['check_out_time'];
+            $checkoutDateTime = str_contains($outTime, 'T') || str_contains($outTime, '-')
+                ? Carbon::parse($outTime)
+                : Carbon::parse("{$sessionDate} {$outTime}");
+
+            $attendance->checkout_time = $checkoutDateTime;
+            $attendance->checkout_lat = $attendance->checkout_lat ?: $locLat;
+            $attendance->checkout_lng = $attendance->checkout_lng ?: $locLng;
+            $attendance->checkout_accuracy = $attendance->checkout_accuracy ?: 25.0;
+
+            $duration = 0;
+            if ($attendance->checkin_time) {
+                $duration = (int) $attendance->checkin_time->diffInMinutes($checkoutDateTime);
+            }
+            $attendance->durasi = max(15, $duration);
+            $attendance->status = 'valid';
+        }
+
+        $attendance->save();
+
+        // If valid, recalculate salary for that month
+        if ($attendance->status === 'valid') {
+            Penggajian::calculateForGuru($guru, Carbon::parse($sessionDate)->format('Y-m'));
+        }
+
+        return $this->successResponse([
+            'attendance' => new AttendanceResource($attendance->load(['guru.grade', 'session.location', 'session.transport'])),
+            'guru' => [
+                'id' => $guru->id,
+                'nama' => $guru->nama,
+            ],
+            'session' => [
+                'id' => $session->id,
+                'tanggal' => $session->tanggal->toDateString(),
+                'mapel' => $session->mapel,
+            ],
+        ], 'Presensi kehadiran berhasil disinkronkan ke SiGuru.');
     }
 
     /**

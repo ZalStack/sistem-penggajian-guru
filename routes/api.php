@@ -105,6 +105,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         /*
         |----------------------------------------------------------------------
+        | External integration (SI ADIK-KK sync)
+        |----------------------------------------------------------------------
+        */
+        Route::post('attendances/sync-from-adik', [AttendanceController::class, 'syncFromAdik'])->name('attendances.sync-from-adik');
+        Route::delete('attendances/sync-from-adik', [AttendanceController::class, 'syncFromAdik'])->name('attendances.sync-from-adik.delete');
+
+        /*
+        |----------------------------------------------------------------------
         | Teacher (guru) actions
         |----------------------------------------------------------------------
         */
