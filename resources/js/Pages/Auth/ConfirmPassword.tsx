@@ -1,62 +1,53 @@
-import Input from '@/Components/ui/input';
-import Button from '@/Components/ui/button';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
+import { FormEvent } from 'react';
+import InputError from '@/Components/InputError';
+import PasswordInput from '@/Components/PasswordInput';
+import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        password: '',
-    });
+    const { data, setData, post, processing, errors } = useForm({ password: '' });
 
-    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
-
-        post(route('password.confirm'), {
-            onFinish: () => reset('password'),
-        });
+        post(route('password.confirm'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Konfirmasi Kata Sandi" />
 
-            <div className="mb-6">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-brand">
-                    <Icon icon="lucide:shield-check" className="text-white text-[21px]" />
+            <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-brand">
+                    <Icon icon="lucide:shield-check" className="text-[20px]" />
                 </div>
-                <h2 className="text-[22px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">
-                    Konfirmasi <span className="text-brand-gradient">Kata Sandi</span>
-                </h2>
-                <p className="text-[13px] text-slate-500 mt-2 leading-5 font-medium">
-                    Ini adalah area aman aplikasi. Silakan konfirmasi kata sandi Anda sebelum melanjutkan.
-                </p>
+                <div>
+                    <h1 className="text-xl font-bold text-gray-900">Konfirmasi Kata Sandi</h1>
+                    <p className="text-sm text-gray-500">Sebelum melanjutkan, masukkan kata sandi Anda</p>
+                </div>
             </div>
 
-            <form onSubmit={submit} className="space-y-4">
-                <Input
-                    label="Kata Sandi"
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={data.password}
-                    autoFocus
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('password', e.target.value)}
-                    error={errors.password}
-                    icon={<Icon icon="lucide:lock" className="text-base" />}
-                />
-
-                <div className="pt-2">
-                    <Button
-                        type="submit"
-                        processing={processing}
-                        className="w-full justify-center py-3.5 text-[14px]"
-                    >
-                        <Icon icon="lucide:check-circle" className="text-base" />
-                        <span>Konfirmasi</span>
-                    </Button>
+            <form onSubmit={submit} className="space-y-5">
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Kata Sandi</label>
+                    <PasswordInput
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Masukkan kata sandi Anda"
+                        autoComplete="current-password"
+                        required
+                        autoFocus
+                    />
+                    <InputError message={errors.password} className="mt-2" />
                 </div>
+
+                <button type="submit" className="btn-primary w-full" disabled={processing}>
+                    {processing && <Icon icon="lucide:loader-2" className="animate-spin text-[16px]" />}
+                    {processing ? 'Memverifikasi...' : 'Konfirmasi & Lanjutkan'}
+                </button>
             </form>
-        </GuestLayout>
+        </>
     );
 }
+
+ConfirmPassword.layout = (children: React.ReactNode) => <GuestLayout>{children}</GuestLayout>;

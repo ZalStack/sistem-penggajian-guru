@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Data Login Guru - SIGURU</title>
+    <title>Data Login Guru - Satu Guru KPM</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 9px; color: #1a1a1a; }
@@ -32,8 +32,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>SIGURU</h1>
-        <h2>Sistem Informasi Penggajian Guru KPM Pusat</h2>
+        <h1>Satu Guru KPM</h1>
+        <h2>Sistem Administrasi Guru KPM</h2>
         <p>Data Login Akun Guru — Tahun Ajaran 2026/2027</p>
     </div>
 
@@ -85,7 +85,7 @@
     </table>
 
     <div class="footer">
-        <p>Dicetak pada {{ now()->format('d M Y H:i') }} — SIGURU Sistem Informasi Penggajian Guru KPM Pusat • {{ $gurus->count() }} akun • Dokumen rahasia admin</p>
+        <p>Dicetak pada {{ now()->format('d M Y H:i') }} — Satu Guru KPM · Sistem Administrasi Guru KPM • {{ $gurus->count() }} akun • Dokumen rahasia admin</p>
         <p style="margin-top:4px; color:#64748b;">Guru silakan login di {{ config('app.url') }}/login menggunakan email di atas dan password <strong>password</strong>, lalu segera ganti password di menu Profil.</p>
     </div>
 </body>

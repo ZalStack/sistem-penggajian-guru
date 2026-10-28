@@ -5,10 +5,9 @@ use App\Http\Controllers\BahanAjarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\GuruController;
-use App\Http\Controllers\JadwalBulananController;
+use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LocationController;
-use App\Http\Controllers\PenggajianController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PerizinanController;
 use App\Http\Controllers\ProfileController;
@@ -21,15 +20,9 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 });
-
-Route::get('/welcome', function () {
-    return inertia('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => false,
-    ]);
-})->name('welcome');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -51,14 +44,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
-    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
 
     // Bahan Ajar — akses guru (lihat & unduh)
     Route::get('my-bahan-ajar', [BahanAjarController::class, 'guruIndex'])->name('my-bahan-ajar.index');
     Route::get('my-bahan-ajar/{bahanAjar}/download', [BahanAjarController::class, 'download'])->name('my-bahan-ajar.download');
 
-    // Jadwal Bulanan — admin & guru (role-aware)
-    Route::get('jadwal-bulanan', [JadwalBulananController::class, 'index'])->name('jadwal.bulanan');
+    // Jadwal Mingguan — admin & guru (role-aware di controller)
+    Route::get('jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
+    Route::redirect('jadwal-bulanan', '/jadwal');
 
     Route::middleware('role:admin')->group(function () {
         // Bahan Ajar — kelola admin (upload/edit/hapus/unduh)
@@ -98,18 +91,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('perizinan', [PerizinanController::class, 'adminIndex'])->name('perizinan.index');
         Route::put('perizinan/{perizinan}', [PerizinanController::class, 'adminUpdate'])->name('perizinan.update');
 
-        Route::get('salary', [SalaryController::class, 'index'])->name('salary.index');
-        Route::post('salary/calculate', [SalaryController::class, 'calculate'])->name('salary.calculate')->middleware('throttle:1,60');
-        Route::post('salary/{penggajian}/pay', [SalaryController::class, 'pay'])->name('salary.pay');
-        Route::get('salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('salary.payslip');
-
-        Route::get('penggajian', [PenggajianController::class, 'index'])->name('penggajian.index');
-        Route::get('penggajian/create', [PenggajianController::class, 'create'])->name('penggajian.create');
-        Route::post('penggajian', [PenggajianController::class, 'store'])->name('penggajian.store');
-        Route::get('penggajian/{penggajian}', [PenggajianController::class, 'show'])->name('penggajian.show');
-        Route::get('penggajian/{penggajian}/edit', [PenggajianController::class, 'edit'])->name('penggajian.edit');
-        Route::put('penggajian/{penggajian}', [PenggajianController::class, 'update'])->name('penggajian.update');
-        Route::delete('penggajian/{penggajian}', [PenggajianController::class, 'destroy'])->name('penggajian.destroy');
+        // Penggajian — rekap honor per guru & periode (dihitung dari presensi tervalidasi)
+        Route::get('penggajian', [SalaryController::class, 'index'])->name('penggajian.index');
+        Route::post('penggajian/calculate', [SalaryController::class, 'calculate'])->name('penggajian.calculate')->middleware('throttle:1,60');
+        Route::post('penggajian/{penggajian}/pay', [SalaryController::class, 'pay'])->name('penggajian.pay');
+        Route::get('penggajian/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('penggajian.payslip');
 
         Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.exportPdf');

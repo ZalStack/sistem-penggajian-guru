@@ -8,16 +8,17 @@ import Pagination from '@/Components/ui/pagination';
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { FormEventHandler, useEffect, useState } from 'react';
-import { Guru, Grade, PaginatedData } from '@/types';
+import { Guru, Grade, Program, PaginatedData } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface GuruIndexProps {
     gurus: PaginatedData<Guru>;
     grades: Grade[];
-    filters: { search?: string; filter_grade?: string; filter_mapel?: string };
+    programs: Program[];
+    filters: { search?: string; filter_grade?: string; filter_mapel?: string; filter_program?: string };
 }
 
-export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
+export default function GuruIndex({ gurus, grades, programs, filters }: GuruIndexProps) {
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [guruToDelete, setGuruToDelete] = useState<Guru | null>(null);
@@ -52,12 +53,20 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
         );
     };
 
+    const handleFilterProgram = (value: string) => {
+        router.get(
+            route('guru.index'),
+            { ...filters, filter_program: value || undefined },
+            { preserveState: true, replace: true }
+        );
+    };
+
     const resetFilters = () => {
         setSearchTerm('');
         router.get(route('guru.index'), {}, { preserveState: true, replace: true });
     };
 
-    const hasActiveFilters = Boolean(filters.search || filters.filter_grade || filters.filter_mapel);
+    const hasActiveFilters = Boolean(filters.search || filters.filter_grade || filters.filter_mapel || filters.filter_program);
 
     const openDeleteModal = (guru: Guru) => {
         setGuruToDelete(guru);
@@ -142,6 +151,21 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                             </select>
                             <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
                         </div>
+                        <div className="relative flex-1 sm:flex-none sm:w-[176px] min-w-0">
+                            <select
+                                value={filters.filter_program || ''}
+                                onChange={(e) => handleFilterProgram(e.target.value)}
+                                className="w-full appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 py-2.5 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 hover:border-indigo-200 transition-all shadow-sm cursor-pointer truncate"
+                            >
+                                <option value="">Semua Program</option>
+                                {programs.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nama}
+                                    </option>
+                                ))}
+                            </select>
+                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                        </div>
                         {hasActiveFilters && (
                             <button
                                 type="button"
@@ -166,6 +190,7 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                         <TableHead>Kota Domisili</TableHead>
                                         <TableHead>Grade</TableHead>
                                         <TableHead>Mapel</TableHead>
+                                        <TableHead>Program</TableHead>
                                         <TableHead>Tunjangan</TableHead>
                                         <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
@@ -199,6 +224,17 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'}>{guru.mapel}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {guru.programs && guru.programs.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {guru.programs.map((p) => (
+                                                            <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">-</span>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <span className={`text-xs font-bold ${Number(guru.tunjangan_khusus) > 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
@@ -266,6 +302,9 @@ export default function GuruIndex({ gurus, grades, filters }: GuruIndexProps) {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <Badge variant="purple">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
                                         <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'}>{guru.mapel}</Badge>
+                                        {guru.programs?.map((p) => (
+                                            <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                        ))}
                                         {Number(guru.tunjangan_khusus) > 0 && <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-bold">{formatCurrency(Number(guru.tunjangan_khusus))}</span>}
                                     </div>
 

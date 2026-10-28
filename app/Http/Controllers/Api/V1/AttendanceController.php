@@ -330,9 +330,10 @@ class AttendanceController extends ApiController
         return match ($result->code) {
             AttendanceService::NO_TEACHER_LINK => 'This account is not linked to a teacher profile.',
             AttendanceService::NOT_SESSION_OWNER => 'This session does not belong to you.',
-            AttendanceService::WRONG_DATE => 'Check-in can only be performed on the session date ('.parse($context['session_date'])->format('d/m/Y').').',
+            AttendanceService::WRONG_DATE => 'Check-in can only be performed on the session date ('.Carbon::parse($context['session_date'])->format('d/m/Y').').',
             AttendanceService::OUTSIDE_TIME_WINDOW => 'Check-in is only allowed from 30 minutes before the session start time until the session ends ('.$context['window_start'].' - '.$context['window_end'].').',
             AttendanceService::ALREADY_CHECKED_IN => 'You have already checked in for this session today.',
+            AttendanceService::APPROVED_LEAVE => 'Check-in is not allowed because an approved leave covers this date.',
             AttendanceService::NOT_CHECKED_IN => 'You have not checked in for this session yet.',
             AttendanceService::ALREADY_CHECKED_OUT => 'You have already checked out for this session.',
             AttendanceService::MIN_DURATION_NOT_MET => 'The minimum teaching duration is 15 minutes. Please check out at least 15 minutes after check-in.',

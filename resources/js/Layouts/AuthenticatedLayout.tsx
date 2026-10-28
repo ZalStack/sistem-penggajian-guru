@@ -9,79 +9,78 @@ interface AuthenticatedLayoutProps {
     children: ReactNode;
 }
 
+interface SharedApp {
+    name?: string;
+    tagline?: string;
+}
+
 const adminNavGroups = [
     {
         title: 'Utama',
         items: [
-            { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan' },
-            { href: 'guru.index', pattern: 'guru.*', label: 'Data Guru', icon: 'lucide:users', desc: 'Kelola pengajar' },
-        ]
-    },
-    {
-        title: 'Presensi',
-        items: [
-            { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'lucide:clipboard-check', desc: 'Kehadiran guru' },
-        ]
+            { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan data' },
+            { href: 'guru.index', pattern: 'guru.*', label: 'Data Guru', icon: 'lucide:users', desc: 'Profil & program' },
+        ],
     },
     {
         title: 'Operasional',
         items: [
-            { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'lucide:award', desc: 'Tarif per sesi' },
-            { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'lucide:car-front', desc: 'Biaya transport' },
-            { href: 'location.index', pattern: 'location.*', label: 'Lokasi Absensi', icon: 'lucide:map-pinned', desc: 'GPS radius' },
-            { href: 'session.index', pattern: 'session.*', label: 'Sesi Mengajar', icon: 'lucide:calendar-days', desc: 'Jadwal' },
-            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan', icon: 'lucide:shield-check', desc: 'Izin & cuti' },
-        ]
-    },
-    {
-        title: 'Jadwal & Materi',
-        items: [
-            { href: 'jadwal.bulanan', pattern: 'jadwal.bulanan', label: 'Jadwal Bulanan', icon: 'lucide:calendar-range', desc: 'Jadwal per bulan' },
-            { href: 'bahan-ajar.index', pattern: 'bahan-ajar.*', label: 'Bahan Ajar', icon: 'lucide:book-open', desc: 'Upload materi' },
-        ]
+            { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Tampilan mingguan' },
+            { href: 'session.index', pattern: 'session.*', label: 'Sesi Mengajar', icon: 'lucide:calendar-days', desc: 'Tugas & status' },
+            { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'lucide:clipboard-check', desc: 'Kehadiran guru' },
+            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'lucide:shield-check', desc: 'Izin & cuti' },
+        ],
     },
     {
         title: 'Keuangan',
         items: [
-            { href: 'salary.index', pattern: 'salary.*', label: 'Penggajian', icon: 'lucide:wallet', desc: 'Hitung & bayar' },
+            { href: 'penggajian.index', pattern: 'penggajian.*', label: 'Penggajian', icon: 'lucide:wallet', desc: 'Honor & pembayaran' },
             { href: 'laporan.index', pattern: 'laporan.*', label: 'Laporan', icon: 'lucide:bar-chart-3', desc: 'Rekap & ekspor' },
-        ]
+        ],
+    },
+    {
+        title: 'Pengaturan',
+        items: [
+            { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'lucide:award', desc: 'Tarif per sesi' },
+            { href: 'location.index', pattern: 'location.*', label: 'Lokasi Mengajar', icon: 'lucide:map-pinned', desc: 'Titik & radius GPS' },
+            { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'lucide:car-front', desc: 'Biaya transport' },
+            { href: 'bahan-ajar.index', pattern: 'bahan-ajar.*', label: 'Bahan Ajar', icon: 'lucide:book-open', desc: 'Materi ajar' },
+        ],
     },
     {
         title: 'Sistem',
         items: [
-            { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'lucide:bell-ring', desc: 'Pemberitahuan' },
-        ]
-    }
+            { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'lucide:bell', desc: 'Pemberitahuan' },
+        ],
+    },
 ];
 
 const guruNavItems = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan hari ini' },
+    { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Agenda mingguan' },
     { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check', desc: 'Check-in GPS' },
-    { href: 'jadwal.bulanan', pattern: 'jadwal.bulanan', label: 'Jadwal Bulanan', icon: 'lucide:calendar-range', desc: 'Jadwal mengajar' },
     { href: 'my-bahan-ajar.index', pattern: 'my-bahan-ajar.*', label: 'Bahan Ajar', icon: 'lucide:book-open', desc: 'Materi ajar' },
-    { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'lucide:shield-check', desc: 'Izin & cuti' },
+    { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'lucide:shield-check', desc: 'Ajukan izin' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Slip Gaji', icon: 'lucide:banknote', desc: 'Honor & slip' },
     { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'lucide:bell', desc: 'Pemberitahuan' },
 ];
 
 const guruBottomNav = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Beranda', icon: 'lucide:layout-dashboard' },
+    { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal', icon: 'lucide:calendar-range' },
     { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check' },
-    { href: 'jadwal.bulanan', pattern: 'jadwal.bulanan', label: 'Jadwal', icon: 'lucide:calendar-range' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji', icon: 'lucide:banknote' },
     { href: 'profile.edit', pattern: 'profile.*', label: 'Profil', icon: 'lucide:user' },
 ];
 
 /* Shared nav item renderer — dark sidebar (desktop + mobile) */
-function NavList({ items, collapsed, onNavigate, variant = 'admin' }: {
+function NavList({ items, collapsed, onNavigate }: {
     items: typeof adminNavGroups[number]['items'];
     collapsed?: boolean;
     onNavigate?: () => void;
-    variant?: 'admin' | 'guru';
 }) {
     return (
-        <div className={variant === 'admin' ? 'space-y-6 px-3' : 'px-3 space-y-1'}>
+        <div className="space-y-6 px-3">
             {items.map((item) => {
                 const active = route().current(item.pattern);
                 return (
@@ -118,6 +117,7 @@ function NavList({ items, collapsed, onNavigate, variant = 'admin' }: {
 
 export default function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     const { props } = usePage<{
+        app?: SharedApp;
         auth: { user: { name: string; email: string; role: string } };
         flash?: { success?: string; error?: string; warning?: string; info?: string };
         unreadNotifications?: number;
@@ -125,6 +125,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const user = props.auth.user;
     const flash = props.flash;
     const unreadCount = props.unreadNotifications ?? 0;
+    const appName = props.app?.name || 'Satu Guru KPM';
+    const appTagline = props.app?.tagline || 'Sistem Administrasi Guru KPM';
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
@@ -144,11 +146,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 </div>
                 {!isCollapsed && (
                     <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[15px] font-extrabold tracking-[-0.03em] text-white">SIGURU</span>
-                            <span className="text-[9px] font-bold tracking-[0.08em] uppercase px-1.5 py-0.5 rounded-md bg-white/15 text-indigo-100 border border-white/10">KPM</span>
-                        </div>
-                        <p className="text-[11px] font-medium text-indigo-300/70 leading-none mt-1">Pusat • TA 2026/27</p>
+                        <p className="text-[15px] font-extrabold tracking-[-0.03em] text-white truncate">{appName}</p>
+                        <p className="text-[11px] font-medium text-indigo-300/70 leading-none mt-1 truncate">{appTagline}</p>
                     </div>
                 )}
                 {forMobile && (
@@ -172,7 +171,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 ) : (
                     <div>
                         {!isCollapsed && <p className="px-6 mb-3 text-[11px] font-bold tracking-[0.1em] text-indigo-300/50 uppercase">Menu Guru</p>}
-                        <NavList items={guruNavItems} collapsed={isCollapsed} variant="guru" onNavigate={forMobile ? () => setMobileOpen(false) : undefined} />
+                        <NavList items={guruNavItems} collapsed={isCollapsed} onNavigate={forMobile ? () => setMobileOpen(false) : undefined} />
                     </div>
                 )}
             </div>
@@ -196,7 +195,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         <>
                             <span className="min-w-0 flex-1">
                                 <span className="block text-[13px] font-bold tracking-[-0.01em] text-white truncate">{user.name}</span>
-                                <span className="block text-[11px] text-indigo-300/70 truncate leading-none mt-1">{user.email}</span>
+                                <span className="block text-[11px] text-indigo-300/70 truncate leading-none mt-1">{isAdmin ? 'Administrator' : 'Guru'}</span>
                             </span>
                             <Icon icon="lucide:chevron-right" className="text-indigo-300/60 group-hover:text-white text-[14px] shrink-0" />
                         </>
@@ -224,7 +223,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
             {/* Main */}
             <div className={`flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:pl-[84px]' : 'lg:pl-[280px]'}`}>
-                {/* Header */}
+                {/* Header — sticky */}
                 <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-indigo-100/70 shadow-[0_1px_3px_rgba(79,70,229,0.05)]">
                     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent" />
                     <div className="flex items-center justify-between h-[68px] px-4 sm:px-6 lg:px-8 xl:px-10 gap-3 sm:gap-4">
@@ -232,16 +231,9 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                             <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2.5 rounded-xl bg-white border border-indigo-100 text-indigo-700 hover:bg-indigo-50 shadow-sm" aria-label="Buka menu">
                                 <Icon icon="lucide:menu" className="text-[18px]" />
                             </button>
-                            <div className="hidden sm:flex items-center gap-2 text-[13px]">
-                                <Link href={route('dashboard')} className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center text-indigo-600 hover:from-indigo-100 hover:to-violet-100 hover:text-indigo-700 transition-colors">
-                                    <Icon icon="lucide:home" className="text-[14px]" />
-                                </Link>
-                                <Icon icon="lucide:chevron-right" className="text-indigo-200 text-[12px]" />
+                            <div className="flex items-center gap-2 text-[13px] min-w-0">
                                 <span className="font-bold tracking-[-0.01em] text-slate-900 truncate">{activeItem?.label || 'Dashboard'}</span>
-                                <span className="hidden lg:inline-flex items-center gap-1.5 ml-2 pl-3 border-l border-indigo-100 text-slate-500">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[11px] font-semibold tracking-[0.02em] uppercase">Live</span>
-                                </span>
+                                <span className="hidden lg:inline text-[11px] font-medium text-slate-400 truncate">— {activeItem?.desc || appName}</span>
                             </div>
                         </div>
 
@@ -258,7 +250,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                             <div className="hidden sm:flex items-center gap-2 pl-2 ml-1 border-l border-indigo-100">
                                 <div className="text-right hidden lg:block">
                                     <p className="text-[13px] font-bold leading-none tracking-[-0.01em] text-slate-900">{user.name}</p>
-                                    <p className="text-[11px] font-medium text-slate-500 leading-none mt-1">{isAdmin ? 'Administrator' : 'Guru'} • Online</p>
+                                    <p className="text-[11px] font-medium text-slate-500 leading-none mt-1">{isAdmin ? 'Administrator' : 'Guru'}</p>
                                 </div>
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -279,7 +271,11 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                         <div className="py-2 border-t border-slate-100">
                                             <Dropdown.Link href={route('profile.edit')} className="flex items-center gap-3">
                                                 <span className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center"><Icon icon="lucide:user" className="text-[14px] text-indigo-600" /></span>
-                                                <span className="text-[13px] font-semibold">Pengaturan Profil</span>
+                                                <span className="text-[13px] font-semibold">Profil Saya</span>
+                                            </Dropdown.Link>
+                                            <Dropdown.Link href={route('profile.edit') + '#ubah-kata-sandi'} className="flex items-center gap-3">
+                                                <span className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center"><Icon icon="lucide:key-round" className="text-[14px] text-amber-600" /></span>
+                                                <span className="text-[13px] font-semibold">Ubah Kata Sandi</span>
                                             </Dropdown.Link>
                                             <Dropdown.Link href={route('logout')} method="post" as="button" className="flex items-center gap-3 text-rose-600">
                                                 <span className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center"><Icon icon="lucide:log-out" className="text-[14px] text-rose-600" /></span>
@@ -308,8 +304,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
                 <footer className="hidden lg:block border-t border-indigo-100/70 bg-white/60 px-6 lg:px-8 xl:px-10 py-4">
                     <div className="w-full flex items-center justify-between text-[11px] font-medium text-slate-400">
-                        <span>© {new Date().getFullYear()} SIGURU — KPM Pusat • Dibuat dengan ♥ untuk pendidikan</span>
-                        <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Semua sistem berjalan normal</span>
+                        <span>© {new Date().getFullYear()} {appName} — {appTagline}</span>
                     </div>
                 </footer>
             </div>

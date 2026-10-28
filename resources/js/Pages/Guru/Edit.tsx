@@ -5,24 +5,29 @@ import Select from '@/Components/ui/select';
 import Button from '@/Components/ui/button';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { Grade, Guru } from '@/types';
+import { Grade, Guru, Program } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface GuruEditProps {
     guru: Guru & { user?: { id: number; email: string } | null };
     grades: Grade[];
+    programs: Program[];
 }
 
-export default function GuruEdit({ guru, grades }: GuruEditProps) {
+export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
     const { data, setData, put, processing, errors } = useForm({
         nama: guru.nama,
         grade_id: guru.grade_id as string | number,
         mapel: guru.mapel,
         jenjang: guru.jenjang || '',
+        program_ids: (guru.programs ?? []).map((p) => p.id),
         domisili: guru.domisili || '',
         alamat: guru.alamat || '',
         riwayat_pendidikan: guru.riwayat_pendidikan || '',
+        pendidikan_terakhir: guru.pendidikan_terakhir || '',
         tanggal_bergabung: guru.tanggal_bergabung || '',
+        lama_mengajar: (guru.lama_mengajar ?? '') as string | number,
+        riwayat_mengajar: guru.riwayat_mengajar || '',
         nomor_telepon: guru.nomor_telepon || '',
         tunjangan_khusus: String(guru.tunjangan_khusus ?? 0),
         bank: guru.bank || '',
@@ -30,6 +35,15 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
         keterangan_mengajar: guru.keterangan_mengajar || '',
         email: guru.user?.email ?? '',
     });
+
+    const toggleProgram = (id: number) => {
+        setData(
+            'program_ids',
+            data.program_ids.includes(id)
+                ? data.program_ids.filter((p) => p !== id)
+                : [...data.program_ids, id]
+        );
+    };
 
     const gradeOptions = grades.map((g) => ({
         value: g.id,
@@ -122,6 +136,43 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Program / Jenis Kelas yang Diajar
+                            </label>
+                            {programs.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {programs.map((p) => {
+                                        const active = data.program_ids.includes(p.id);
+                                        return (
+                                            <button
+                                                key={p.id}
+                                                type="button"
+                                                onClick={() => toggleProgram(p.id)}
+                                                aria-pressed={active}
+                                                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                                                    active
+                                                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]'
+                                                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+                                                }`}
+                                            >
+                                                {active && <Icon icon="lucide:check" className="text-[13px]" />}
+                                                {p.nama}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-slate-400">Belum ada program — buat program terlebih dahulu.</p>
+                            )}
+                            {errors.program_ids && (
+                                <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.program_ids}</p>
+                            )}
+                            <p className="text-xs text-slate-400 mt-1.5">
+                                Pilih semua jenis kelas yang menjadi penugasan guru ini (bisa lebih dari satu).
+                            </p>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
                                 label="Kelas yang Diajar"
@@ -157,30 +208,68 @@ export default function GuruEdit({ guru, grades }: GuruEditProps) {
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                        Riwayat Pendidikan
-                                    </label>
-                                    <textarea
-                                        value={data.riwayat_pendidikan}
-                                        onChange={(e) => setData('riwayat_pendidikan', e.target.value)}
-                                        placeholder={'Contoh:\nS1 Pendidikan IPA — UNJ\nS2 Pendidikan Dasar — UI'}
-                                        rows={3}
-                                        className="input-modern resize-none leading-6"
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                            Riwayat Pendidikan
+                                        </label>
+                                        <textarea
+                                            value={data.riwayat_pendidikan}
+                                            onChange={(e) => setData('riwayat_pendidikan', e.target.value)}
+                                            placeholder={'Contoh:\nS1 Pendidikan IPA — UNJ\nS2 Pendidikan Dasar — UI'}
+                                            rows={3}
+                                            className="input-modern resize-none leading-6"
+                                        />
+                                        {errors.riwayat_pendidikan && (
+                                            <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.riwayat_pendidikan}</p>
+                                        )}
+                                        <p className="text-xs text-slate-400 mt-1">Tulis satu pendidikan per baris</p>
+                                    </div>
+                                    <Input
+                                        label="Pendidikan Terakhir"
+                                        value={data.pendidikan_terakhir}
+                                        onChange={(e) => setData('pendidikan_terakhir', e.target.value)}
+                                        error={errors.pendidikan_terakhir}
+                                        placeholder="Contoh: S.Pd, M.Pd"
                                     />
-                                    {errors.riwayat_pendidikan && (
-                                        <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.riwayat_pendidikan}</p>
-                                    )}
-                                    <p className="text-xs text-slate-400 mt-1">Tulis satu pendidikan per baris</p>
                                 </div>
-                                <Input
-                                    label="Tanggal Bergabung di KPM"
-                                    type="date"
-                                    value={data.tanggal_bergabung}
-                                    onChange={(e) => setData('tanggal_bergabung', e.target.value)}
-                                    error={errors.tanggal_bergabung}
-                                    hint="Kapan guru bergabung mengajar di KPM"
-                                />
+                                <div className="space-y-4">
+                                    <Input
+                                        label="Tanggal Bergabung di KPM"
+                                        type="date"
+                                        value={data.tanggal_bergabung}
+                                        onChange={(e) => setData('tanggal_bergabung', e.target.value)}
+                                        error={errors.tanggal_bergabung}
+                                        hint="Kapan guru bergabung mengajar di KPM"
+                                    />
+                                    <Input
+                                        label="Lama Mengajar (tahun)"
+                                        type="number"
+                                        min={0}
+                                        max={60}
+                                        value={data.lama_mengajar}
+                                        onChange={(e) => setData('lama_mengajar', e.target.value)}
+                                        error={errors.lama_mengajar}
+                                        placeholder="Contoh: 5"
+                                        hint="Total pengalaman mengajar dalam tahun"
+                                    />
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                            Riwayat Mengajar
+                                        </label>
+                                        <textarea
+                                            value={data.riwayat_mengajar}
+                                            onChange={(e) => setData('riwayat_mengajar', e.target.value)}
+                                            placeholder={'Contoh:\n2018–2020 — SMPN 1 Bogor — IPA Kelas 8\n2020–sekarang — KPM Pusat — IPA Kelas 9'}
+                                            rows={3}
+                                            className="input-modern resize-none leading-6"
+                                        />
+                                        {errors.riwayat_mengajar && (
+                                            <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.riwayat_mengajar}</p>
+                                        )}
+                                        <p className="text-xs text-slate-400 mt-1">Format: tahun — instansi — kelas/mapel, satu per baris</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

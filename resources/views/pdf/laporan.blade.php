@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Rekap Penggajian - SIGURU</title>
+    <title>Rekap Penggajian - Satu Guru KPM</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10px; color: #1a1a1a; }
@@ -28,8 +28,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>SIGURU - Sistem Informasi Penggajian Guru</h1>
-        <p>Rekap Penggajian Guru KPM Pusat Tahun Ajaran 2026/2027</p>
+        <h1>Satu Guru KPM</h1>
+        <p>Sistem Administrasi Guru KPM &mdash; Rekap Penggajian</p>
     </div>
     <div class="meta">
         <span>Periode: {{ $periode }}</span>
@@ -44,9 +44,11 @@
                 <th>Grade</th>
                 <th>Mapel</th>
                 <th class="text-center">Sesi</th>
-                <th>Transport</th>
+                <th class="text-center">Hadir</th>
+                <th>Rincian Program</th>
                 <th class="text-right">Honor</th>
                 <th class="text-right">Transport</th>
+                <th class="text-right">Tunjangan</th>
                 <th class="text-right">Total</th>
             </tr>
         </thead>
@@ -58,22 +60,32 @@
                     <td><span class="badge badge-purple">{{ $p->guru->grade->kode_grade ?? '-' }}</span></td>
                     <td><span class="badge badge-{{ $p->guru->mapel === 'IPA' ? 'green' : 'blue' }}">{{ $p->guru->mapel ?? '-' }}</span></td>
                     <td class="text-center">{{ $p->jumlah_sesi }}</td>
-                    <td>{{ $p->transport->jenis ?? '-' }}</td>
+                    <td class="text-center">{{ $p->jumlah_hadir }}</td>
+                    <td>
+                        @if ($p->detail)
+                            @foreach ($p->rincian() as $row)
+                                <div>{{ $row['program'] }} &middot; {{ $row['transport'] }} &middot; {{ $row['jumlah_hadir'] }} hadir</div>
+                            @endforeach
+                        @else
+                            &mdash;
+                        @endif
+                    </td>
                     <td class="text-right">Rp {{ number_format($p->honor, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($p->total_transport, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format((float) $p->tunjangan_khusus, 0, ',', '.') }}</td>
                     <td class="text-right font-bold">Rp {{ number_format($p->total, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             <tr class="total-row">
                 <td colspan="4" class="text-right">GRAND TOTAL</td>
                 <td class="text-center">{{ $totalSesi }}</td>
-                <td colspan="3"></td>
+                <td colspan="5"></td>
                 <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
     <div class="footer">
-        <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; SIGURU Sistem Informasi Penggajian Guru KPM Pusat</p>
+        <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; Satu Guru KPM &middot; Sistem Administrasi Guru KPM</p>
     </div>
 </body>
 </html>

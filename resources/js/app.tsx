@@ -12,7 +12,7 @@ import { offlineCollections } from './lib/offline-icons';
 // (diblokir CSP `default-src 'self'` / connect-src). Dihasilkan oleh scripts/generate-icons.mjs.
 offlineCollections.forEach((collection) => addCollection(collection));
 
-const appName = import.meta.env?.VITE_APP_NAME || 'SIGURU';
+const appName = import.meta.env?.VITE_APP_NAME || 'Satu Guru KPM';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

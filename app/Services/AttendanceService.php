@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Attendance;
 use App\Models\Penggajian;
+use App\Models\Perizinan;
 use App\Models\TeachingSession;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,8 @@ class AttendanceService
 
     public const OUTSIDE_RADIUS = 'outside_radius';
 
+    public const APPROVED_LEAVE = 'approved_leave';
+
     /**
      * @param  array{session_id: int, latitude: float, longitude: float, accuracy: float}  $data
      */
@@ -61,6 +64,22 @@ class AttendanceService
             if ($sessionDate !== now()->toDateString()) {
                 return AttendanceResult::failure(self::WRONG_DATE, [
                     'session_date' => $sessionDate,
+                ]);
+            }
+
+            // Perizinan yang sudah disetujui menutup sesi pada tanggal tersebut:
+            // presensi tidak boleh dicatat agar status kehadiran tetap jujur
+            // dan rekap admin menampilkan "Izin" alih-alih "Belum Check-in".
+            $izin = Perizinan::where('guru_id', $guru->id)
+                ->where('status', Perizinan::STATUS_DISETUJUI)
+                ->whereDate('tanggal_mulai', '<=', $sessionDate)
+                ->whereDate('tanggal_selesai', '>=', $sessionDate)
+                ->first();
+
+            if ($izin) {
+                return AttendanceResult::failure(self::APPROVED_LEAVE, [
+                    'session_date' => $sessionDate,
+                    'izin' => $izin,
                 ]);
             }
 
@@ -192,6 +211,10 @@ class AttendanceService
                 'durasi' => $durasi,
                 'status' => 'valid',
             ]);
+
+            if ($session->status === TeachingSession::STATUS_DIJADWALKAN) {
+                $session->update(['status' => TeachingSession::STATUS_SELESAI]);
+            }
 
             Penggajian::calculateForGuru($guru, $attendance->tanggal->format('Y-m'));
 

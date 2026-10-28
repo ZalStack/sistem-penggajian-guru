@@ -5,11 +5,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
     icon?: ReactNode;
+    trailing?: ReactNode;
     hint?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ className, label, error, icon, hint, id, ...props }, ref) => {
+    ({ className, label, error, icon, trailing, hint, id, ...props }, ref) => {
         return (
             <div className="space-y-1.5">
                 {label && (
@@ -29,11 +30,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         className={cn(
                             'input-modern',
                             icon && 'pl-10',
+                            trailing && 'pr-11',
                             error && 'border-rose-300 focus:ring-rose-500/10 focus:border-rose-400 bg-rose-50/20',
                             className
                         )}
                         {...props}
                     />
+                    {trailing && (
+                        <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                            {trailing}
+                        </div>
+                    )}
                 </div>
                 {hint && !error && <p className="text-[11px] leading-4 text-slate-500 font-[450]">{hint}</p>}
                 {error && <p className="text-[11px] leading-4 text-rose-600 font-[600] flex items-center gap-1">{error}</p>}

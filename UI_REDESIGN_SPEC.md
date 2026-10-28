@@ -1,4 +1,4 @@
-# SIGURU — Design Spec: Rombak UI/UX Indigo–Violet (Modern SaaS)
+# Satu Guru KPM — Design Spec: Rombak UI/UX Indigo–Violet (Modern SaaS)
 
 Spesifikasi wajib untuk semua halaman React/Inertia di project ini.
 **Fondasi (tailwind.config.js, resources/css/app.css, components di `Components/ui/*`, `Layouts/*`) SUDAH selesai dirombak — jangan ubah file-file itu.**

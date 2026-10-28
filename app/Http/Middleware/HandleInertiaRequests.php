@@ -32,6 +32,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'app' => [
+                'name' => config('app.name'),
+                'tagline' => 'Sistem Administrasi Guru KPM',
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],

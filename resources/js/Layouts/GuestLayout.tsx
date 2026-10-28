@@ -1,6 +1,9 @@
 import { Icon } from '@iconify/react';
 import { ReactNode } from 'react';
 
+const APP_NAME = 'Satu Guru KPM';
+const APP_TAGLINE = 'Sistem Administrasi Guru KPM';
+
 export default function GuestLayout({ children }: { children: ReactNode }) {
     return (
         <div className="min-h-screen flex bg-slate-50 mesh-gradient">
@@ -20,29 +23,28 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                             <Icon icon="lucide:graduation-cap" className="text-indigo-700 text-[23px]" />
                         </div>
                         <div>
-                            <p className="text-white font-extrabold tracking-[-0.02em] leading-none text-[16px]">SIGURU</p>
-                            <p className="text-white/70 text-[11px] font-semibold tracking-[0.08em] uppercase leading-none mt-1">KPM Pusat</p>
+                            <p className="text-white font-extrabold tracking-[-0.02em] leading-none text-[16px]">{APP_NAME}</p>
+                            <p className="text-white/70 text-[11px] font-semibold tracking-[0.08em] uppercase leading-none mt-1">KPM</p>
                         </div>
                     </div>
 
                     <div className="flex-1 flex flex-col justify-center max-w-[520px] py-12">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/20 text-white/90 text-[11px] font-bold tracking-[0.06em] uppercase w-fit backdrop-blur-sm">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            Tahun Ajaran 2026/27 • Live
-                        </div>
-                        <h1 className="text-[42px] font-extrabold tracking-[-0.04em] leading-[0.98] text-white mt-6">
-                            Sistem Penggajian Guru{' '}
-                            <span className="bg-gradient-to-r from-fuchsia-300 via-violet-300 to-indigo-200 bg-clip-text text-transparent">Terpadu</span>
+                        <h1 className="text-[40px] font-extrabold tracking-[-0.04em] leading-[1.02] text-white">
+                            Sistem Administrasi{' '}
+                            <span className="bg-gradient-to-r from-fuchsia-300 via-violet-300 to-indigo-200 bg-clip-text text-transparent">
+                                Guru KPM
+                            </span>
                         </h1>
-                        <p className="text-[16px] leading-7 text-white/70 mt-4 font-medium">
-                            Kelola absensi GPS, honor per sesi, tunjangan transport, dan slip gaji dalam satu platform modern yang akurat & efisien.
+                        <p className="text-[15px] leading-7 text-white/70 mt-4 font-medium">
+                            Kelola data guru, jadwal mengajar, presensi berbasis GPS, honor per sesi, hingga slip gaji dalam satu sistem yang akurat dan mudah dipantau.
                         </p>
 
                         <div className="mt-10 grid grid-cols-1 gap-3">
                             {[
-                                { icon: 'lucide:map-pin', title: 'Absensi berbasis GPS', desc: 'Validasi radius lokasi & akurasi real-time' },
-                                { icon: 'lucide:calculator', title: 'Hitung otomatis', desc: 'Honor + transport + tunjangan khusus' },
-                                { icon: 'lucide:file-check', title: 'Slip & laporan PDF', desc: 'Ekspor resmi siap cetak & audit' },
+                                { icon: 'lucide:users', title: 'Profil guru lengkap', desc: 'Program mengajar, pendidikan, riwayat & honor per grade' },
+                                { icon: 'lucide:calendar-range', title: 'Jadwal & sesi mengajar', desc: 'Tampilan mingguan dengan status sesi yang jelas' },
+                                { icon: 'lucide:map-pin', title: 'Presensi berbasis GPS', desc: 'Validasi radius lokasi & akurasi perangkat' },
+                                { icon: 'lucide:wallet', title: 'Honor transparan', desc: 'Rekap per guru & periode dengan rincian yang dapat ditelusuri' },
                             ].map(f => (
                                 <div key={f.title} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.10] border border-white/15 backdrop-blur-md hover:bg-white/[0.16] transition-colors">
                                     <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400/60 to-violet-400/60 flex items-center justify-center shrink-0 border border-white/20">
@@ -58,9 +60,9 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                     </div>
 
                     <div className="flex items-center gap-3 text-white/50 text-[11px] font-medium">
-                        <span>© {new Date().getFullYear()} SIGURU</span>
+                        <span>© {new Date().getFullYear()} {APP_NAME}</span>
                         <span className="w-1 h-1 rounded-full bg-white/40" />
-                        <span>KPM Pusat • Pendidikan Berkualitas</span>
+                        <span>KPM</span>
                     </div>
                 </div>
             </div>
@@ -73,8 +75,8 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                             <div className="w-14 h-14 rounded-2xl bg-brand-gradient flex items-center justify-center shadow-lg shadow-indigo-500/30">
                                 <Icon icon="lucide:graduation-cap" className="text-white text-[26px]" />
                             </div>
-                            <h1 className="text-[24px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">SIGURU</h1>
-                            <p className="text-[12px] font-semibold tracking-[0.06em] uppercase text-indigo-500">KPM Pusat • Sistem Penggajian Guru</p>
+                            <h1 className="text-[24px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">{APP_NAME}</h1>
+                            <p className="text-[12px] font-semibold tracking-[0.06em] uppercase text-indigo-500">{APP_TAGLINE}</p>
                         </div>
 
                         <div className="relative bg-white rounded-[24px] border border-indigo-100/70 shadow-float p-7 sm:p-8 overflow-hidden">
@@ -83,7 +85,7 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                         </div>
 
                         <p className="text-center text-[11px] font-medium text-slate-400 mt-6">
-                            Butuh bantuan? Hubungi admin KPM Pusat
+                            Butuh bantuan? Hubungi admin KPM
                         </p>
                     </div>
                 </div>

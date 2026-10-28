@@ -5,13 +5,29 @@ import Input from '@/Components/ui/input';
 import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import Select from '@/Components/ui/select';
+import Pagination from '@/Components/ui/pagination';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { Penggajian, Guru, Grade } from '@/types';
+import { Fragment, useState } from 'react';
+import { Penggajian, Guru, Grade, PaginatedData } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
+interface Ringkasan {
+    total_guru: number;
+    total_honor: number;
+    total_transport: number;
+    total_tunjangan: number;
+    grand_total: number;
+    sudah_dibayar: number;
+    belum_dibayar: number;
+    nominal_belum_dibayar: number;
+    total_sesi: number;
+    total_hadir: number;
+}
+
 interface SalaryIndexProps {
-    penggajians: Penggajian[];
+    penggajians: PaginatedData<Penggajian>;
     gurus: (Guru & { grade?: Grade })[];
     filters: {
         periode?: string;
@@ -19,16 +35,21 @@ interface SalaryIndexProps {
         status_bayar?: string;
     };
     periodeDefault: string;
+    periodeAktif: string;
+    ringkasan: Ringkasan;
 }
 
-export default function SalaryIndex({ penggajians, gurus, filters, periodeDefault }: SalaryIndexProps) {
+export default function SalaryIndex({ penggajians, gurus, filters, periodeDefault, periodeAktif, ringkasan }: SalaryIndexProps) {
+    const [expandedId, setExpandedId] = useState<number | null>(null);
+
     const calculateForm = useForm({
         periode: filters.periode ?? periodeDefault,
+        guru_id: filters.filter_guru ?? '',
     });
 
     const handleFilterChange = (key: string, value: string) => {
         router.get(
-            route('salary.index'),
+            route('penggajian.index'),
             { ...filters, [key]: value || undefined },
             { preserveState: true, replace: true }
         );
@@ -36,75 +57,64 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
 
     const handleCalculate = (e: React.FormEvent) => {
         e.preventDefault();
-        calculateForm.post(route('salary.calculate'));
+        calculateForm.post(route('penggajian.calculate'));
     };
 
     const handlePay = (id: number) => {
-        router.post(route('salary.pay', id));
+        router.post(route('penggajian.pay', id));
     };
 
-    const totalGaji = penggajians.reduce((sum, p) => sum + (Number(p.total) || 0), 0);
-    const sudahDibayar = penggajians
-        .filter((p) => p.status_bayar === 'sudah_dibayar')
-        .reduce((sum, p) => sum + (Number(p.total) || 0), 0);
-    const belumDibayar = penggajians
-        .filter((p) => p.status_bayar === 'belum_dibayar')
-        .reduce((sum, p) => sum + (Number(p.total) || 0), 0);
+    const periodeLabel = new Date(periodeAktif + '-01T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
     return (
         <AuthenticatedLayout>
-            <Head title="Kelola Penggajian — SIGURU" />
+            <Head title="Penggajian Guru" />
 
-            {/* Header — spacious premium */}
-            <div className="mb-10">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-semibold tracking-wide uppercase text-indigo-700">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Keuangan • Live
-                        </div>
-                        <h1 className="text-3xl sm:text-[32px] font-bold tracking-tight text-slate-900 leading-tight">Penggajian Guru</h1>
-                        <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
-                            Hitung honor mengajar, kelola status pembayaran gaji, dan pantau realisasi dana secara transparan.
-                        </p>
-                    </div>
-                    <Link
-                        href={route('penggajian.index')}
-                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-all shadow-sm hover:shadow shrink-0"
-                    >
-                        <Icon icon="lucide:archive" className="w-4 h-4" />
-                        Input Manual & Arsip
-                    </Link>
-                </div>
+            <div className="page-header animate-fade-in mb-8">
+                <h1 className="page-title">Penggajian Guru</h1>
+                <p className="page-subtitle mt-1">
+                    Rekap honor per guru per periode, dihitung otomatis dari sesi mengajar yang tervalidasi lewat presensi.
+                </p>
             </div>
 
-            {/* Stats — generous gap */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-10">
+            {/* Ringkasan periode aktif */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <StatCard
-                    title="Total Gaji"
-                    value={formatCurrency(totalGaji)}
+                    title={`Total Honor (${periodeLabel})`}
+                    value={formatCurrency(ringkasan.grand_total)}
                     icon="lucide:wallet"
                     color="slate"
-                    description="Seluruh periode • Akumulasi"
+                    description={`Honor ${formatCurrency(ringkasan.total_honor)} + transport ${formatCurrency(ringkasan.total_transport)}`}
+                    className="break-words"
                 />
                 <StatCard
                     title="Sudah Dibayar"
-                    value={formatCurrency(sudahDibayar)}
+                    value={formatCurrency(ringkasan.grand_total - ringkasan.nominal_belum_dibayar)}
                     icon="lucide:check-circle"
                     color="success"
-                    description="Pembayaran lunas"
+                    description={`${ringkasan.sudah_dibayar} dari ${ringkasan.total_guru} guru`}
+                    className="break-words"
                 />
                 <StatCard
                     title="Belum Dibayar"
-                    value={formatCurrency(belumDibayar)}
+                    value={formatCurrency(ringkasan.nominal_belum_dibayar)}
                     icon="lucide:clock"
                     color="warning"
-                    description="Menunggu pembayaran"
+                    description={`${ringkasan.belum_dibayar} guru menunggu pembayaran`}
+                    className="break-words"
+                />
+                <StatCard
+                    title="Total Sesi / Hadir"
+                    value={`${ringkasan.total_sesi} / ${ringkasan.total_hadir}`}
+                    icon="lucide:book-open"
+                    color="accent"
+                    description="Sesi terjadwal & kehadiran valid"
                 />
             </div>
 
-            {/* Filters — spacious */}
-            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 lg:gap-8 mb-10">
-                <Card title="Filter Data" description="Saring data penggajian sesuai kebutuhan" className="xl:col-span-3">
+            {/* Filter & Hitung Gaji */}
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
+                <Card title="Filter Data" description="Saring rekap honor sesuai kebutuhan" className="xl:col-span-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <Input
                             label="Periode"
@@ -112,253 +122,325 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                             value={filters.periode ?? ''}
                             onChange={(e) => handleFilterChange('periode', e.target.value)}
                         />
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-700">Guru</label>
-                            <select
-                                value={filters.filter_guru ?? ''}
-                                onChange={(e) => handleFilterChange('filter_guru', e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 shadow-sm cursor-pointer"
-                            >
-                                <option value="">Semua Guru</option>
-                                {gurus.map((g) => (
-                                    <option key={g.id} value={g.id}>
-                                        {g.nama}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-slate-700">Status Bayar</label>
-                            <select
-                                value={filters.status_bayar ?? ''}
-                                onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 shadow-sm cursor-pointer"
-                            >
-                                <option value="">Semua Status</option>
-                                <option value="belum_dibayar">Belum Dibayar</option>
-                                <option value="sudah_dibayar">Sudah Dibayar</option>
-                            </select>
-                        </div>
+                        <Select
+                            label="Guru"
+                            value={filters.filter_guru ?? ''}
+                            onChange={(e) => handleFilterChange('filter_guru', e.target.value)}
+                            options={gurus.map((g) => ({ value: g.id, label: g.nama }))}
+                            placeholder="Semua Guru"
+                        />
+                        <Select
+                            label="Status Bayar"
+                            value={filters.status_bayar ?? ''}
+                            onChange={(e) => handleFilterChange('status_bayar', e.target.value)}
+                            options={[
+                                { value: 'belum_dibayar', label: 'Belum Dibayar' },
+                                { value: 'sudah_dibayar', label: 'Sudah Dibayar' },
+                            ]}
+                            placeholder="Semua Status"
+                        />
                     </div>
                 </Card>
 
-                <Card title="Hitung Gaji" description="Masukkan periode untuk menghitung otomatis" className="xl:col-span-2">
+                <Card title="Hitung Ulang Gaji" description="Perbarui rekap dari data presensi & sesi valid" className="xl:col-span-2">
                     <form onSubmit={handleCalculate} className="space-y-5">
                         <Input
                             label="Periode"
                             type="month"
                             value={calculateForm.data.periode}
                             onChange={(e) => calculateForm.setData('periode', e.target.value)}
+                            error={calculateForm.errors.periode}
                             required
+                        />
+                        <Select
+                            label="Guru (opsional)"
+                            value={calculateForm.data.guru_id}
+                            onChange={(e) => calculateForm.setData('guru_id', e.target.value)}
+                            options={gurus.map((g) => ({ value: g.id, label: g.nama }))}
+                            placeholder="Semua guru"
+                            error={calculateForm.errors.guru_id}
                         />
                         <Button type="submit" processing={calculateForm.processing} className="w-full justify-center py-3">
                             <Icon icon="lucide:calculator" className="w-4 h-4" />
                             Hitung Gaji Sekarang
                         </Button>
-                        <p className="text-xs text-center text-slate-500">Perhitungan otomatis berdasarkan sesi hadir & grade</p>
+                        <p className="text-xs text-center text-slate-500">
+                            Perhitungan otomatis dari jumlah sesi hadir × honor grade + transport + tunjangan khusus.
+                        </p>
                     </form>
                 </Card>
             </div>
 
-            {/* Table — spacious */}
+            {/* Tabel rekap */}
             <Card
-                title="Daftar Penggajian"
-                description={`Menampilkan ${penggajians.length} data penggajian • Kelola pembayaran`}
+                title="Daftar Rekap Honor"
+                description={`Menampilkan ${penggajians.total} rekap honor${filters.periode ? ` periode ${periodeLabel}` : ' seluruh periode'}`}
             >
-                {/* Desktop Table */}
-                <div className="hidden xl:block -mx-8">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-14">No</TableHead>
-                                <TableHead>Guru</TableHead>
-                                <TableHead>Grade</TableHead>
-                                <TableHead>Periode</TableHead>
-                                <TableHead className="text-center">Sesi</TableHead>
-                                <TableHead className="text-center">Hadir</TableHead>
-                                <TableHead>Total Jam</TableHead>
-                                <TableHead>Honor</TableHead>
-                                <TableHead>Transport</TableHead>
-                                <TableHead>Total</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {penggajians.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={12}>
-                                        <div className="text-center py-20">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                                <Icon icon="lucide:inbox" className="text-2xl" />
-                                            </div>
-                                            <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
-                                            <p className="text-xs text-slate-500 mt-1">Gunakan filter atau hitung gaji untuk periode baru</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                penggajians.map((p, index) => (
-                                    <TableRow key={p.id} className="hover:bg-indigo-50/40">
-                                        <TableCell className="font-medium text-slate-500">
-                                            {index + 1}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                                    {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
-                                                </div>
-                                                <span className="font-semibold text-slate-900">
-                                                    {p.guru?.nama ?? '-'}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="info">
-                                                {p.guru?.grade?.kode_grade ?? '-'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-slate-700 font-mono text-xs bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
-                                                {p.periode}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-bold shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{p.jumlah_sesi}</span>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <span className="text-slate-700 font-medium">{p.jumlah_hadir}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-slate-600 text-sm">{p.total_jam} jam</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="font-semibold text-slate-900">
-                                                {formatCurrency(p.honor)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-slate-600">
-                                                {formatCurrency(p.total_transport)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="font-bold text-slate-900">
-                                                {formatCurrency(p.total)}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            {p.status_bayar === 'sudah_dibayar' ? (
-                                                <Badge variant="success">Lunas</Badge>
-                                            ) : (
-                                                <Badge variant="danger">Belum</Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <a
-                                                    href={route('salary.payslip', p.id)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors shadow-sm"
-                                                    title="Download Slip Gaji PDF"
-                                                >
-                                                    <Icon icon="lucide:download" className="w-3.5 h-3.5" />
-                                                    PDF
-                                                </a>
-                                                {p.status_bayar === 'belum_dibayar' && (
-                                                    <Button
-                                                        variant="success"
-                                                        size="sm"
-                                                        onClick={() => handlePay(p.id)}
-                                                        className="shadow-sm px-4"
-                                                    >
-                                                        <Icon icon="lucide:credit-card" className="w-4 h-4" />
-                                                        Bayar
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {/* Mobile Cards — spacious */}
-                <div className="xl:hidden space-y-4">
-                    {penggajians.length === 0 ? (
-                        <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                <Icon icon="lucide:inbox" className="text-2xl" />
-                            </div>
-                            <p className="text-sm font-medium text-slate-900">Tidak ada data</p>
-                            <p className="text-xs text-slate-500 mt-1">Belum ada penggajian untuk periode ini</p>
+                {penggajians.data.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
+                            <Icon icon="lucide:inbox" className="text-2xl" />
                         </div>
-                    ) : (
-                        penggajians.map((p, index) => (
-                            <div
-                                key={p.id}
-                                className="p-5 bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all space-y-4"
-                            >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                            {p.guru?.nama?.substring(0,2).toUpperCase() ?? 'GU'}
+                        <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
+                        <p className="text-xs text-slate-500 mt-1">Gunakan filter atau hitung gaji untuk periode baru</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden lg:block -mx-8">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-14">No</TableHead>
+                                        <TableHead>Guru</TableHead>
+                                        <TableHead>Periode</TableHead>
+                                        <TableHead className="text-center">Sesi</TableHead>
+                                        <TableHead className="text-center">Hadir</TableHead>
+                                        <TableHead>Honor</TableHead>
+                                        <TableHead>Transport</TableHead>
+                                        <TableHead>Tunjangan</TableHead>
+                                        <TableHead>Total</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {penggajians.data.map((p, index) => (
+                                        <Fragment key={p.id}>
+                                            <TableRow className="hover:bg-indigo-50/40">
+                                                <TableCell className="font-medium text-slate-500">
+                                                    {(penggajians.current_page - 1) * penggajians.per_page + index + 1}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
+                                                        className="flex items-center gap-3 text-left group"
+                                                        title="Lihat rincian perhitungan"
+                                                    >
+                                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                            {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <span className="font-semibold text-slate-900 block truncate group-hover:text-indigo-700 transition-colors">
+                                                                {p.guru?.nama ?? '-'}
+                                                            </span>
+                                                            <span className="text-[11px] text-slate-400 inline-flex items-center gap-1">
+                                                                <Icon icon={expandedId === p.id ? 'lucide:chevron-up' : 'lucide:chevron-down'} className="text-[11px]" />
+                                                                Rincian perhitungan
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-slate-700 font-mono text-xs bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+                                                        {p.periode}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-bold shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{p.jumlah_sesi}</span>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="text-slate-700 font-medium">{p.jumlah_hadir}</span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="font-semibold text-slate-900">
+                                                        {formatCurrency(p.honor)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-slate-600">
+                                                        {formatCurrency(p.total_transport)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-slate-600">
+                                                        {formatCurrency(p.tunjangan_khusus)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="font-bold text-slate-900">
+                                                        {formatCurrency(p.total)}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {p.status_bayar === 'sudah_dibayar' ? (
+                                                        <Badge variant="success">Lunas</Badge>
+                                                    ) : (
+                                                        <Badge variant="warning">Belum</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <a
+                                                            href={route('penggajian.payslip', p.id)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors shadow-sm"
+                                                            title="Unduh Slip Gaji PDF"
+                                                        >
+                                                            <Icon icon="lucide:download" className="w-3.5 h-3.5" />
+                                                            PDF
+                                                        </a>
+                                                        {p.status_bayar === 'belum_dibayar' && (
+                                                            <Button
+                                                                variant="success"
+                                                                size="sm"
+                                                                onClick={() => handlePay(p.id)}
+                                                                className="shadow-sm px-4"
+                                                            >
+                                                                <Icon icon="lucide:credit-card" className="w-4 h-4" />
+                                                                Bayar
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                            {expandedId === p.id && (
+                                                <TableRow>
+                                                    <TableCell colSpan={11} className="bg-indigo-50/40 p-0">
+                                                        <div className="px-6 py-4">
+                                                            <p className="text-[12px] font-[700] uppercase tracking-wider text-slate-500 mb-3">
+                                                                Rincian Per Program &amp; Transport
+                                                            </p>
+                                                            {p.detail && p.detail.length > 0 ? (
+                                                                <div className="rounded-xl border border-indigo-100 bg-white overflow-hidden">
+                                                                    <table className="w-full text-sm">
+                                                                        <thead>
+                                                                            <tr className="border-b border-slate-100 text-left text-[11px] uppercase tracking-wider text-slate-400">
+                                                                                <th className="px-4 py-2.5 font-[600]">Program</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Transport</th>
+                                                                                <th className="px-4 py-2.5 font-[600] text-center">Sesi</th>
+                                                                                <th className="px-4 py-2.5 font-[600] text-center">Hadir</th>
+                                                                                <th className="px-4 py-2.5 font-[600] text-right">Honor</th>
+                                                                                <th className="px-4 py-2.5 font-[600] text-right">Transport</th>
+                                                                                <th className="px-4 py-2.5 font-[600] text-right">Subtotal</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-slate-50">
+                                                                            {p.detail.map((d, i) => (
+                                                                                <tr key={i}>
+                                                                                    <td className="px-4 py-2.5 font-[600] text-slate-800">{d.program}</td>
+                                                                                    <td className="px-4 py-2.5 text-slate-600">{d.transport}</td>
+                                                                                    <td className="px-4 py-2.5 text-center text-slate-600">{d.jumlah_sesi}</td>
+                                                                                    <td className="px-4 py-2.5 text-center text-slate-600">{d.jumlah_hadir}</td>
+                                                                                    <td className="px-4 py-2.5 text-right text-slate-700">{formatCurrency(d.honor)}</td>
+                                                                                    <td className="px-4 py-2.5 text-right text-slate-700">{formatCurrency(d.transport_biaya)}</td>
+                                                                                    <td className="px-4 py-2.5 text-right font-[700] text-slate-900">{formatCurrency(d.total)}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                            {Number(p.tunjangan_khusus) > 0 && (
+                                                                                <tr>
+                                                                                    <td className="px-4 py-2.5 font-[600] text-slate-800" colSpan={6}>
+                                                                                        Tunjangan Khusus
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2.5 text-right font-[700] text-slate-900">
+                                                                                        {formatCurrency(p.tunjangan_khusus)}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            )}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-[13px] text-slate-500">
+                                                                    Tidak ada rincian program — honor dihitung langsung dari total kehadiran.
+                                                                </p>
+                                                            )}
+                                                            <p className="text-[11.5px] text-slate-400 mt-3">
+                                                                Data dihitung dari presensi valid pada periode {p.periode}. Baris yang sudah dibayar tidak dihitung ulang.
+                                                            </p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </Fragment>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="lg:hidden space-y-4">
+                            {penggajians.data.map((p) => (
+                                <div
+                                    key={p.id}
+                                    className="p-5 bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 shadow-sm hover:shadow-md transition-all space-y-4"
+                                >
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-900">
+                                                    {p.guru?.nama ?? '-'}
+                                                </p>
+                                                <p className="text-xs text-slate-500 mt-0.5">
+                                                    Grade {p.guru?.grade?.kode_grade ?? '-'} • {p.periode} • {p.jumlah_sesi} sesi
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-slate-900">
-                                                {p.guru?.nama ?? '-'}
-                                            </p>
-                                            <p className="text-xs text-slate-500 mt-0.5">
-                                                Grade {p.guru?.grade?.kode_grade ?? '-'} • {p.periode} • {p.jumlah_sesi} sesi
-                                            </p>
+                                        {p.status_bayar === 'sudah_dibayar' ? (
+                                            <Badge variant="success">Lunas</Badge>
+                                        ) : (
+                                            <Badge variant="warning">Belum</Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hadir</p>
+                                            <p className="text-sm font-bold text-slate-900 mt-1">{p.jumlah_hadir} / {p.jumlah_sesi}</p>
+                                        </div>
+                                        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Transport</p>
+                                            <p className="text-sm font-bold text-slate-900 mt-1 break-words">{formatCurrency(p.total_transport)}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Total</p>
+                                            <p className="text-sm font-bold mt-1 break-words">{formatCurrency(p.total)}</p>
                                         </div>
                                     </div>
-                                    {p.status_bayar === 'sudah_dibayar' ? (
-                                        <Badge variant="success">Lunas</Badge>
-                                    ) : (
-                                        <Badge variant="danger">Belum</Badge>
+
+                                    {p.detail && p.detail.length > 0 && (
+                                        <div className="rounded-xl border border-indigo-100 bg-indigo-50/30 divide-y divide-indigo-100/60">
+                                            {p.detail.map((d, i) => (
+                                                <div key={i} className="flex items-center justify-between px-3.5 py-2 text-xs gap-2">
+                                                    <div className="min-w-0">
+                                                        <p className="font-[700] text-slate-800 truncate">{d.program}</p>
+                                                        <p className="text-slate-500 truncate">{d.transport} · {d.jumlah_hadir} hadir</p>
+                                                    </div>
+                                                    <p className="font-[700] text-slate-900 shrink-0">{formatCurrency(d.total)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
-                                </div>
 
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hadir</p>
-                                        <p className="text-sm font-bold text-slate-900 mt-1">{p.jumlah_hadir} / {p.jumlah_sesi}</p>
-                                    </div>
-                                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Jam</p>
-                                        <p className="text-sm font-bold text-slate-900 mt-1">{p.total_jam} jam</p>
-                                    </div>
-                                    <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Total</p>
-                                        <p className="text-sm font-bold mt-1">{formatCurrency(p.total)}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-2 pt-2">
-                                    <a
-                                        href={route('salary.payslip', p.id)}
-                                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
-                                    >
-                                        <Icon icon="lucide:download" className="w-4 h-4" />
-                                        Slip PDF
-                                    </a>
-                                    {p.status_bayar === 'belum_dibayar' && (
-                                        <Button
-                                            variant="success"
-                                            onClick={() => handlePay(p.id)}
-                                            className="flex-1 justify-center py-2.5"
+                                    <div className="flex flex-wrap items-center gap-2 pt-2">
+                                        <a
+                                            href={route('penggajian.payslip', p.id)}
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
                                         >
-                                            <Icon icon="lucide:credit-card" className="w-4 h-4" />
-                                            Bayar Sekarang
-                                        </Button>
-                                    )}
+                                            <Icon icon="lucide:download" className="w-4 h-4" />
+                                            Slip PDF
+                                        </a>
+                                        {p.status_bayar === 'belum_dibayar' && (
+                                            <Button
+                                                variant="success"
+                                                onClick={() => handlePay(p.id)}
+                                                className="flex-1 justify-center py-2.5"
+                                            >
+                                                <Icon icon="lucide:credit-card" className="w-4 h-4" />
+                                                Bayar Sekarang
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+                            ))}
+                        </div>
+
+                        <Pagination links={penggajians.links} from={penggajians.from} to={penggajians.to} total={penggajians.total} />
+                    </>
+                )}
             </Card>
         </AuthenticatedLayout>
     );

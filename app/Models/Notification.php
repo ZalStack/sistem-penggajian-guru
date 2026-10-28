@@ -33,4 +33,49 @@ class Notification extends Model
     {
         $this->update(['dibaca' => true, 'dibaca_pada' => now()]);
     }
+
+    /**
+     * Kirim notifikasi in-app ke satu pengguna.
+     *
+     * @param  'info'|'success'|'warning'|'error'  $tipe
+     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'  $kategori
+     */
+    public static function send(User $user, string $judul, string $pesan, string $tipe = 'info', string $kategori = 'sistem'): void
+    {
+        static::create([
+            'user_id' => $user->id,
+            'judul' => $judul,
+            'pesan' => $pesan,
+            'tipe' => $tipe,
+            'kategori' => $kategori,
+        ]);
+    }
+
+    /**
+     * Kirim notifikasi ke semua pengguna dengan peran tertentu.
+     *
+     * @param  'admin'|'guru'  $role
+     * @param  'info'|'success'|'warning'|'error'  $tipe
+     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'  $kategori
+     */
+    public static function sendToRole(string $role, string $judul, string $pesan, string $tipe = 'info', string $kategori = 'sistem'): void
+    {
+        $users = User::where('role', $role)->pluck('id');
+
+        if ($users->isEmpty()) {
+            return;
+        }
+
+        $rows = $users->map(fn (int $userId) => [
+            'user_id' => $userId,
+            'judul' => $judul,
+            'pesan' => $pesan,
+            'tipe' => $tipe,
+            'kategori' => $kategori,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->all();
+
+        static::insert($rows);
+    }
 }

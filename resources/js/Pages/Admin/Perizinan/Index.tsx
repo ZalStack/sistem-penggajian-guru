@@ -16,6 +16,12 @@ interface PerizinanIndexProps {
     filters: {
         status?: string;
         filter_guru?: string;
+        filter_jenis?: string;
+    };
+    ringkasan: {
+        pending: number;
+        disetujui: number;
+        ditolak: number;
     };
 }
 
@@ -35,7 +41,7 @@ function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanIndexProps) {
+export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }: PerizinanIndexProps) {
     const [actionModal, setActionModal] = useState<{ type: 'disetujui' | 'ditolak'; item: Perizinan } | null>(null);
     const { data, setData, post, processing, errors, reset } = useForm({
         status: '',
@@ -76,9 +82,9 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
         reset();
     };
 
-    const pendingCount = perizinan.data.filter((p) => p.status === 'pending').length;
-    const approvedCount = perizinan.data.filter((p) => p.status === 'disetujui').length;
-    const rejectedCount = perizinan.data.filter((p) => p.status === 'ditolak').length;
+    const pendingCount = ringkasan.pending;
+    const approvedCount = ringkasan.disetujui;
+    const rejectedCount = ringkasan.ditolak;
 
     return (
         <AuthenticatedLayout>
@@ -132,7 +138,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
 
             {/* Filters */}
             <Card title="Filter" description="Gunakan filter untuk mencari data perizinan">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-slate-700">Status</label>
                         <select
@@ -144,6 +150,19 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                             <option value="pending">Menunggu</option>
                             <option value="disetujui">Disetujui</option>
                             <option value="ditolak">Ditolak</option>
+                        </select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-slate-700">Jenis</label>
+                        <select
+                            value={filters.filter_jenis ?? ''}
+                            onChange={(e) => handleFilterChange('filter_jenis', e.target.value)}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 transition-colors duration-200 shadow-sm cursor-pointer"
+                        >
+                            <option value="">Semua Jenis</option>
+                            <option value="izin">Izin</option>
+                            <option value="sakit">Sakit</option>
+                            <option value="cuti">Cuti</option>
                         </select>
                     </div>
                     <div className="space-y-1.5">
@@ -227,6 +246,18 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                                     {p.tanggal_mulai !== p.tanggal_selesai && (
                                                         <p className="text-slate-500 text-xs">s/d {formatDate(p.tanggal_selesai)}</p>
                                                     )}
+                                                    {p.session && (
+                                                        <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
+                                                            <Icon icon="lucide:book-open" className="text-[10px]" />
+                                                            Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
+                                                        </p>
+                                                    )}
+                                                    {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
+                                                        <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1" title="Sesi mengajar yang jatuh pada rentang tanggal perizinan">
+                                                            <Icon icon="lucide:calendar-clock" className="text-[10px]" />
+                                                            {p.jumlah_sesi_terdampak} sesi terdampak
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -300,6 +331,12 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                                     {jenisConfig[p.jenis]?.label ?? p.jenis} &bull; {formatDate(p.tanggal_mulai)}
                                                     {p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}
                                                 </p>
+                                                {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
+                                                    <p className="text-xs text-slate-500 flex items-center gap-1">
+                                                        <Icon icon="lucide:calendar-clock" className="text-[11px]" />
+                                                        {p.jumlah_sesi_terdampak} sesi mengajar terdampak
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -392,6 +429,18 @@ export default function PerizinanIndex({ perizinan, gurus, filters }: PerizinanI
                                     ? ` s/d ${formatDate(actionModal.item.tanggal_selesai)}`
                                     : ''}
                             </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                                Sesi terdampak:{' '}
+                                <span className="font-semibold text-slate-700">
+                                    {actionModal.item.jumlah_sesi_terdampak ?? 0} sesi mengajar
+                                </span>
+                                {' '}pada rentang tanggal tersebut
+                            </p>
+                            {actionModal.type === 'disetujui' && (
+                                <p className="text-xs text-indigo-600 mt-1">
+                                    Bila disetujui, sesi tersebut tercatat sebagai Izin di rekap presensi dan check-in guru dinonaktifkan.
+                                </p>
+                            )}
                         </div>
 
                         <form onSubmit={handleSubmitAction}>

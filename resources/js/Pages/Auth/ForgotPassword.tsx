@@ -1,85 +1,101 @@
-import Input from '@/Components/ui/input';
-import Button from '@/Components/ui/button';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { FormEventHandler } from 'react';
+import { FormEvent } from 'react';
+import InputError from '@/Components/InputError';
+import Input from '@/Components/ui/input';
+import PasswordInput from '@/Components/PasswordInput';
+import GuestLayout from '@/Layouts/GuestLayout';
 
-interface Props {
-    status?: string;
-}
-
-export default function ForgotPassword({ status }: Props) {
+export default function ForgotPassword({ status }: { status?: string }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
+        password: '',
+        password_confirmation: '',
     });
 
-    const submit: FormEventHandler = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
         post(route('password.email'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Lupa Kata Sandi" />
 
-            <div className="mb-6">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-brand">
-                    <Icon icon="lucide:mail-question" className="text-white text-[21px]" />
+            <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-brand">
+                    <Icon icon="lucide:key-round" className="text-[20px]" />
                 </div>
-                <h2 className="text-[22px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">
-                    Lupa <span className="text-brand-gradient">Kata Sandi?</span>
-                </h2>
-                <p className="text-[13px] text-slate-500 mt-2 leading-5 font-medium">
-                    Masukkan alamat email terdaftar Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi akun Anda.
-                </p>
+                <div>
+                    <h1 className="text-xl font-bold text-gray-900">Lupa Kata Sandi</h1>
+                    <p className="text-sm text-gray-500">Tautan atur ulang akan dikirim ke email Anda</p>
+                </div>
+            </div>
+
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+                Masukkan email terdaftar. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda.
             </div>
 
             {status && (
-                <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-[13px] font-semibold text-emerald-800 flex items-center gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(16,185,129,0.6)]">
-                        <Icon icon="lucide:check" className="text-base" />
-                    </span>
-                    <span className="leading-5">{status}</span>
+                <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                    {status}
                 </div>
             )}
 
-            <form onSubmit={submit} className="space-y-4">
-                <Input
-                    label="Alamat Email"
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    placeholder="admin@siguru.com"
-                    autoComplete="username"
-                    onChange={(e) => setData('email', e.target.value)}
-                    error={errors.email}
-                    required
-                    icon={<Icon icon="lucide:mail" className="text-base" />}
-                />
-
-                <div className="pt-2">
-                    <Button
-                        type="submit"
-                        processing={processing}
-                        className="w-full justify-center py-3.5 text-[14px]"
-                    >
-                        <Icon icon="lucide:send" className="text-base" />
-                        <span>Kirim Tautan Reset</span>
-                    </Button>
+            <form onSubmit={submit} className="mt-6 space-y-5">
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+                    <Input
+                        type="email"
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        placeholder="nama@satugurukpm.id"
+                        icon={<Icon icon="lucide:mail" className="text-[16px]" />}
+                        required
+                        autoFocus
+                    />
+                    <InputError message={errors.email} className="mt-2" />
                 </div>
 
-                <div className="pt-4 border-t border-slate-200/70 text-center">
-                    <Link
-                        href={route('login')}
-                        className="inline-flex items-center justify-center gap-2 w-full min-h-[44px] px-4 rounded-xl text-[13px] font-semibold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition-colors"
-                    >
-                        <Icon icon="lucide:arrow-left" />
-                        <span>Kembali ke halaman Masuk</span>
-                    </Link>
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Kata Sandi Baru</label>
+                    <PasswordInput
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Minimal 8 karakter"
+                        autoComplete="new-password"
+                    />
+                    <InputError message={errors.password} className="mt-2" />
                 </div>
+
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Konfirmasi Kata Sandi</label>
+                    <PasswordInput
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        placeholder="Ulangi kata sandi baru"
+                        autoComplete="new-password"
+                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
+                </div>
+
+                <button type="submit" className="btn-primary w-full" disabled={processing}>
+                    {processing ? (
+                        <Icon icon="lucide:loader-2" className="animate-spin text-[16px]" />
+                    ) : (
+                        <Icon icon="lucide:mail" className="text-[16px]" />
+                    )}
+                    {processing ? 'Mengirim...' : 'Kirim Tautan Atur Ulang'}
+                </button>
             </form>
-        </GuestLayout>
+
+            <div className="mt-6 text-center text-sm text-gray-500">
+                <Link href={route('login')} className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-500">
+                    <Icon icon="lucide:arrow-left" className="text-[14px]" /> Kembali ke Halaman Masuk
+                </Link>
+            </div>
+        </>
     );
 }
+
+ForgotPassword.layout = (children: React.ReactNode) => <GuestLayout>{children}</GuestLayout>;

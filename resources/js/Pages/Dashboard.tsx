@@ -3,26 +3,79 @@ import { Card } from '@/Components/ui/card';
 import StatCard from '@/Components/ui/stat-card';
 import Badge from '@/Components/ui/badge';
 import Button from '@/Components/ui/button';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 
+interface AdminStats {
+    total_guru: number;
+    total_guru_aktif: number;
+    total_kelas_khusus: number;
+    total_sesi_bulan: number;
+    total_sesi_hari_ini: number;
+    guru_hadir_hari_ini: number;
+    total_pengeluaran: number;
+    total_sudah_dibayar: number;
+    pengeluaran_belum_dibayar: number;
+    total_guru_bergaji: number;
+    izin_pending: number;
+    periode: string;
+}
+
+interface GuruStats {
+    total_sesi_bulan: number;
+    total_hadir: number;
+    total_jam: number;
+    gaji_bulan: number;
+    potensi_gaji: number;
+    status_bayar: string;
+}
+
+interface TodaySession {
+    id: number;
+    jam_mulai: string;
+    jam_selesai: string;
+    jumlah_sesi: number;
+    mapel: 'IPA' | 'MTK';
+    status: 'dijadwalkan' | 'selesai' | 'dibatalkan';
+    program: string | null;
+    lokasi: string | null;
+    guru: { nama: string; kode_grade: string };
+    presensi: 'valid' | 'tidak_valid' | 'belum_checkin' | 'belum_checkout' | 'izin';
+}
+
+interface RecentSession {
+    id: number;
+    tanggal: string;
+    jam_mulai: string;
+    jam_selesai: string;
+    jumlah_sesi: number;
+    mapel: 'IPA' | 'MTK';
+    status: 'dijadwalkan' | 'selesai' | 'dibatalkan';
+    lokasi: string;
+    program: string | null;
+    guru: { nama: string; kode_grade: string };
+}
+
+interface PendingPerizinan {
+    id: number;
+    jenis: 'izin' | 'sakit' | 'cuti';
+    tanggal_mulai: string;
+    tanggal_selesai: string;
+    alasan: string;
+    guru: { nama: string; kode_grade?: string } | null;
+}
+
 interface DashboardProps {
-    stats: {
-        total_guru?: number;
-        total_sesi_bulan?: number;
-        total_pengeluaran?: number;
-        total_guru_hadir?: number;
-        total_hadir?: number;
-        gaji_bulan?: number;
-        potensi_gaji?: number;
-        status_bayar?: string;
-    };
-    recentSessions?: any[];
+    stats: AdminStats | GuruStats;
+    todaySessions?: TodaySession[];
+    recentSessions?: RecentSession[];
     recentPenggajian?: any[];
+    pendingPerizinan?: PendingPerizinan[];
     upcomingSessions?: any[];
     todayAttendances?: Record<string, any>;
+    izinHariIni?: { jenis: string; rentang: string; alasan?: string } | null;
     guru?: any;
     role: 'admin' | 'guru';
 }
@@ -84,13 +137,32 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
     return R * c;
 }
 
-function useCurrentPosition(): Position | null {
+/**
+ * Mengambil posisi perangkat HANYA saat diaktifkan (enabled).
+ *
+ * Geolocation tidak diminta otomatis oleh aplikasi: permintaan lokasi hanya
+ * terjadi pada halaman dashboard guru yang memiliki sesi hari ini dengan
+ * antrean check-in/check-out. Admin tidak pernah memicu permintaan lokasi.
+ */
+function useCurrentPosition(enabled: boolean): Position | null {
     const [position, setPosition] = useState<Position | null>(null);
     const watchIdRef = useRef<number | null>(null);
     const phaseRef = useRef<'gps' | 'network'>('gps');
 
     useEffect(() => {
-        if (!navigator.geolocation) return;
+        if (!enabled || !navigator.geolocation) return;
+
+        const startNetworkWatch = () => {
+            phaseRef.current = 'network';
+            if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current);
+            }
+            watchIdRef.current = navigator.geolocation.watchPosition(onSuccess, () => {}, {
+                enableHighAccuracy: false,
+                maximumAge: 0,
+                timeout: 15000,
+            });
+        };
 
         const onSuccess = (pos: GeolocationPosition) => {
             const newPos: Position = {
@@ -107,15 +179,7 @@ function useCurrentPosition(): Position | null {
 
         const onError = () => {
             if (phaseRef.current === 'gps') {
-                phaseRef.current = 'network';
-                if (watchIdRef.current !== null) {
-                    navigator.geolocation.clearWatch(watchIdRef.current);
-                }
-                watchIdRef.current = navigator.geolocation.watchPosition(onSuccess, () => {}, {
-                    enableHighAccuracy: false,
-                    maximumAge: 0,
-                    timeout: 15000,
-                });
+                startNetworkWatch();
             }
         };
 
@@ -127,15 +191,7 @@ function useCurrentPosition(): Position | null {
 
         const fallbackTimer = setTimeout(() => {
             if (phaseRef.current === 'gps') {
-                phaseRef.current = 'network';
-                if (watchIdRef.current !== null) {
-                    navigator.geolocation.clearWatch(watchIdRef.current);
-                }
-                watchIdRef.current = navigator.geolocation.watchPosition(onSuccess, () => {}, {
-                    enableHighAccuracy: false,
-                    maximumAge: 0,
-                    timeout: 15000,
-                });
+                startNetworkWatch();
             }
         }, 5000);
 
@@ -145,7 +201,7 @@ function useCurrentPosition(): Position | null {
                 navigator.geolocation.clearWatch(watchIdRef.current);
             }
         };
-    }, []);
+    }, [enabled]);
 
     return position;
 }
@@ -184,17 +240,21 @@ function getAccuratePosition(): Promise<GeolocationPosition> {
             }
         };
 
+        const startNetworkWatch = () => {
+            phase = 'network';
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            watchId = navigator.geolocation.watchPosition(onSuccess, () => {}, {
+                enableHighAccuracy: false,
+                maximumAge: 0,
+                timeout: 15000,
+            });
+        };
+
         const onError = () => {
             if (phase === 'gps' && !finished) {
-                phase = 'network';
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                }
-                watchId = navigator.geolocation.watchPosition(onSuccess, () => {}, {
-                    enableHighAccuracy: false,
-                    maximumAge: 0,
-                    timeout: 15000,
-                });
+                startNetworkWatch();
             }
         };
 
@@ -206,15 +266,7 @@ function getAccuratePosition(): Promise<GeolocationPosition> {
 
         setTimeout(() => {
             if (phase === 'gps' && !finished) {
-                phase = 'network';
-                if (watchId !== null) {
-                    navigator.geolocation.clearWatch(watchId);
-                }
-                watchId = navigator.geolocation.watchPosition(onSuccess, () => {}, {
-                    enableHighAccuracy: false,
-                    maximumAge: 0,
-                    timeout: 15000,
-                });
+                startNetworkWatch();
             }
         }, 5000);
 
@@ -309,7 +361,7 @@ function LocationIndicator({ distance, radius, accuracy }: { distance: number | 
     );
 }
 
-function SessionCard({ session, attendance, attStatus, position }: { session: any; attendance: any; attStatus: string; position: Position | null }) {
+function SessionCard({ session, attendance, attStatus, position, izinAktif = false }: { session: any; attendance: any; attStatus: string; position: Position | null; izinAktif?: boolean }) {
     const [canCheckinTime, setCanCheckinTime] = useState(false);
     const [canCheckoutTime, setCanCheckoutTime] = useState(false);
     const [distance, setDistance] = useState<number | null>(null);
@@ -348,7 +400,9 @@ function SessionCard({ session, attendance, attStatus, position }: { session: an
     const canCheckout = canCheckoutTime && locationValid && !loading;
 
     let statusBadge = null;
-    if (attStatus === 'valid') {
+    if (izinAktif && attStatus === 'none') {
+        statusBadge = <Badge variant="info">Izin</Badge>;
+    } else if (attStatus === 'valid') {
         statusBadge = <Badge variant="success">Selesai</Badge>;
     } else if (attStatus === 'checkin') {
         statusBadge = <Badge variant="warning">Check-in</Badge>;
@@ -392,7 +446,7 @@ function SessionCard({ session, attendance, attStatus, position }: { session: an
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
-                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.mapel} &bull; {session.jumlah_sesi} sesi
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
                         </p>
                         {session.transport && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">
@@ -418,7 +472,12 @@ function SessionCard({ session, attendance, attStatus, position }: { session: an
                         <LocationIndicator distance={distance} radius={session.location.radius} accuracy={accuracy} />
                     )}
                     <div className="flex flex-wrap gap-1.5 sm:justify-end">
-                        {attStatus === 'none' && (
+                        {attStatus === 'none' && izinAktif && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg">
+                                <Icon icon="lucide:shield-check" className="text-xs" /> Izin disetujui
+                            </span>
+                        )}
+                        {attStatus === 'none' && !izinAktif && (
                             loading ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-indigo-600 bg-indigo-50 ring-1 ring-indigo-100/80 rounded-lg">
                                     <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
@@ -478,7 +537,7 @@ function UpcomingSessionCard({ session }: { session: any }) {
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
-                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.mapel} &bull; {session.jumlah_sesi} sesi
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
                         </p>
                         {session.transport && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">Transport: {session.transport.jenis}</p>
@@ -494,278 +553,450 @@ function UpcomingSessionCard({ session }: { session: any }) {
     );
 }
 
-export default function Dashboard({ stats, recentSessions, recentPenggajian, upcomingSessions, todayAttendances, guru, role }: DashboardProps) {
-    const position = useCurrentPosition();
+const presensiBadge: Record<string, { variant: 'success' | 'warning' | 'danger' | 'default'; label: string }> = {
+    valid: { variant: 'success', label: 'Hadir' },
+    belum_checkout: { variant: 'warning', label: 'Belum Check-out' },
+    tidak_valid: { variant: 'danger', label: 'Tidak Valid' },
+    belum_checkin: { variant: 'default', label: 'Belum Check-in' },
+};
 
-    if (role === 'guru') {
-        const hour = new Date().getHours();
-        const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam';
-        const initials = (guru?.nama || 'G').split(' ').map((n: string) => n[0]).slice(0,2).join('').toUpperCase();
-        return (
-            <AuthenticatedLayout>
-                <Head title="Dashboard Guru" />
+const statusSesiBadge: Record<string, { variant: 'info' | 'success' | 'danger'; label: string }> = {
+    dijadwalkan: { variant: 'info', label: 'Dijadwalkan' },
+    selesai: { variant: 'success', label: 'Selesai' },
+    dibatalkan: { variant: 'danger', label: 'Dibatalkan' },
+};
 
-                {/* Hero - Brand */}
-                <div className="bg-hero-gradient rounded-2xl p-6 mb-6 text-white shadow-brand-lg relative overflow-hidden">
-                    <div className="pointer-events-none absolute -top-14 -right-10 w-48 h-48 rounded-full bg-white/10 blur-3xl" />
-                    <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4 min-w-0">
-                            <div className="w-12 h-12 rounded-xl bg-white/15 ring-1 ring-white/25 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                                {initials}
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-xs font-medium text-indigo-200 tracking-wide uppercase">{greeting} • Guru KPM Pusat</p>
-                                <h1 className="text-xl font-semibold text-white tracking-tight truncate mt-0.5">{guru?.nama}</h1>
-                                <div className="flex flex-wrap items-center gap-2 mt-2">
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
-                                        <Icon icon="lucide:award" className="w-3.5 h-3.5" /> Grade {guru?.grade?.kode_grade ?? '-'}
-                                    </span>
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
-                                        {guru?.mapel ?? '-'} • {guru?.jenjang ?? '-'}
-                                    </span>
-                                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-300 font-medium">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Aktif
-                                    </span>
+function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian, pendingPerizinan }: {
+    stats: AdminStats;
+    todaySessions?: TodaySession[];
+    recentSessions?: RecentSession[];
+    recentPenggajian?: any[];
+    pendingPerizinan?: PendingPerizinan[];
+}) {
+    const periodeLabel = new Date(stats.periode + '-01T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+    return (
+        <AuthenticatedLayout>
+            <Head title="Dashboard" />
+
+            <div className="py-6 sm:py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-6">
+                        <h1 className="page-title">Dashboard</h1>
+                        <p className="page-subtitle mt-1">
+                            Ringkasan data operasional Satu Guru KPM per {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
+                        </p>
+                    </div>
+
+                    {/* Statistik data aktual */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <StatCard
+                            title="Total Guru"
+                            value={stats.total_guru}
+                            icon="lucide:users"
+                            color="accent"
+                            description={`${stats.total_guru_aktif} terhubung akun · ${stats.total_kelas_khusus} kelas khusus`}
+                        />
+                        <StatCard
+                            title="Sesi Bulan Ini"
+                            value={stats.total_sesi_bulan}
+                            icon="lucide:calendar-days"
+                            color="success"
+                            description={`${stats.total_sesi_hari_ini} sesi hari ini`}
+                        />
+                        <StatCard
+                            title="Guru Hadir Hari Ini"
+                            value={stats.guru_hadir_hari_ini}
+                            icon="lucide:user-check"
+                            color="warning"
+                            description="Presensi valid & terverifikasi"
+                        />
+                        <StatCard
+                            title="Pengeluaran Bulan Ini"
+                            value={formatCurrency(stats.total_pengeluaran)}
+                            icon="lucide:wallet"
+                            color="slate"
+                            description={`${stats.total_guru_bergaji} guru terhitung gajinya`}
+                            className="break-words"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                        <Card className="lg:col-span-1">
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Sudah Dibayar ({periodeLabel})</p>
+                                    <p className="text-[20px] font-[800] tracking-tight text-emerald-600 mt-1 break-words">{formatCurrency(stats.total_sudah_dibayar)}</p>
                                 </div>
+                                <div className="h-px bg-slate-100" />
+                                <div>
+                                    <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Belum Dibayar ({periodeLabel})</p>
+                                    <p className="text-[20px] font-[800] tracking-tight text-amber-600 mt-1 break-words">{formatCurrency(stats.pengeluaran_belum_dibayar)}</p>
+                                </div>
+                                <Link
+                                    href={route('penggajian.index')}
+                                    className="inline-flex items-center gap-1.5 text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 transition-colors"
+                                >
+                                    Kelola penggajian <Icon icon="lucide:arrow-right" className="text-[13px]" />
+                                </Link>
                             </div>
-                        </div>
-                        <div className="hidden sm:flex items-center gap-3 text-right shrink-0 border-l border-white/20 pl-6">
-                            <div>
-                                <p className="text-xs font-medium text-indigo-200 uppercase tracking-wide">Hari ini</p>
-                                <p className="text-sm font-medium text-white">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                            </div>
-                            <div className="w-9 h-9 rounded-lg bg-white/15 ring-1 ring-white/25 flex items-center justify-center text-white">
-                                <Icon icon="lucide:calendar" className="w-4 h-4" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        </Card>
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="lucide:book-open" color="blue" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />
-                    <StatCard title="Kehadiran" value={`${stats.total_hadir ?? 0}/${stats.total_sesi_bulan ?? 0}`} icon="lucide:check-circle" color="green" description="Valid & terverifikasi GPS" />
-                    <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 lg:col-span-1 col-span-2">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-                        <div className="relative">
-                            <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Gaji Bulan Ini</p>
-                            <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-white mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                            <div className="mt-3 rounded-xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm px-3 py-2">
-                                <p className="text-[10px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Potensi Gaji Bulan Ini</p>
-                                <p className="text-[16px] font-[800] tracking-[-0.02em] text-white mt-0.5 leading-tight break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
-                            </div>
-                            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-[700] border bg-white/15 text-white border-white/25 backdrop-blur-sm">
-                                <Icon icon="lucide:wallet" className="text-[12px]" /> {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}
-                                <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div className="lg:col-span-3">
                         <Card
-                            title="Jadwal Mengajar Terdekat"
-                            description="Jadwal hari ini & mendatang — absensi GPS berlaku untuk jadwal hari ini"
-                            headerAction={<span className="text-[11px] font-[700] tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{upcomingSessions?.length ?? 0} sesi</span>}
+                            className="lg:col-span-2"
+                            title="Sesi Mengajar Hari Ini"
+                            description={`${todaySessions?.length ?? 0} sesi aktif terjadwal hari ini`}
+                            headerAction={
+                                <Link href={route('jadwal.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Jadwal mingguan <Icon icon="lucide:arrow-right" className="text-[13px]" />
+                                </Link>
+                            }
+                            noPadding
                         >
-                            {upcomingSessions && upcomingSessions.length > 0 ? (
-                                <div className="space-y-3">
-                                    {upcomingSessions.map((session: any) => {
-                                        if (!session.is_today) {
-                                            return <UpcomingSessionCard key={session.id} session={session} />;
-                                        }
-                                        const attStatus = getGuruAttendanceStatus(todayAttendances?.[String(session.id)]);
-                                        const attendance = todayAttendances?.[String(session.id)];
+                            {todaySessions && todaySessions.length > 0 ? (
+                                <div className="divide-y divide-slate-100 max-h-[340px] overflow-y-auto">
+                                    {todaySessions.map((s) => {
+                                        const presensi = presensiBadge[s.presensi] ?? presensiBadge.belum_checkin;
                                         return (
-                                            <SessionCard
-                                                key={session.id}
-                                                session={session}
-                                                attendance={attendance}
-                                                attStatus={attStatus}
-                                                position={position}
-                                            />
+                                            <div key={s.id} className="flex items-center justify-between gap-3 px-5 sm:px-7 py-3.5">
+                                                <div className="min-w-0">
+                                                    <p className="text-[13px] font-[700] text-slate-900 truncate">{s.guru.nama}</p>
+                                                    <p className="text-[11.5px] text-slate-500 truncate">
+                                                        {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi ?? '-'}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <Badge variant={presensi.variant} size="sm">{presensi.label}</Badge>
+                                                </div>
+                                            </div>
                                         );
                                     })}
                                 </div>
                             ) : (
-                                <div className="text-center py-10">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto">
-                                        <Icon icon="lucide:calendar-off" className="text-[28px] text-indigo-400" />
-                                    </div>
-                                    <p className="text-[13px] font-[600] text-slate-700 mt-3">Tidak ada jadwal mendatang</p>
-                                    <p className="text-[12px] text-slate-500 mt-1">Jadwal mengajar Anda akan muncul di sini</p>
-                                </div>
+                                <p className="text-[13px] text-slate-500 text-center py-8">Tidak ada sesi mengajar hari ini.</p>
                             )}
-
-                            <div className="mt-4 pt-4 border-t border-slate-200/60">
-                                <a
-                                    href={route('jadwal.bulanan')}
-                                    className="w-full flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl hover:border-indigo-200 hover:from-indigo-100/70 hover:to-violet-100/70 transition-colors"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <Icon icon="lucide:calendar-range" className="text-indigo-600" />
-                                        <span className="text-sm font-semibold text-slate-900">Lihat Jadwal Bulanan Lengkap</span>
-                                    </div>
-                                    <Icon icon="lucide:chevron-right" className="text-indigo-400" />
-                                </a>
-                            </div>
                         </Card>
                     </div>
 
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card title="Ringkasan Pembayaran" description="Status honor bulan berjalan">
-                            <div className="space-y-4">
-                                <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 p-5">
-                                    <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
-                                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                            {stats.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
-                                        </span>
-                                    </div>
-                                    <p className="text-[22px] sm:text-[26px] font-[800] tracking-[-0.03em] text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-[500] text-slate-500">
-                                        <Icon icon="lucide:trending-up" className="text-emerald-500" /> Potensi: <span className="font-[700] text-slate-900 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
-                                    </div>
-                                    <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
-                                        <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
-                                    </div>
-                                    <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi • Kehadiran</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card
+                            title="Perizinan Menunggu Tinjauan"
+                            description="Ajukan persetujuan atau penolakan sesegera mungkin"
+                            headerAction={
+                                stats.izin_pending > 0 ? (
+                                    <Link href={route('perizinan.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                        Tinjau semua <Icon icon="lucide:arrow-right" className="text-[13px]" />
+                                    </Link>
+                                ) : undefined
+                            }
+                        >
+                            {pendingPerizinan && pendingPerizinan.length > 0 ? (
+                                <div className="space-y-3">
+                                    {pendingPerizinan.map((p) => (
+                                        <div key={p.id} className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white">
+                                            <div className="min-w-0">
+                                                <p className="text-[13px] font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
+                                                <p className="text-[11.5px] text-slate-500 truncate">
+                                                    {p.jenis} · {p.tanggal_mulai} s/d {p.tanggal_selesai}
+                                                </p>
+                                            </div>
+                                            <Badge variant="warning" size="sm">Menunggu</Badge>
+                                        </div>
+                                    ))}
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
-                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
-                                    </div>
-                                    <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
-                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            ) : (
+                                <p className="text-[13px] text-slate-500 text-center py-6">Tidak ada perizinan yang menunggu tinjauan.</p>
+                            )}
                         </Card>
 
-                        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-5">
-                            <div className="flex items-start gap-3">
-                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shrink-0 shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
-                                    <Icon icon="lucide:help-circle" className="w-5 h-5" />
+                        <Card
+                            title="Rekap Penggajian Bulan Ini"
+                            description={`Periode ${periodeLabel}`}
+                            headerAction={
+                                <Link href={route('laporan.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Laporan <Icon icon="lucide:arrow-right" className="text-[13px]" />
+                                </Link>
+                            }
+                        >
+                            {recentPenggajian && recentPenggajian.length > 0 ? (
+                                <div className="space-y-3">
+                                    {recentPenggajian.map((p) => (
+                                        <div key={p.id} className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white">
+                                            <div className="min-w-0">
+                                                <p className="text-[13px] font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
+                                                <p className="text-[11.5px] text-slate-500 truncate">{p.jumlah_sesi} sesi · {p.jumlah_hadir} hadir</p>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <p className="text-[13px] font-[800] text-slate-900 break-words">{formatCurrency(p.total)}</p>
+                                                <Badge variant={p.status_bayar === 'sudah_dibayar' ? 'success' : 'warning'} size="sm">
+                                                    {p.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Belum Dibayar'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div>
-                                    <h3 className="text-sm font-semibold text-slate-900">Butuh bantuan?</h3>
-                                    <p className="text-sm text-slate-600 mt-1 leading-5">Hubungi admin jika ada kendala absensi GPS, jadwal, atau slip gaji.</p>
-                                </div>
-                            </div>
-                        </div>
+                            ) : (
+                                <p className="text-[13px] text-slate-500 text-center py-6">
+                                    Belum ada data penggajian bulan ini. Hitung gaji dari halaman Penggajian.
+                                </p>
+                            )}
+                        </Card>
                     </div>
+
+                    {recentSessions && recentSessions.length > 0 && (
+                        <Card
+                            className="mt-6"
+                            title="Sesi Mengajar Terbaru"
+                            description="Sesi yang baru saja dibuat atau diperbarui"
+                            headerAction={
+                                <Link href={route('session.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Kelola sesi <Icon icon="lucide:arrow-right" className="text-[13px]" />
+                                </Link>
+                            }
+                            noPadding
+                        >
+                            <div className="divide-y divide-slate-100">
+                                {recentSessions.map((s) => {
+                                    const status = statusSesiBadge[s.status] ?? statusSesiBadge.dijadwalkan;
+                                    return (
+                                        <div key={s.id} className="flex items-center justify-between gap-3 px-5 sm:px-7 py-3.5">
+                                            <div className="min-w-0">
+                                                <p className="text-[13px] font-[700] text-slate-900 truncate">
+                                                    {s.guru.nama}
+                                                    {s.guru.kode_grade !== '-' && <span className="text-slate-400 font-[500]"> ({s.guru.kode_grade})</span>}
+                                                </p>
+                                                <p className="text-[11.5px] text-slate-500 truncate">
+                                                    {s.tanggal} · {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Badge variant={status.variant} size="sm">{status.label}</Badge>
+                                                <Badge variant="neutral" size="sm">{s.jumlah_sesi} sesi</Badge>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </Card>
+                    )}
                 </div>
-            </AuthenticatedLayout>
+            </div>
+        </AuthenticatedLayout>
+    );
+}
+
+export default function Dashboard(props: DashboardProps) {
+    const { stats, role } = props;
+
+    if (role === 'admin') {
+        return (
+            <AdminDashboard
+                stats={stats as AdminStats}
+                todaySessions={props.todaySessions}
+                recentSessions={props.recentSessions}
+                recentPenggajian={props.recentPenggajian}
+                pendingPerizinan={props.pendingPerizinan}
+            />
         );
     }
 
+    return <GuruDashboard {...props} stats={stats as GuruStats} />;
+}
+
+function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHariIni = null }: {
+    stats: GuruStats;
+    upcomingSessions?: any[];
+    todayAttendances?: Record<string, any>;
+    izinHariIni?: { jenis: string; rentang: string; alasan?: string } | null;
+    guru?: any;
+}) {
+    const izinAktif = Boolean(izinHariIni);
+    // Geolocation HANYA diminta untuk role guru yang punya sesi hari ini
+    // dengan antrean check-in/check-out — bukan otomatis setiap kunjungan.
+    const needsGps = !izinAktif && (upcomingSessions ?? []).some(
+        (s: any) => s.is_today && ['none', 'checkin'].includes(getGuruAttendanceStatus(todayAttendances?.[String(s.id)]))
+    );
+    const position = useCurrentPosition(needsGps);
+
+    const hour = new Date().getHours();
+    const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam';
+    const initials = (guru?.nama || 'G').split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
+
     return (
         <AuthenticatedLayout>
-            <Head title="Dashboard Admin" />
-            {/* Hero - Brand */}
+            <Head title="Dashboard" />
+
+            {/* Hero - Profil singkat */}
             <div className="bg-hero-gradient rounded-2xl p-6 mb-6 text-white shadow-brand-lg relative overflow-hidden">
-                <div className="pointer-events-none absolute -top-16 -right-12 w-56 h-56 rounded-full bg-white/10 blur-3xl" />
-                <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-[11px] font-[700] tracking-[0.06em] uppercase backdrop-blur-sm">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Sistem Aktif • TA 2026/27
+                <div className="pointer-events-none absolute -top-14 -right-10 w-48 h-48 rounded-full bg-white/10 blur-3xl" />
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-12 h-12 rounded-xl bg-white/15 ring-1 ring-white/25 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                            {initials}
                         </div>
-                        <h1 className="text-[26px] sm:text-[32px] font-[800] tracking-[-0.03em] text-white leading-none mt-3">Dashboard Admin</h1>
-                        <p className="text-[13.5px] leading-6 text-indigo-100 mt-2 font-[450] w-full">Pantau guru, sesi mengajar, absensi GPS, dan pengeluaran honor secara real-time. Semua terkonsolidasi dalam satu tampilan.</p>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 ring-1 ring-white/25 text-[12px] font-[600] text-white backdrop-blur-sm">
-                                <Icon icon="lucide:shield-check" className="text-emerald-300" /> Data terverifikasi
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 ring-1 ring-white/25 text-[12px] font-[600] text-white backdrop-blur-sm">
-                                <Icon icon="lucide:zap" className="text-amber-300" /> Kalkulasi &lt;1 detik
-                            </span>
+                        <div className="min-w-0">
+                            <p className="text-xs font-medium text-indigo-200 tracking-wide uppercase">{greeting} • Satu Guru KPM</p>
+                            <h1 className="text-xl font-semibold text-white tracking-tight truncate mt-0.5">{guru?.nama}</h1>
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                    <Icon icon="lucide:award" className="w-3.5 h-3.5" /> Grade {guru?.grade?.kode_grade ?? '-'}
+                                </span>
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                    {guru?.mapel ?? '-'}{guru?.jenjang ? ` • ${guru.jenjang}` : ''}
+                                </span>
+                                {Array.isArray(guru?.programs) && guru.programs.length > 0 && (
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                        {guru.programs.map((p: any) => p.nama).join(' · ')}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div className="hidden lg:flex items-center gap-3 shrink-0">
-                        <div className="text-right">
-                            <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Hari ini</p>
-                            <p className="text-[13px] font-[700] text-white">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                    <div className="hidden sm:flex items-center gap-3 text-right shrink-0 border-l border-white/20 pl-6">
+                        <div>
+                            <p className="text-xs font-medium text-indigo-200 uppercase tracking-wide">Hari ini</p>
+                            <p className="text-sm font-medium text-white">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                         </div>
-                        <div className="w-11 h-11 rounded-xl bg-white/15 ring-1 ring-white/25 flex items-center justify-center text-white backdrop-blur-sm">
-                            <Icon icon="lucide:calendar-range" className="text-[18px]" />
+                        <div className="w-9 h-9 rounded-lg bg-white/15 ring-1 ring-white/25 flex items-center justify-center text-white">
+                            <Icon icon="lucide:calendar" className="w-4 h-4" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <StatCard title="Total Guru" value={stats.total_guru ?? 0} icon="lucide:users" color="blue" description="Terdaftar aktif" />
-                <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="lucide:calendar-days" color="green" description="Jadwal terbuat" />
-                <StatCard title="Guru Hadir" value={stats.total_guru_hadir ?? 0} icon="lucide:user-check" color="amber" description="Hari ini" />
-                <StatCard title="Pengeluaran" value={formatCurrency(stats.total_pengeluaran ?? 0)} icon="lucide:wallet" color="purple" description="Bulan berjalan" className="break-words" />
+            {izinHariIni && (
+                <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 sm:p-5 flex items-start gap-3">
+                    <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
+                        <Icon icon="lucide:shield-check" className="text-base" />
+                    </span>
+                    <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900">
+                            {izinHariIni.jenis} disetujui &mdash; check-in tidak diperlukan
+                        </p>
+                        <p className="text-sm text-slate-600 mt-0.5 break-words">
+                            Periode {izinHariIni.rentang}. Sesi mengajar pada rentang ini tercatat sebagai Izin di rekap presensi.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="lucide:book-open" color="accent" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />
+                <StatCard title="Kehadiran" value={`${stats.total_hadir ?? 0}/${stats.total_sesi_bulan ?? 0}`} icon="lucide:check-circle" color="success" description="Valid & terverifikasi GPS" />
+                <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 lg:col-span-1 col-span-2">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+                    <div className="relative">
+                        <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Gaji Bulan Ini</p>
+                        <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-white mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
+                        <div className="mt-3 rounded-xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm px-3 py-2">
+                            <p className="text-[10px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Potensi Gaji Bulan Ini</p>
+                            <p className="text-[16px] font-[800] tracking-[-0.02em] text-white mt-0.5 leading-tight break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
+                        </div>
+                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-[700] border bg-white/15 text-white border-white/25 backdrop-blur-sm">
+                            <Icon icon="lucide:wallet" className="text-[12px]" /> {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}
+                            <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Sesi Mengajar Terbaru" description="Jadwal terbaru yang dibuat admin" headerAction={<span className="text-[11px] font-[700] tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{recentSessions?.length ?? 0} sesi</span>}>
-                    {recentSessions && recentSessions.length > 0 ? (
-                        <div className="space-y-3">
-                            {recentSessions.map((s: any) => (
-                                <div key={s.id} className="group flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-sm hover:-translate-y-px transition-all duration-200">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-[800] text-[12px] shrink-0 shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
-                                            {s.guru?.grade?.kode_grade ?? '-'}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[13.5px] font-[700] tracking-[-0.01em] text-slate-900 truncate">{s.guru?.nama}</p>
-                                            <p className="text-[11.5px] font-[500] text-slate-500 truncate flex items-center gap-1.5"><Icon icon="lucide:map-pin" className="text-[11px] shrink-0" />{s.location?.nama_lokasi} • {s.tanggal}</p>
-                                        </div>
-                                    </div>
-                                    <Badge variant="neutral">{s.jumlah_sesi} sesi</Badge>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-10">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto">
-                                <Icon icon="lucide:calendar-off" className="text-[26px] text-indigo-400" />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="lg:col-span-3">
+                    <Card
+                        title="Jadwal Mengajar Terdekat"
+                        description="Jadwal hari ini & mendatang — absensi GPS berlaku untuk jadwal hari ini"
+                        headerAction={<span className="text-[11px] font-[700] tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{upcomingSessions?.length ?? 0} sesi</span>}
+                    >
+                        {upcomingSessions && upcomingSessions.length > 0 ? (
+                            <div className="space-y-3">
+                                {upcomingSessions.map((session: any) => {
+                                    if (!session.is_today) {
+                                        return <UpcomingSessionCard key={session.id} session={session} />;
+                                    }
+                                    const attStatus = getGuruAttendanceStatus(todayAttendances?.[String(session.id)]);
+                                    const attendance = todayAttendances?.[String(session.id)];
+                                    return (
+                                        <SessionCard
+                                            key={session.id}
+                                            session={session}
+                                            attendance={attendance}
+                                            attStatus={attStatus}
+                                            position={position}
+                                            izinAktif={izinAktif}
+                                        />
+                                    );
+                                })}
                             </div>
-                            <p className="text-[13px] font-[600] text-slate-700 mt-3">Belum ada sesi</p>
-                            <p className="text-[12px] text-slate-500">Buat sesi mengajar pertama untuk memulai</p>
-                        </div>
-                    )}
-                </Card>
+                        ) : (
+                            <div className="text-center py-10">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto">
+                                    <Icon icon="lucide:calendar-off" className="text-[28px] text-indigo-400" />
+                                </div>
+                                <p className="text-[13px] font-[600] text-slate-700 mt-3">Tidak ada jadwal mendatang</p>
+                                <p className="text-[12px] text-slate-500 mt-1">Jadwal mengajar Anda akan muncul di sini</p>
+                            </div>
+                        )}
 
-                <Card title="Rekap Penggajian Terbaru" description="Pembayaran honor terkini" headerAction={<span className="text-[11px] font-[700] tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">Rekap</span>}>
-                    {recentPenggajian && recentPenggajian.length > 0 ? (
-                        <div className="space-y-3">
-                            {recentPenggajian.map((p: any) => (
-                                <div key={p.id} className="group flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-sm hover:-translate-y-px transition-all duration-200">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center font-[800] text-[12px] text-indigo-700 shrink-0">
-                                            {p.guru?.grade?.kode_grade ?? '-'}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[13.5px] font-[700] tracking-[-0.01em] text-slate-900 truncate">{p.guru?.nama}</p>
-                                            <p className="text-[11.5px] font-[500] text-slate-500 break-words">{p.periode} • {p.jumlah_sesi} sesi</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-left shrink-0 sm:text-right">
-                                        <p className="text-[13px] font-[800] tracking-[-0.01em] text-slate-900 break-words">{formatCurrency(p.total)}</p>
-                                        <Badge variant={p.status_bayar === 'sudah_dibayar' ? 'success' : 'danger'} size="sm">
-                                            {p.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
-                                        </Badge>
-                                    </div>
+                        <div className="mt-4 pt-4 border-t border-slate-200/60">
+                            <a
+                                href={route('jadwal.index')}
+                                className="w-full flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl hover:border-indigo-200 hover:from-indigo-100/70 hover:to-violet-100/70 transition-colors"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Icon icon="lucide:calendar-range" className="text-indigo-600" />
+                                    <span className="text-sm font-semibold text-slate-900">Lihat Jadwal Mingguan Lengkap</span>
                                 </div>
-                            ))}
+                                <Icon icon="lucide:chevron-right" className="text-indigo-400" />
+                            </a>
                         </div>
-                    ) : (
-                        <div className="text-center py-10">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto">
-                                <Icon icon="lucide:wallet" className="text-[26px] text-indigo-400" />
+                    </Card>
+                </div>
+
+                <div className="lg:col-span-2 space-y-6">
+                    <Card title="Ringkasan Pembayaran" description="Status honor bulan berjalan">
+                        <div className="space-y-4">
+                            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 p-5">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
+                                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                        {stats.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
+                                    </span>
+                                </div>
+                                <p className="text-[22px] sm:text-[26px] font-[800] tracking-[-0.03em] text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
+                                <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-[500] text-slate-500">
+                                    <Icon icon="lucide:trending-up" className="text-emerald-500" /> Potensi: <span className="font-[700] text-slate-900 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
+                                </div>
+                                <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
+                                    <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
+                                </div>
+                                <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi • Kehadiran</p>
                             </div>
-                            <p className="text-[13px] font-[600] text-slate-700 mt-3">Belum ada penggajian</p>
-                            <p className="text-[12px] text-slate-500">Hitung gaji untuk periode berjalan</p>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
+                                    <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
+                                    <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
+                                </div>
+                                <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
+                                    <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
+                                    <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </Card>
+                    </Card>
+
+                    <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-5">
+                        <div className="flex items-start gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shrink-0 shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
+                                <Icon icon="lucide:help-circle" className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-900">Butuh bantuan?</h3>
+                                <p className="text-sm text-slate-600 mt-1 leading-5">Hubungi admin jika ada kendala absensi GPS, jadwal, atau slip gaji.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </AuthenticatedLayout>
     );

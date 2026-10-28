@@ -6,9 +6,22 @@ import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
 import Pagination from '@/Components/ui/pagination';
+import Select from '@/Components/ui/select';
 import { Head, router, Link } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Attendance, Guru, Grade, PaginatedData } from '@/types';
+
+interface AttendanceRecap {
+    total: number;
+    valid: number;
+    belum_checkin: number;
+    belum_checkout: number;
+    tidak_valid: number;
+    izin: number;
+    menunggu: number;
+    total_jam: number;
+    guru_hadir: number;
+}
 
 interface AttendanceIndexProps {
     attendances: PaginatedData<Attendance>;
@@ -16,7 +29,11 @@ interface AttendanceIndexProps {
     filters: {
         periode?: string;
         filter_guru?: string;
+        filter_status?: string;
+        tanggal?: string;
     };
+    recap: AttendanceRecap;
+    guruTerpilih: (Guru & { grade?: Grade }) | null;
 }
 
 function formatDuration(minutes: number): string {
@@ -51,12 +68,16 @@ function getStatusBadge(status: Attendance['status']) {
             return <Badge variant="warning">Belum Checkout</Badge>;
         case 'belum_checkin':
             return <Badge variant="default">Belum Check-in</Badge>;
+        case 'izin':
+            return <Badge variant="info">Izin Disetujui</Badge>;
+        case 'menunggu':
+            return <Badge variant="warning">Menunggu Presensi</Badge>;
         default:
             return <Badge variant="default">{status}</Badge>;
     }
 }
 
-export default function AttendanceIndex({ attendances, gurus, filters }: AttendanceIndexProps) {
+export default function AttendanceIndex({ attendances, gurus, filters, recap }: AttendanceIndexProps) {
     const handleFilterChange = (key: string, value: string) => {
         router.get(
             route('attendance.index'),
@@ -66,15 +87,6 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
     };
 
     const attendanceList = attendances.data;
-    const totalHadir = attendanceList.filter((a) => a.status === 'valid').length;
-    const totalTidakHadir = attendanceList.filter(
-        (a) => a.status === 'belum_checkin' || a.status === 'belum_checkout'
-    ).length;
-    const validAttendances = attendanceList.filter((a) => a.status === 'valid');
-    const avgDuration =
-        validAttendances.length > 0
-            ? Math.round(validAttendances.reduce((sum, a) => sum + a.durasi, 0) / validAttendances.length)
-            : 0;
 
     return (
         <AuthenticatedLayout>
@@ -88,7 +100,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                     </p>
                 </div>
                 <Link
-                    href={route('salary.index')}
+                    href={route('penggajian.index')}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)] hover:-translate-y-[1px] shrink-0"
                 >
                     <Icon icon="lucide:banknote" className="text-base" />
@@ -96,41 +108,68 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 animate-fade-in">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 animate-fade-in">
                 <StatCard
-                    title="Total Hadir"
-                    value={totalHadir}
+                    title="Hadir Valid"
+                    value={recap.valid}
                     icon="lucide:check-circle"
                     color="success"
-                    description="Absensi valid"
+                    description={`${recap.guru_hadir} guru hadir`}
                 />
                 <StatCard
-                    title="Total Belum Hadir"
-                    value={totalTidakHadir}
-                    icon="lucide:x-circle"
-                    color="danger"
-                    description="Check-in/checkout tertinggal"
+                    title="Belum Check-in"
+                    value={recap.belum_checkin}
+                    icon="lucide:user-x"
+                    color="warning"
+                    description="Waktu sesi sudah lewat"
                 />
                 <StatCard
-                    title="Rata-rata Durasi"
-                    value={formatDuration(avgDuration)}
-                    icon="lucide:clock"
+                    title="Belum Check-out"
+                    value={recap.belum_checkout}
+                    icon="lucide:log-out"
                     color="accent"
-                    description="Dari yang hadir"
+                    description="Check-in tanpa check-out"
+                />
+                <StatCard
+                    title="Izin Disetujui"
+                    value={recap.izin ?? 0}
+                    icon="lucide:shield-check"
+                    color="neutral"
+                    description="Sesi tertutup perizinan"
+                />
+                <StatCard
+                    title="Menunggu Presensi"
+                    value={recap.menunggu ?? 0}
+                    icon="lucide:hourglass"
+                    color="slate"
+                    description="Sesi belum dimulai"
+                />
+                <StatCard
+                    title="Total Jam Mengajar"
+                    value={`${recap.total_jam} jam`}
+                    icon="lucide:clock"
+                    color="slate"
+                    description="Dari presensi valid"
                 />
             </div>
 
             <Card
-                title="Filter Periode"
-                description="Gunakan filter untuk menampilkan data sesuai kebutuhan"
+                title="Filter Presensi"
+                description="Saring data kehadiran sesuai kebutuhan"
                 className="mt-8"
             >
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     <Input
                         label="Periode"
                         type="month"
                         value={filters.periode ?? ''}
                         onChange={(e) => handleFilterChange('periode', e.target.value)}
+                    />
+                    <Input
+                        label="Tanggal"
+                        type="date"
+                        value={filters.tanggal ?? ''}
+                        onChange={(e) => handleFilterChange('tanggal', e.target.value)}
                     />
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-slate-700">Guru</label>
@@ -147,6 +186,20 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                             ))}
                         </select>
                     </div>
+                    <Select
+                        label="Status"
+                        value={filters.filter_status ?? ''}
+                        onChange={(e) => handleFilterChange('filter_status', e.target.value)}
+                        options={[
+                            { value: 'valid', label: 'Valid' },
+                            { value: 'belum_checkin', label: 'Belum Check-in' },
+                            { value: 'belum_checkout', label: 'Belum Check-out' },
+                            { value: 'izin', label: 'Izin Disetujui' },
+                            { value: 'menunggu', label: 'Menunggu Presensi' },
+                            { value: 'tidak_valid', label: 'Tidak Valid' },
+                        ]}
+                        placeholder="Semua Status"
+                    />
                     <div className="flex items-end">
                         <Button
                             variant="secondary"
@@ -168,7 +221,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
             <div className="mt-8">
                 <Card
                     title="Daftar Absensi"
-                    description={`Menampilkan ${attendances.total} data kehadiran`}
+                    description={`Menampilkan ${attendances.total} baris presensi — termasuk sesi yang belum check-in`}
                 >
                     {/* Desktop Table */}
                     <div className="hidden lg:block">
@@ -227,10 +280,13 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                                                 <span className="text-slate-700 text-sm">{formatDisplayDate(att.tanggal)}</span>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-xs font-medium text-slate-600">
+                                                <span className="text-xs font-medium text-slate-600 block">
                                                     {att.session
                                                         ? `${att.session.jam_mulai?.substring(0,5)} – ${att.session.jam_selesai?.substring(0,5)}`
                                                         : '-'}
+                                                </span>
+                                                <span className="text-[10.5px] text-slate-400">
+                                                    {att.session?.program?.nama ?? att.session?.mapel ?? ''}
                                                 </span>
                                             </TableCell>
                                             <TableCell>
@@ -267,7 +323,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-sm font-medium text-slate-700">
-                                                    {formatDuration(att.durasi)}
+                                                    {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
                                                 </span>
                                             </TableCell>
                                             <TableCell>{getStatusBadge(att.status)}</TableCell>
@@ -337,7 +393,7 @@ export default function AttendanceIndex({ attendances, gurus, filters }: Attenda
                                         <div>
                                             <p className="text-slate-500">Durasi</p>
                                             <p className="font-medium text-slate-700">
-                                                {formatDuration(att.durasi)}
+                                                {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
                                             </p>
                                         </div>
                                         <div>

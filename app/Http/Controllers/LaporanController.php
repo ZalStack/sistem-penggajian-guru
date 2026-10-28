@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\PenggajianExport;
 use App\Models\Grade;
 use App\Models\Penggajian;
-use App\Models\Transport;
+use App\Models\Program;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,14 +19,14 @@ class LaporanController extends Controller
             'periode' => 'nullable|string|max:7',
             'filter_grade' => 'nullable|integer|exists:grades,id',
             'filter_mapel' => 'nullable|in:IPA,MTK',
-            'filter_transport' => 'nullable|integer|exists:transports,id',
+            'filter_program' => 'nullable|integer|exists:programs,id',
         ]);
 
-        return Penggajian::with(['guru.grade', 'transport'])
+        return Penggajian::with(['guru.grade', 'guru.programs', 'transport'])
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
             ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
-            ->when($validated['filter_transport'] ?? null, fn ($q, $t) => $q->where('transport_id', $t));
+            ->when($validated['filter_program'] ?? null, fn ($q, $p) => $q->whereJsonContains('detail', ['program_id' => (int) $p]));
     }
 
     public function index(Request $request)
@@ -38,8 +38,8 @@ class LaporanController extends Controller
             'grandTotal' => (float) $penggajians->sum('total'),
             'totalSesi' => $penggajians->sum('jumlah_sesi'),
             'grades' => Grade::orderBy('kode_grade')->get(),
-            'transports' => Transport::orderBy('jenis')->get(),
-            'filters' => $request->only(['periode', 'filter_grade', 'filter_mapel', 'filter_transport']),
+            'programs' => Program::orderBy('urutan')->orderBy('nama')->get(),
+            'filters' => $request->only(['periode', 'filter_grade', 'filter_mapel', 'filter_program']),
         ]);
     }
 

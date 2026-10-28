@@ -10,7 +10,18 @@ class LocationController extends Controller
 {
     public function index()
     {
-        $locations = Location::withCount('sessions')->orderBy('nama_lokasi')->get();
+        $locations = Location::withCount('sessions')
+            ->with(['sessions.guru.grade'])
+            ->orderBy('nama_lokasi')
+            ->get()
+            ->map(function (Location $location) {
+                $location->setAttribute(
+                    'gurus',
+                    $location->sessions->pluck('guru')->filter()->unique('id')->values()
+                );
+
+                return $location;
+            });
 
         return Inertia::render('Admin/Locations/Index', [
             'locations' => $locations,
@@ -19,30 +30,20 @@ class LocationController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_lokasi' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'required|integer|min:10|max:1000',
-        ]);
+        $validated = $request->validate($this->rules());
 
         Location::create($validated);
 
-        return back()->with('success', 'Lokasi berhasil ditambahkan.');
+        return back()->with('success', 'Lokasi mengajar berhasil ditambahkan.');
     }
 
     public function update(Request $request, Location $location)
     {
-        $validated = $request->validate([
-            'nama_lokasi' => 'required|string|max:255',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'required|integer|min:10|max:1000',
-        ]);
+        $validated = $request->validate($this->rules());
 
         $location->update($validated);
 
-        return back()->with('success', 'Lokasi berhasil diperbarui.');
+        return back()->with('success', 'Lokasi mengajar berhasil diperbarui.');
     }
 
     public function destroy(Location $location)
@@ -54,6 +55,20 @@ class LocationController extends Controller
 
         $location->delete();
 
-        return back()->with('success', 'Lokasi berhasil dihapus.');
+        return back()->with('success', 'Lokasi mengajar berhasil dihapus.');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function rules(): array
+    {
+        return [
+            'nama_lokasi' => 'required|string|max:255',
+            'alamat' => 'nullable|string|max:500',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'radius' => 'required|integer|min:10|max:1000',
+        ];
     }
 }

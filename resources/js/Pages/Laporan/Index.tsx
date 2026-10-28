@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
-import { Grade, Transport, Penggajian } from '@/types';
+import { Grade, Program, Penggajian } from '@/types';
 import { useState } from 'react';
 
 interface LaporanProps {
@@ -10,8 +10,8 @@ interface LaporanProps {
     grandTotal: number;
     totalSesi: number;
     grades: Grade[];
-    transports: Transport[];
-    filters: { periode?: string; filter_grade?: string; filter_mapel?: string; filter_transport?: string; search?: string };
+    programs: Program[];
+    filters: { periode?: string; filter_grade?: string; filter_mapel?: string; filter_program?: string; search?: string };
 }
 
 function buildQueryString(filters: Record<string, string | undefined>): string {
@@ -24,7 +24,7 @@ function formatNIP(id: number) {
     return `GUR-${new Date().getFullYear()}-${String(id).padStart(4, '0')}`;
 }
 
-export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grades, transports, filters }: LaporanProps) {
+export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grades, programs, filters }: LaporanProps) {
     const qs = buildQueryString(filters as Record<string, string | undefined>);
     const [search, setSearch] = useState(filters.search || '');
 
@@ -172,12 +172,12 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
 
                         <div className="relative w-full sm:w-auto">
                             <select
-                                value={filters.filter_transport || ''}
-                                onChange={(e) => updateFilter('filter_transport', e.target.value)}
+                                value={filters.filter_program || ''}
+                                onChange={(e) => updateFilter('filter_program', e.target.value)}
                                 className="appearance-none w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-full pl-3 pr-8 py-2 text-sm font-medium text-slate-700 hover:bg-white hover:border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 transition-colors"
                             >
-                                <option value="">Semua Transport</option>
-                                {transports.map(t => <option key={t.id} value={t.id}>{t.jenis}</option>)}
+                                <option value="">Semua Program</option>
+                                {programs.map(p => <option key={p.id} value={p.id}>{p.nama}</option>)}
                             </select>
                             <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
@@ -252,8 +252,16 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                                 <span className="text-xs text-slate-500 ml-1">Sesi</span>
                                             </td>
                                             <td className="px-3 py-4">
-                                                <div className="text-sm text-slate-900 leading-none">{p.transport?.jenis ?? '-'}</div>
-                                                <div className="text-xs text-slate-500 leading-none mt-1">Bogor Timur</div>
+                                                {p.detail && p.detail.length > 0 ? (
+                                                    <div className="text-xs text-slate-600 space-y-0.5">
+                                                        {p.detail.slice(0, 2).map((d, di) => (
+                                                            <div key={di}>{d.program} · {d.transport}</div>
+                                                        ))}
+                                                        {p.detail.length > 2 && <div className="text-slate-400">+{p.detail.length - 2} lainnya</div>}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-sm text-slate-900">{p.transport?.jenis ?? '-'}</div>
+                                                )}
                                             </td>
                                             <td className="px-3 py-4 text-sm text-slate-700 text-right whitespace-nowrap">{formatCurrency(p.honor)}</td>
                                             <td className="px-3 py-4 text-sm text-slate-700 text-right whitespace-nowrap">{formatCurrency(p.total_transport)}</td>
@@ -380,7 +388,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
 
             {/* Print only footer */}
             <div className="hidden print:block mt-4 text-center text-xs text-slate-500 border-t border-slate-200 pt-3">
-                Dicetak pada {new Date().toLocaleDateString('id-ID')} — SIGURU Sistem Informasi Penggajian Guru KPM Pusat
+                Dicetak pada {new Date().toLocaleDateString('id-ID')} — Satu Guru KPM · Sistem Administrasi Guru KPM
             </div>
         </AuthenticatedLayout>
     );

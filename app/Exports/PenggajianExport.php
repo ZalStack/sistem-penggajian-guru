@@ -28,7 +28,7 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
 
     public function headings(): array
     {
-        return ['No', 'Nama Guru', 'Grade', 'Mapel', 'Periode', 'Sesi', 'Jenis Transport', 'Honor', 'Transport', 'Total Gaji'];
+        return ['No', 'Nama Guru', 'Grade', 'Mapel', 'Periode', 'Sesi', 'Hadir', 'Jenis Transport', 'Honor', 'Transport', 'Tunjangan Khusus', 'Total Gaji'];
     }
 
     public function map($penggajian): array
@@ -42,9 +42,11 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
             $penggajian->guru->mapel ?? '-',
             $penggajian->periode,
             $penggajian->jumlah_sesi,
+            $penggajian->jumlah_hadir,
             $penggajian->transport->jenis ?? '-',
             $penggajian->honor,
             $penggajian->total_transport,
+            (float) $penggajian->tunjangan_khusus,
             $penggajian->total,
         ];
     }
@@ -57,9 +59,11 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
             1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '111827']], 'alignment' => ['horizontal' => 'center', 'vertical' => 'center']],
             'A' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
             'J' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
+            'K' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
+            'L' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
             ($lastRow + 1) => ['font' => ['bold' => true], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F3F4F6']]],
         ];
     }

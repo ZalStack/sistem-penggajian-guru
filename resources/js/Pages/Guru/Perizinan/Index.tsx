@@ -7,10 +7,11 @@ import Badge from '@/Components/ui/badge';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { Perizinan } from '@/types';
+import { Perizinan, TeachingSession } from '@/types';
 
 interface PerizinanIndexProps {
     perizinan: Perizinan[];
+    sesiTerjadwal?: TeachingSession[];
 }
 
 const jenisConfig: Record<string, { label: string; icon: string; color: string }> = {
@@ -29,13 +30,38 @@ function formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
+function formatSesi(session: TeachingSession): string {
+    const tanggal = new Date(session.tanggal).toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+    });
+    const jam = `${session.jam_mulai?.substring(0, 5) ?? ''}–${session.jam_selesai?.substring(0, 5) ?? ''}`;
+    const lokasi = session.location?.nama_lokasi ?? 'Lokasi belum diatur';
+
+    return `${tanggal} • ${jam} • ${lokasi}`;
+}
+
+/**
+ * Tanggal sesi dalam waktu lokal berformat YYYY-MM-DD supaya cocok dengan
+ * nilai input type="date" (tanggal dari API dikirim dalam ISO UTC).
+ */
+function tanggalLokal(dateStr: string): string {
+    const d = new Date(dateStr);
+    const bulan = `${d.getMonth() + 1}`.padStart(2, '0');
+    const hari = `${d.getDate()}`.padStart(2, '0');
+
+    return `${d.getFullYear()}-${bulan}-${hari}`;
+}
+
+export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: PerizinanIndexProps) {
     const [showForm, setShowForm] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         jenis: 'izin' as string,
         tanggal_mulai: '',
         tanggal_selesai: '',
+        session_id: '' as string,
         alasan: '',
     });
 
@@ -52,6 +78,16 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
     const pendingCount = perizinan.filter((p) => p.status === 'pending').length;
     const approvedCount = perizinan.filter((p) => p.status === 'disetujui').length;
     const rejectedCount = perizinan.filter((p) => p.status === 'ditolak').length;
+
+    // Pilihan sesi dibatasi pada rentang tanggal yang sedang diisi.
+    const sesiTersedia = sesiTerjadwal.filter((session) => {
+        const tanggalSesi = tanggalLokal(session.tanggal);
+
+        if (data.tanggal_mulai && tanggalSesi < data.tanggal_mulai) return false;
+        if (data.tanggal_selesai && tanggalSesi > data.tanggal_selesai) return false;
+
+        return true;
+    });
 
     return (
         <AuthenticatedLayout>
@@ -171,6 +207,42 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                             />
                             {errors.alasan && <p className="text-xs text-rose-500">{errors.alasan}</p>}
                         </div>
+                        {sesiTerjadwal.length > 0 && (
+                            <div className="space-y-1.5">
+                                <label className="block text-sm font-medium text-slate-700">
+                                    Kaitkan dengan Sesi Mengajar <span className="text-slate-400 font-normal">(opsional)</span>
+                                </label>
+                                <select
+                                    value={data.session_id}
+                                    onChange={(e) => {
+                                        const dipilih = sesiTersedia.find((s) => String(s.id) === e.target.value);
+
+                                        // Isi rentang tanggal otomatis bila belum diisi,
+                                        // supaya tanggal pengajuan selalu mencakup sesinya.
+                                        if (dipilih && !data.tanggal_mulai) {
+                                            const tanggalSesi = tanggalLokal(dipilih.tanggal);
+                                            setData({ ...data, session_id: e.target.value, tanggal_mulai: tanggalSesi, tanggal_selesai: tanggalSesi });
+
+                                            return;
+                                        }
+
+                                        setData('session_id', e.target.value);
+                                    }}
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 hover:border-indigo-200 transition-colors duration-200 shadow-sm cursor-pointer"
+                                >
+                                    <option value="">Tanpa kaitan sesi (ikut rentang tanggal)</option>
+                                    {sesiTersedia.map((session) => (
+                                        <option key={session.id} value={session.id}>
+                                            {formatSesi(session)}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.session_id && <p className="text-xs text-rose-500">{errors.session_id}</p>}
+                                <p className="text-xs text-slate-500">
+                                    Sesi pada rentang tanggal perizinan akan tercatat sebagai Izin di rekap presensi.
+                                </p>
+                            </div>
+                        )}
                         <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
                             <Button type="submit" processing={processing} className="w-full sm:w-auto">
                                 <Icon icon="lucide:send" className="text-base" />
@@ -222,6 +294,18 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                                     <p className="text-slate-900">{formatDate(p.tanggal_mulai)}</p>
                                                     {p.tanggal_mulai !== p.tanggal_selesai && (
                                                         <p className="text-slate-500 text-xs">s/d {formatDate(p.tanggal_selesai)}</p>
+                                                    )}
+                                                    {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
+                                                        <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                                                            <Icon icon="lucide:calendar-clock" className="text-[10px]" />
+                                                            {p.jumlah_sesi_terdampak} sesi terdampak
+                                                        </p>
+                                                    )}
+                                                    {p.session && (
+                                                        <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
+                                                            <Icon icon="lucide:book-open" className="text-[10px]" />
+                                                            Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </TableCell>
@@ -275,6 +359,12 @@ export default function PerizinanIndex({ perizinan }: PerizinanIndexProps) {
                                             <div className="min-w-0">
                                                 <p className="font-bold text-slate-900 text-sm">{jenisConfig[p.jenis]?.label ?? p.jenis}</p>
                                                 <p className="text-xs text-slate-500 break-words">{formatDate(p.tanggal_mulai)}{p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}</p>
+                                                {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
+                                                    <p className="text-xs text-slate-500 flex items-center gap-1">
+                                                        <Icon icon="lucide:calendar-clock" className="text-[11px]" />
+                                                        {p.jumlah_sesi_terdampak} sesi terdampak
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">

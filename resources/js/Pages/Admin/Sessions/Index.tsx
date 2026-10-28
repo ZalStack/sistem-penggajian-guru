@@ -6,23 +6,40 @@ import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import Modal from '@/Components/ui/modal';
 import Select from '@/Components/ui/select';
+import Pagination from '@/Components/ui/pagination';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { Location, TeachingSession, Guru, Transport } from '@/types';
+import { Location, TeachingSession, Guru, Transport, Program, PaginatedData } from '@/types';
 
 interface SessionIndexProps {
-    sessions: TeachingSession[];
+    sessions: PaginatedData<TeachingSession>;
     gurus: (Guru & { grade?: { kode_grade: string } })[];
     locations: Location[];
     transports: Transport[];
+    programs: Program[];
     filters: {
         periode?: string;
         filter_guru?: string;
+        filter_program?: string;
+        filter_status?: string;
+        search?: string;
     };
 }
 
-export default function SessionIndex({ sessions, gurus, locations, transports, filters }: SessionIndexProps) {
+const statusVariant: Record<string, 'info' | 'success' | 'danger'> = {
+    dijadwalkan: 'info',
+    selesai: 'success',
+    dibatalkan: 'danger',
+};
+
+const statusLabel: Record<string, string> = {
+    dijadwalkan: 'Dijadwalkan',
+    selesai: 'Selesai',
+    dibatalkan: 'Dibatalkan',
+};
+
+export default function SessionIndex({ sessions, gurus, locations, transports, programs, filters }: SessionIndexProps) {
     const [showForm, setShowForm] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
     const [sessionToDelete, setSessionToDelete] = useState<TeachingSession | null>(null);
@@ -32,7 +49,10 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         guru_id: '',
         location_id: '',
         transport_id: '',
+        program_id: '',
         mapel: 'IPA' as 'IPA' | 'MTK',
+        status: 'dijadwalkan',
+        catatan: '',
         tanggal: '',
         jam_mulai: '',
         jam_selesai: '',
@@ -44,10 +64,13 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         setData('guru_id', String(session.guru_id));
         setData('location_id', String(session.location_id));
         setData('transport_id', String(session.transport_id));
+        setData('program_id', session.program_id ? String(session.program_id) : '');
         setData('mapel', session.mapel);
-        setData('tanggal', session.tanggal);
-        setData('jam_mulai', session.jam_mulai);
-        setData('jam_selesai', session.jam_selesai);
+        setData('status', session.status);
+        setData('catatan', session.catatan ?? '');
+        setData('tanggal', session.tanggal.substring(0, 10));
+        setData('jam_mulai', session.jam_mulai.substring(0, 5));
+        setData('jam_selesai', session.jam_selesai.substring(0, 5));
         setData('jumlah_sesi', session.jumlah_sesi);
         setShowForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -82,18 +105,10 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         }
     };
 
-    const handleFilterPeriode = (value: string) => {
+    const applyFilters = (patch: Record<string, string | undefined>) => {
         router.get(
             route('session.index'),
-            { ...filters, periode: value || undefined },
-            { preserveState: true, replace: true }
-        );
-    };
-
-    const handleFilterGuru = (value: string) => {
-        router.get(
-            route('session.index'),
-            { ...filters, filter_guru: value || undefined },
+            { ...filters, ...patch },
             { preserveState: true, replace: true }
         );
     };
@@ -102,7 +117,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         router.get(route('session.index'), {}, { preserveState: true, replace: true });
     };
 
-    const hasActiveFilters = Boolean(filters.periode || filters.filter_guru);
+    const hasActiveFilters = Boolean(filters.periode || filters.filter_guru || filters.filter_program || filters.filter_status || filters.search);
 
     const guruOptions = gurus.map((g) => ({
         value: g.id,
@@ -119,14 +134,17 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
         label: t.jenis,
     }));
 
+    const programOptions = programs.map((p) => ({
+        value: p.id,
+        label: p.nama,
+    }));
+
     const formatDate = (dateStr: string) => {
         const d = new Date(dateStr);
         return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
-    const formatTime = (timeStr: string) => {
-        return timeStr.substring(0, 5);
-    };
+    const formatTime = (timeStr: string) => timeStr.substring(0, 5);
 
     return (
         <AuthenticatedLayout>
@@ -136,7 +154,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                 <div className="min-w-0">
                     <h1 className="page-title">Sesi Mengajar</h1>
                     <p className="page-subtitle">
-                        Kelola jadwal sesi mengajar guru beserta lokasi dan transport
+                        Kelola jadwal sesi mengajar guru: program kelas, status, dan lokasi.
                     </p>
                 </div>
                 <Button
@@ -155,7 +173,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                 {showForm && (
                     <Card
                         title={editId ? 'Edit Sesi Mengajar' : 'Tambah Sesi Mengajar Baru'}
-                        description="Lengkapi data jadwal sesi mengajar termasuk guru, lokasi, dan transport"
+                        description="Lengkapi data jadwal sesi mengajar termasuk program, status, dan lokasi"
                     >
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,6 +187,16 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     required
                                 />
                                 <Select
+                                    label="Program / Kelas"
+                                    value={data.program_id}
+                                    onChange={(e) => setData('program_id', e.target.value)}
+                                    options={programOptions}
+                                    placeholder="Tanpa program"
+                                    error={errors.program_id}
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Select
                                     label="Lokasi"
                                     value={data.location_id}
                                     onChange={(e) => setData('location_id', e.target.value)}
@@ -177,8 +205,6 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     error={errors.location_id}
                                     required
                                 />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Select
                                     label="Transport"
                                     value={data.transport_id}
@@ -188,6 +214,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     error={errors.transport_id}
                                     required
                                 />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Select
                                     label="Mata Pelajaran"
                                     value={data.mapel}
@@ -198,6 +226,18 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     ]}
                                     placeholder="Pilih Mapel"
                                     error={errors.mapel}
+                                    required
+                                />
+                                <Select
+                                    label="Status Sesi"
+                                    value={data.status}
+                                    onChange={(e) => setData('status', e.target.value)}
+                                    options={[
+                                        { value: 'dijadwalkan', label: 'Dijadwalkan' },
+                                        { value: 'selesai', label: 'Selesai' },
+                                        { value: 'dibatalkan', label: 'Dibatalkan' },
+                                    ]}
+                                    error={errors.status}
                                     required
                                 />
                             </div>
@@ -237,6 +277,13 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     min={1}
                                     required
                                 />
+                                <Input
+                                    label="Catatan"
+                                    value={data.catatan}
+                                    onChange={(e) => setData('catatan', e.target.value)}
+                                    error={errors.catatan}
+                                    placeholder="Opsional: alasan pembatalan / catatan admin"
+                                />
                             </div>
                             <div className="flex flex-wrap items-center gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
@@ -252,38 +299,58 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
 
                 <Card>
                     {/* Filter Bar */}
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end mb-8">
-                        <div className="flex-1">
-                            <Input
-                                label="Periode"
-                                type="month"
-                                value={filters.periode || ''}
-                                onChange={(e) => handleFilterPeriode(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex-1">
-                            <Select
-                                label="Filter Guru"
-                                value={filters.filter_guru || ''}
-                                onChange={(e) => handleFilterGuru(e.target.value)}
-                                options={guruOptions}
-                                placeholder="Semua Guru"
-                            />
-                        </div>
-                        {hasActiveFilters && (
-                            <div className="flex items-end">
-                                <button
-                                    type="button"
-                                    onClick={resetFilters}
-                                    className="inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors whitespace-nowrap"
-                                >
-                                    <Icon icon="lucide:rotate-ccw" /> Reset
-                                </button>
-                            </div>
-                        )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <Input
+                            label="Cari"
+                            value={filters.search || ''}
+                            onChange={(e) => applyFilters({ search: e.target.value || undefined })}
+                            placeholder="Nama guru / lokasi"
+                        />
+                        <Input
+                            label="Periode"
+                            type="month"
+                            value={filters.periode || ''}
+                            onChange={(e) => applyFilters({ periode: e.target.value || undefined })}
+                        />
+                        <Select
+                            label="Filter Guru"
+                            value={filters.filter_guru || ''}
+                            onChange={(e) => applyFilters({ filter_guru: e.target.value || undefined })}
+                            options={guruOptions}
+                            placeholder="Semua Guru"
+                        />
+                        <Select
+                            label="Program"
+                            value={filters.filter_program || ''}
+                            onChange={(e) => applyFilters({ filter_program: e.target.value || undefined })}
+                            options={programOptions}
+                            placeholder="Semua Program"
+                        />
+                        <Select
+                            label="Status"
+                            value={filters.filter_status || ''}
+                            onChange={(e) => applyFilters({ filter_status: e.target.value || undefined })}
+                            options={[
+                                { value: 'dijadwalkan', label: 'Dijadwalkan' },
+                                { value: 'selesai', label: 'Selesai' },
+                                { value: 'dibatalkan', label: 'Dibatalkan' },
+                            ]}
+                            placeholder="Semua Status"
+                        />
                     </div>
+                    {hasActiveFilters && (
+                        <div className="flex justify-end -mt-6 mb-6">
+                            <button
+                                type="button"
+                                onClick={resetFilters}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors whitespace-nowrap"
+                            >
+                                <Icon icon="lucide:rotate-ccw" /> Reset Filter
+                            </button>
+                        </div>
+                    )}
 
-                    {sessions.length > 0 ? (
+                    {sessions.data.length > 0 ? (
                         <>
                             {/* Desktop & Tablet Table */}
                             <div className="hidden md:block">
@@ -292,38 +359,42 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                         <TableRow>
                                             <TableHead className="w-16">No</TableHead>
                                             <TableHead>Guru</TableHead>
-                                            <TableHead>Grade</TableHead>
-                                            <TableHead>Mapel</TableHead>
+                                            <TableHead>Program</TableHead>
+                                            <TableHead>Status</TableHead>
                                             <TableHead>Tanggal</TableHead>
                                             <TableHead>Jam</TableHead>
                                             <TableHead>Sesi</TableHead>
                                             <TableHead>Lokasi</TableHead>
-                                            <TableHead>Transport</TableHead>
                                             <TableHead className="text-right">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {sessions.map((session, index) => (
+                                        {sessions.data.map((session, index) => (
                                             <TableRow key={session.id}>
-                                                <TableCell className="font-medium text-slate-500">{index + 1}</TableCell>
+                                                <TableCell className="font-medium text-slate-500">
+                                                    {(sessions.current_page - 1) * sessions.per_page + index + 1}
+                                                </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                             {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
                                                         </div>
-                                                        <span className="font-semibold text-slate-900 text-sm">
-                                                            {session.guru?.nama ?? '-'}
-                                                        </span>
+                                                        <div className="min-w-0">
+                                                            <span className="font-semibold text-slate-900 text-sm block truncate">
+                                                                {session.guru?.nama ?? '-'}
+                                                            </span>
+                                                            <span className="text-[11px] text-slate-400">
+                                                                Grade {session.guru?.grade?.kode_grade ?? '-'} · {session.mapel}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="purple">
-                                                        Grade {session.guru?.grade?.kode_grade ?? '-'}
-                                                    </Badge>
+                                                    <span className="text-slate-600 text-sm">{session.program?.nama ?? '-'}</span>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={session.mapel === 'IPA' ? 'success' : 'info'}>
-                                                        {session.mapel}
+                                                    <Badge variant={statusVariant[session.status] ?? 'default'} size="sm">
+                                                        {statusLabel[session.status] ?? session.status}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
@@ -339,9 +410,6 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="text-slate-600 text-sm">{session.transport?.jenis ?? '-'}</span>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-1">
@@ -371,7 +439,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
 
                             {/* Mobile Cards View */}
                             <div className="md:hidden space-y-3">
-                                {sessions.map((session, index) => (
+                                {sessions.data.map((session) => (
                                     <div
                                         key={session.id}
                                         className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
@@ -386,9 +454,9 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                                     <p className="text-xs text-slate-500">{session.location?.nama_lokasi ?? '-'}</p>
                                                 </div>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-500">
-                                                #{index + 1}
-                                            </span>
+                                            <Badge variant={statusVariant[session.status] ?? 'default'} size="sm">
+                                                {statusLabel[session.status] ?? session.status}
+                                            </Badge>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3 text-xs">
@@ -405,10 +473,9 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                         </div>
 
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <Badge variant="purple">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
-                                            <Badge variant={session.mapel === 'IPA' ? 'success' : 'info'}>{session.mapel}</Badge>
+                                            <Badge variant="info">{session.program?.nama ?? session.mapel}</Badge>
                                             <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
-                                            <Badge variant="default">{session.transport?.jenis ?? '-'}</Badge>
+                                            <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
                                         </div>
 
                                         <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
@@ -430,6 +497,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                                     </div>
                                 ))}
                             </div>
+
+                            <Pagination links={sessions.links} from={sessions.from} to={sessions.to} total={sessions.total} />
                         </>
                     ) : (
                         <div className="text-center py-16">
@@ -441,7 +510,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, f
                             </h3>
                             <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
                                 {hasActiveFilters
-                                    ? 'Coba ubah atau reset filter periode dan guru yang dipilih.'
+                                    ? 'Coba ubah atau reset filter yang dipilih.'
                                     : 'Mulai dengan menambahkan sesi mengajar baru untuk memulai penjadwalan.'}
                             </p>
                             <div className="mt-6">

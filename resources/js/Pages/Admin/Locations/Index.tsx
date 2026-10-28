@@ -22,6 +22,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         nama_lokasi: '',
+        alamat: '',
         latitude: 0,
         longitude: 0,
         radius: 100,
@@ -31,6 +32,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
         setEditId(location.id);
         setData({
             nama_lokasi: location.nama_lokasi,
+            alamat: location.alamat ?? '',
             latitude: location.latitude,
             longitude: location.longitude,
             radius: location.radius,
@@ -108,6 +110,15 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                     required
                                 />
                                 <Input
+                                    label="Alamat Lengkap"
+                                    value={data.alamat}
+                                    onChange={(e) => setData('alamat', e.target.value)}
+                                    error={errors.alamat}
+                                    placeholder="Contoh: Jl. Raya Bogor No. 10, Jakarta Timur"
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Input
                                     label="Radius (meter)"
                                     type="number"
                                     value={data.radius}
@@ -118,7 +129,7 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                     max={1000}
                                     required
                                 />
-                                <p className="text-xs text-slate-500 mt-1 sm:col-span-2">
+                                <p className="text-xs text-slate-500 self-end pb-2">
                                     Luar ruangan: 50-100m &bull; Dalam ruangan: 100-300m &bull; Laptop/WiFi: 150-300m
                                 </p>
                             </div>
@@ -167,9 +178,9 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                 <TableRow>
                                     <TableHead className="w-16">No</TableHead>
                                     <TableHead>Nama Lokasi</TableHead>
-                                    <TableHead>Latitude</TableHead>
-                                    <TableHead>Longitude</TableHead>
+                                    <TableHead>Alamat</TableHead>
                                     <TableHead>Radius</TableHead>
+                                    <TableHead>Guru Penugasan</TableHead>
                                     <TableHead>Jumlah Sesi</TableHead>
                                     <TableHead className="text-right">Aksi</TableHead>
                                 </TableRow>
@@ -183,17 +194,35 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
                                                     <Icon icon="lucide:map-pin" className="text-lg" />
                                                 </div>
-                                                <span className="font-bold text-slate-900">{location.nama_lokasi}</span>
+                                                <div className="min-w-0">
+                                                    <span className="font-bold text-slate-900 block">{location.nama_lokasi}</span>
+                                                    <span className="text-[11px] text-slate-400 font-mono">
+                                                        {Number(location.latitude).toFixed(5)}, {Number(location.longitude).toFixed(5)}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-600 font-mono text-xs">{Number(location.latitude).toFixed(6)}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-slate-600 font-mono text-xs">{Number(location.longitude).toFixed(6)}</span>
+                                            <span className="text-slate-600 text-sm max-w-[200px] block truncate" title={location.alamat ?? ''}>
+                                                {location.alamat || '-'}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="info">{location.radius} m</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            {location.gurus && location.gurus.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                                    {location.gurus.slice(0, 3).map((g) => (
+                                                        <Badge key={g.id} variant="outline" size="sm">{g.nama}</Badge>
+                                                    ))}
+                                                    {location.gurus.length > 3 && (
+                                                        <span className="text-[11px] text-slate-400 font-semibold">+{location.gurus.length - 3} lagi</span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-slate-400">-</span>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
@@ -240,6 +269,9 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                                         </div>
                                         <div className="min-w-0">
                                             <p className="font-bold text-slate-900 text-sm truncate">{location.nama_lokasi}</p>
+                                            {location.alamat && (
+                                                <p className="text-xs text-slate-500 truncate">{location.alamat}</p>
+                                            )}
                                             <p className="text-xs text-slate-500 font-mono break-all">
                                                 {Number(location.latitude).toFixed(4)}, {Number(location.longitude).toFixed(4)}
                                             </p>

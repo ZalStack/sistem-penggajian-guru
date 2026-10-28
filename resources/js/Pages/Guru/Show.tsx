@@ -2,21 +2,60 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
 import Badge from '@/Components/ui/badge';
+import StatCard from '@/Components/ui/stat-card';
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
-import { Guru } from '@/types';
+import { Attendance, Guru, Penggajian, TeachingSession } from '@/types';
+
+interface PresensiRecap {
+    total_sesi: number;
+    total_hadir: number;
+    belum_checkin: number;
+    belum_checkout: number;
+    tidak_valid: number;
+    total_jam: number;
+    persentase: number;
+}
 
 interface GuruShowProps {
     guru: Guru & { user?: { id: number; email: string } | null };
+    periode: string;
+    presensi: PresensiRecap;
+    attendances: Attendance[];
+    sessions: TeachingSession[];
+    penggajian: Penggajian | null;
+    periodeTersedia: string[];
 }
 
-export default function GuruShow({ guru }: GuruShowProps) {
+const statusPresensiVariant: Record<string, 'success' | 'warning' | 'danger' | 'default'> = {
+    valid: 'success',
+    belum_checkout: 'warning',
+    tidak_valid: 'danger',
+    belum_checkin: 'default',
+};
+
+const statusPresensiLabel: Record<string, string> = {
+    valid: 'Valid',
+    belum_checkout: 'Belum Check-out',
+    tidak_valid: 'Tidak Valid',
+    belum_checkin: 'Belum Check-in',
+};
+
+export default function GuruShow({ guru, periode, presensi, attendances, sessions, penggajian, periodeTersedia }: GuruShowProps) {
     const handleResetPassword = () => {
         if (confirm(`Reset password guru "${guru.nama}"? Password baru akan ditampilkan setelah reset.`)) {
             router.post(route('guru.resetPassword', guru.id));
         }
     };
+
+    const handlePeriodeChange = (value: string) => {
+        router.get(route('guru.show', guru.id), value ? { periode: value } : {}, { preserveState: true, replace: true });
+    };
+
+    const formatDate = (d: string | null) =>
+        d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+    const formatTime = (t: string | null) => (t ? t.substring(0, 5) : '-');
 
     return (
         <AuthenticatedLayout>
@@ -32,7 +71,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     </Link>
                     <div className="min-w-0">
                         <h1 className="page-title truncate">Detail Profil Guru</h1>
-                        <p className="page-subtitle">Informasi lengkap penugasan, kontak & keuangan</p>
+                        <p className="page-subtitle">Penugasan program, presensi, & honor</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -68,6 +107,13 @@ export default function GuruShow({ guru }: GuruShowProps) {
                             <Badge variant="purple">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
                             <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'}>{guru.mapel}</Badge>
                         </div>
+                        {guru.programs && guru.programs.length > 0 && (
+                            <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
+                                {guru.programs.map((p) => (
+                                    <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="mt-6 space-y-2.5 text-left">
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
@@ -95,11 +141,14 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                     <Icon icon="lucide:calendar-heart" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Bergabung di KPM</p>
+                                    <p className="text-[11px] font-medium text-slate-400">Mulai Mengajar di KPM</p>
                                     <p className="text-sm font-semibold text-slate-900">
                                         {guru.tanggal_bergabung
                                             ? new Date(guru.tanggal_bergabung).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
                                             : '-'}
+                                        {guru.lama_mengajar != null && (
+                                            <span className="text-xs text-slate-500 font-medium"> · {guru.lama_mengajar} thn pengalaman</span>
+                                        )}
                                     </p>
                                 </div>
                             </div>
@@ -132,6 +181,120 @@ export default function GuruShow({ guru }: GuruShowProps) {
 
                 {/* Right Details */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Rekap Presensi */}
+                    <Card
+                        title="Rekap Presensi"
+                        description={`Periode ${periode}`}
+                        headerAction={
+                            periodeTersedia.length > 0 || attendances.length > 0 || sessions.length > 0 ? (
+                                <select
+                                    value={periode}
+                                    onChange={(e) => handlePeriodeChange(e.target.value)}
+                                    className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 cursor-pointer"
+                                    aria-label="Pilih periode rekap presensi"
+                                >
+                                    <option value={periode}>{periode}</option>
+                                    {periodeTersedia
+                                        .filter((p) => p !== periode)
+                                        .map((p) => (
+                                            <option key={p} value={p}>{p}</option>
+                                        ))}
+                                </select>
+                            ) : undefined
+                        }
+                    >
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+                            <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-100">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">Sesi Terjadwal</p>
+                                <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.total_sesi}</p>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Hadir Valid</p>
+                                <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.total_hadir}</p>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-100">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Belum Check-out</p>
+                                <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.belum_checkout}</p>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Tidak Valid</p>
+                                <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.tidak_valid}</p>
+                            </div>
+                        </div>
+                        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
+                            <span>Persentase kehadiran</span>
+                            <span className="text-slate-900 font-bold">{presensi.persentase}% · {presensi.total_jam} jam mengajar</span>
+                        </div>
+                        <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700"
+                                style={{ width: `${Math.min(100, presensi.persentase)}%` }}
+                            />
+                        </div>
+
+                        {attendances.length > 0 ? (
+                            <div className="mt-5 overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                                            <th className="py-2.5 pr-3 font-semibold">Tanggal</th>
+                                            <th className="py-2.5 pr-3 font-semibold">Program</th>
+                                            <th className="py-2.5 pr-3 font-semibold">Lokasi</th>
+                                            <th className="py-2.5 pr-3 font-semibold">Masuk</th>
+                                            <th className="py-2.5 pr-3 font-semibold">Keluar</th>
+                                            <th className="py-2.5 pr-3 font-semibold text-right">Durasi</th>
+                                            <th className="py-2.5 font-semibold text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {attendances.map((a) => (
+                                            <tr key={a.id}>
+                                                <td className="py-2.5 pr-3 text-slate-700 whitespace-nowrap">{formatDate(a.tanggal)}</td>
+                                                <td className="py-2.5 pr-3 text-slate-600">{a.session?.program?.nama ?? a.session?.mapel ?? '-'}</td>
+                                                <td className="py-2.5 pr-3 text-slate-600">{a.session?.location?.nama_lokasi ?? '-'}</td>
+                                                <td className="py-2.5 pr-3 text-slate-600">{formatTime(a.checkin_time)}</td>
+                                                <td className="py-2.5 pr-3 text-slate-600">{formatTime(a.checkout_time)}</td>
+                                                <td className="py-2.5 pr-3 text-slate-600 text-right whitespace-nowrap">{a.durasi} mnt</td>
+                                                <td className="py-2.5 text-right">
+                                                    <Badge variant={statusPresensiVariant[a.status] ?? 'default'} size="sm">
+                                                        {statusPresensiLabel[a.status] ?? a.status}
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-[13px] text-slate-500 text-center py-5 mt-4 bg-slate-50 rounded-xl">
+                                Tidak ada data presensi pada periode ini.
+                            </p>
+                        )}
+
+                        {penggajian && (
+                            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white">
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-200">Honor Periode {penggajian.periode}</p>
+                                    <p className="text-lg font-extrabold mt-0.5 break-words">{formatCurrency(penggajian.total)}</p>
+                                    <p className="text-[11.5px] text-indigo-200 mt-0.5">
+                                        {penggajian.jumlah_hadir} kehadiran valid · {penggajian.jumlah_sesi} sesi terjadwal
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={penggajian.status_bayar === 'sudah_dibayar' ? 'success' : 'warning'}>
+                                        {penggajian.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Belum Dibayar'}
+                                    </Badge>
+                                    <a
+                                        href={route('penggajian.payslip', penggajian.id)}
+                                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white text-indigo-700 rounded-xl hover:bg-indigo-50 transition-colors"
+                                    >
+                                        <Icon icon="lucide:download" className="text-[13px]" /> Slip PDF
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </Card>
+
                     {/* Kontak & Domisili */}
                     <Card title="Kontak & Domisili" description="Informasi komunikasi guru">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -150,7 +313,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                 </div>
                                 <p className="text-sm font-bold text-emerald-900">{guru.nomor_telepon || '-'}</p>
                                 {guru.nomor_telepon && (
-                                    <a href={`https://wa.me/${guru.nomor_telepon.replace(/[^0-9]/g, '')}`} target="_blank" className="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-1">
+                                    <a href={`https://wa.me/${guru.nomor_telepon.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-1">
                                         <Icon icon="lucide:message-circle" /> Chat WhatsApp
                                     </a>
                                 )}
@@ -165,9 +328,9 @@ export default function GuruShow({ guru }: GuruShowProps) {
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Icon icon="lucide:graduation-cap" className="text-slate-600 text-base" />
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelas yang Diajar</span>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendidikan Terakhir</span>
                                 </div>
-                                <p className="text-sm font-semibold text-slate-900">{guru.jenjang || '-'}</p>
+                                <p className="text-sm font-semibold text-slate-900">{guru.pendidikan_terakhir || '-'}</p>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 sm:col-span-2">
                                 <div className="flex items-center gap-2 mb-2">
@@ -186,6 +349,16 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                     <span className="text-xs font-bold text-violet-700 uppercase tracking-wider">Riwayat Pendidikan</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_pendidikan}</p>
+                            </div>
+                        )}
+
+                        {guru.riwayat_mengajar && (
+                            <div className="mt-4 p-4 bg-sky-50/60 rounded-xl border border-sky-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Icon icon="lucide:briefcase" className="text-sky-600" />
+                                    <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Riwayat Mengajar</span>
+                                </div>
+                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_mengajar}</p>
                             </div>
                         )}
 
@@ -223,7 +396,7 @@ export default function GuruShow({ guru }: GuruShowProps) {
                         <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
                             <Icon icon="lucide:shield-check" className="text-amber-600 text-base mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-amber-700 leading-relaxed">
-                                <b>Tunjangan Khusus:</b> {formatCurrency(Number(guru.tunjangan_khusus))} — Hanya Admin yang dapat mengubah nominal ini. Guru melihat sebagai informasi read-only di profilnya.
+                                <b>Tunjangan Khusus:</b> {formatCurrency(Number(guru.tunjangan_khusus))} — Hanya Admin yang dapat mengubah nominal ini.
                             </p>
                         </div>
                     </Card>
@@ -267,16 +440,17 @@ export default function GuruShow({ guru }: GuruShowProps) {
                     )}
 
                     {/* Salary History */}
-                    <Card title="Riwayat Penggajian Guru" description="Daftar seluruh sesi dan honor yang telah disalurkan">
+                    <Card title="Riwayat Penggajian Guru" description="Rekap honor per periode (satu baris per guru per periode)">
                         {guru.penggajians && guru.penggajians.length > 0 ? (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Periode</TableHead>
-                                        <TableHead>Sesi</TableHead>
-                                        <TableHead>Transport</TableHead>
+                                        <TableHead>Sesi / Hadir</TableHead>
                                         <TableHead>Honor</TableHead>
+                                        <TableHead>Transport</TableHead>
                                         <TableHead>Total Diterima</TableHead>
+                                        <TableHead>Status</TableHead>
                                         <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -286,16 +460,25 @@ export default function GuruShow({ guru }: GuruShowProps) {
                                             <TableCell>
                                                 <Badge>{p.periode}</Badge>
                                             </TableCell>
-                                            <TableCell className="font-semibold text-slate-700">{p.jumlah_sesi} sesi</TableCell>
-                                            <TableCell className="text-slate-600">{p.transport?.jenis ?? '-'}</TableCell>
+                                            <TableCell className="font-semibold text-slate-700">{p.jumlah_sesi} / {p.jumlah_hadir}</TableCell>
                                             <TableCell className="text-slate-600">{formatCurrency(p.honor)}</TableCell>
+                                            <TableCell className="text-slate-600">{formatCurrency(p.total_transport)}</TableCell>
                                             <TableCell>
                                                 <span className="font-extrabold text-slate-900">{formatCurrency(p.total)}</span>
                                             </TableCell>
+                                            <TableCell>
+                                                <Badge variant={p.status_bayar === 'sudah_dibayar' ? 'success' : 'warning'} size="sm">
+                                                    {p.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Belum'}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell className="text-right">
-                                                <Link href={route('penggajian.show', p.id)} className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-block" title="Lihat Slip">
-                                                    <Icon icon="lucide:eye" className="text-base" />
-                                                </Link>
+                                                <a
+                                                    href={route('penggajian.payslip', p.id)}
+                                                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-block"
+                                                    title="Unduh Slip Gaji"
+                                                >
+                                                    <Icon icon="lucide:download" className="text-base" />
+                                                </a>
                                             </TableCell>
                                         </TableRow>
                                     ))}

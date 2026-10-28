@@ -10,7 +10,7 @@ class Location extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_lokasi', 'latitude', 'longitude', 'radius'];
+    protected $fillable = ['nama_lokasi', 'alamat', 'latitude', 'longitude', 'radius'];
 
     protected function casts(): array
     {

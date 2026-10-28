@@ -1,107 +1,95 @@
-import Input from '@/Components/ui/input';
-import Button from '@/Components/ui/button';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { FormEventHandler } from 'react';
+import { FormEvent } from 'react';
+import InputError from '@/Components/InputError';
+import Input from '@/Components/ui/input';
+import PasswordInput from '@/Components/PasswordInput';
+import GuestLayout from '@/Layouts/GuestLayout';
 
-interface Props {
-    token: string;
-    email: string;
-}
-
-export default function ResetPassword({ token, email }: Props) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+export default function ResetPassword({ token, email }: { token: string; email: string }) {
+    const { data, setData, post, processing, errors } = useForm({
         token: token,
         email: email,
         password: '',
         password_confirmation: '',
     });
 
-    const submit: FormEventHandler = (e) => {
+    const submit = (e: FormEvent) => {
         e.preventDefault();
-
-        post(route('password.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+        post(route('password.store'));
     };
 
     return (
-        <GuestLayout>
+        <>
             <Head title="Atur Ulang Kata Sandi" />
 
-            <div className="mb-6">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-brand">
-                    <Icon icon="lucide:key-round" className="text-white text-[21px]" />
+            <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-brand">
+                    <Icon icon="lucide:key-round" className="text-[20px]" />
                 </div>
-                <h2 className="text-[22px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">
-                    Atur <span className="text-brand-gradient">Kata Sandi Baru</span>
-                </h2>
-                <p className="text-[13px] text-slate-500 mt-2 leading-5 font-medium">
-                    Silakan buat kata sandi baru untuk mengamankan akun Anda
-                </p>
+                <div>
+                    <h1 className="text-xl font-bold text-gray-900">Atur Ulang Kata Sandi</h1>
+                    <p className="text-sm text-gray-500">Buat kata sandi baru untuk akun Anda</p>
+                </div>
             </div>
 
-            <form onSubmit={submit} className="space-y-4">
-                <Input
-                    label="Alamat Email"
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    autoComplete="username"
-                    onChange={(e) => setData('email', e.target.value)}
-                    error={errors.email}
-                    required
-                    icon={<Icon icon="lucide:mail" className="text-base" />}
-                />
+            <form onSubmit={submit} className="space-y-5">
+                <input type="hidden" name="token" value={data.token} />
 
-                <Input
-                    label="Kata Sandi Baru"
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={data.password}
-                    autoComplete="new-password"
-                    onChange={(e) => setData('password', e.target.value)}
-                    error={errors.password}
-                    placeholder="Minimal 8 karakter"
-                    required
-                    icon={<Icon icon="lucide:lock" className="text-base" />}
-                />
-
-                <Input
-                    label="Konfirmasi Kata Sandi Baru"
-                    id="password_confirmation"
-                    type="password"
-                    name="password_confirmation"
-                    value={data.password_confirmation}
-                    autoComplete="new-password"
-                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                    error={errors.password_confirmation}
-                    placeholder="••••••••"
-                    required
-                    icon={<Icon icon="lucide:lock-keyhole" className="text-base" />}
-                />
-
-                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100">
-                    <Icon icon="lucide:shield-check" className="text-indigo-500 text-[16px] mt-0.5 shrink-0" />
-                    <p className="text-[12px] leading-5 text-indigo-700/80 font-medium">
-                        Gunakan minimal 8 karakter dengan kombinasi huruf, angka, dan simbol agar kata sandi lebih kuat.
-                    </p>
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+                    <Input
+                        type="email"
+                        value={data.email}
+                        onChange={(e) => setData('email', e.target.value)}
+                        placeholder="nama@satugurukpm.id"
+                        required
+                        autoFocus
+                    />
+                    <InputError message={errors.email} className="mt-2" />
                 </div>
 
-                <div className="pt-2">
-                    <Button
-                        type="submit"
-                        processing={processing}
-                        className="w-full justify-center py-3.5 text-[14px]"
-                    >
-                        <Icon icon="lucide:key" className="text-base" />
-                        <span>Simpan Kata Sandi Baru</span>
-                    </Button>
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Kata Sandi Baru</label>
+                    <PasswordInput
+                        value={data.password}
+                        onChange={(e) => setData('password', e.target.value)}
+                        placeholder="Minimal 8 karakter"
+                        autoComplete="new-password"
+                        required
+                    />
+                    <InputError message={errors.password} className="mt-2" />
+                </div>
+
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-gray-700">Konfirmasi Kata Sandi</label>
+                    <PasswordInput
+                        value={data.password_confirmation}
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        placeholder="Ulangi kata sandi baru"
+                        autoComplete="new-password"
+                        required
+                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
+                </div>
+
+                <button type="submit" className="btn-primary w-full" disabled={processing}>
+                    {processing ? (
+                        <Icon icon="lucide:loader-2" className="animate-spin text-[16px]" />
+                    ) : (
+                        <Icon icon="lucide:key-round" className="text-[16px]" />
+                    )}
+                    {processing ? 'Menyimpan...' : 'Simpan Kata Sandi Baru'}
+                </button>
+
+                <div className="text-center text-sm text-gray-500">
+                    <Link href={route('login')} className="font-medium text-indigo-600 hover:text-indigo-500">
+                        Kembali ke Halaman Masuk
+                    </Link>
                 </div>
             </form>
-        </GuestLayout>
+        </>
     );
 }
+
+ResetPassword.layout = (children: React.ReactNode) => <GuestLayout>{children}</GuestLayout>;
