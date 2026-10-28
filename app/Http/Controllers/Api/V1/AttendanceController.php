@@ -157,6 +157,9 @@ class AttendanceController extends ApiController
             'level' => 'nullable|string',
             'check_in_time' => 'nullable|string',
             'check_out_time' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'accuracy' => 'nullable|numeric',
             'notes' => 'nullable|string',
         ]);
 
@@ -177,7 +180,7 @@ class AttendanceController extends ApiController
         }
         if (! $guru && ! empty($validated['teacher_name'])) {
             $guru = Guru::with('grade')->where('nama', $validated['teacher_name'])->first()
-                ?? Guru::with('grade')->where('nama', 'like', '%' . $validated['teacher_name'] . '%')->first();
+                ?? Guru::with('grade')->where('nama', 'like', '%'.$validated['teacher_name'].'%')->first();
         }
 
         if (! $guru) {
@@ -260,9 +263,9 @@ class AttendanceController extends ApiController
                 : Carbon::parse("{$sessionDate} {$inTime}");
 
             $attendance->checkin_time = $checkinDateTime;
-            $attendance->checkin_lat = $attendance->checkin_lat ?: $locLat;
-            $attendance->checkin_lng = $attendance->checkin_lng ?: $locLng;
-            $attendance->checkin_accuracy = $attendance->checkin_accuracy ?: 25.0;
+            $attendance->checkin_lat = $validated['latitude'] ?? ($attendance->checkin_lat ?: $locLat);
+            $attendance->checkin_lng = $validated['longitude'] ?? ($attendance->checkin_lng ?: $locLng);
+            $attendance->checkin_accuracy = $validated['accuracy'] ?? ($attendance->checkin_accuracy ?: 25.0);
             $attendance->status = 'belum_checkout';
         }
 
@@ -274,9 +277,9 @@ class AttendanceController extends ApiController
                 : Carbon::parse("{$sessionDate} {$outTime}");
 
             $attendance->checkout_time = $checkoutDateTime;
-            $attendance->checkout_lat = $attendance->checkout_lat ?: $locLat;
-            $attendance->checkout_lng = $attendance->checkout_lng ?: $locLng;
-            $attendance->checkout_accuracy = $attendance->checkout_accuracy ?: 25.0;
+            $attendance->checkout_lat = $validated['latitude'] ?? ($attendance->checkout_lat ?: $locLat);
+            $attendance->checkout_lng = $validated['longitude'] ?? ($attendance->checkout_lng ?: $locLng);
+            $attendance->checkout_accuracy = $validated['accuracy'] ?? ($attendance->checkout_accuracy ?: 25.0);
 
             $duration = 0;
             if ($attendance->checkin_time) {

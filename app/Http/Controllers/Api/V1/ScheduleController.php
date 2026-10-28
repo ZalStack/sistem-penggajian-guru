@@ -59,6 +59,12 @@ class ScheduleController extends ApiController
                         'mapel' => $s->mapel,
                         'jumlah_sesi' => $s->jumlah_sesi,
                         'lokasi' => $s->location->nama_lokasi ?? '-',
+                        'location' => $s->location ? [
+                            'nama_lokasi' => $s->location->nama_lokasi,
+                            'latitude' => (float) $s->location->latitude,
+                            'longitude' => (float) $s->location->longitude,
+                            'radius' => (int) $s->location->radius,
+                        ] : null,
                         'transport' => $s->transport->jenis ?? '-',
                         'guru' => [
                             'id' => $s->guru?->id,
