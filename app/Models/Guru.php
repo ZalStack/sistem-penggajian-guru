@@ -76,6 +76,11 @@ class Guru extends Model
         return $this->hasMany(Perizinan::class);
     }
 
+    public function sunnahGurus(): HasMany
+    {
+        return $this->hasMany(SunnahGuru::class);
+    }
+
     /**
      * Daftar nama program untuk tampilan.
      *

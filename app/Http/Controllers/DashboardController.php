@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Guru;
 use App\Models\Penggajian;
 use App\Models\Perizinan;
+use App\Models\SunnahGuru;
 use App\Models\TeachingSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,6 +50,8 @@ class DashboardController extends Controller
             'total_pengeluaran' => (float) Penggajian::where('periode', $periode)->sum('total'),
             'total_sudah_dibayar' => (float) Penggajian::where('periode', $periode)->paid()->sum('total'),
             'izin_pending' => Perizinan::where('status', 'pending')->count(),
+            'sunnah_pending' => SunnahGuru::where('status_approval', SunnahGuru::STATUS_PENDING)->count(),
+            'sunnah_hari_ini' => SunnahGuru::whereDate('tanggal', $today)->count(),
             'periode' => $periode,
         ];
 
@@ -162,6 +165,7 @@ class DashboardController extends Controller
                 'todayAttendances' => (object) [],
                 'izinHariIni' => null,
                 'guru' => (object) ['nama' => $user->name, 'grade' => null, 'programs' => []],
+                'sunnahHariIni' => null,
                 'role' => 'guru',
             ]);
         }
@@ -237,6 +241,16 @@ class DashboardController extends Controller
             ->orderByDesc('tanggal_mulai')
             ->first();
 
+        $sunnahHariIni = SunnahGuru::where('guru_id', $guru->id)
+            ->whereDate('tanggal', $now->toDateString())
+            ->first();
+
+        $sunnahBulanIni = SunnahGuru::where('guru_id', $guru->id)
+            ->whereYear('tanggal', $now->year)
+            ->whereMonth('tanggal', $now->month)
+            ->orderBy('tanggal')
+            ->get(['tanggal', 'total_poin', 'status_approval']);
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'total_sesi_bulan' => $totalSesiBulan,
@@ -254,6 +268,22 @@ class DashboardController extends Controller
                 'alasan' => $izinHariIni->alasan,
             ] : null,
             'guru' => $guru,
+            'sunnahHariIni' => $sunnahHariIni ? [
+                'id' => $sunnahHariIni->id,
+                'total_poin' => $sunnahHariIni->total_poin,
+                'status_approval' => $sunnahHariIni->status_approval,
+                'status_label' => $sunnahHariIni->status_label,
+                'catatan' => $sunnahHariIni->catatan,
+            ] : null,
+            'sunnahBulanIni' => [
+                'total_poin' => (int) $sunnahBulanIni->sum('total_poin'),
+                'total_hari' => $sunnahBulanIni->count(),
+                'riwayat' => $sunnahBulanIni->map(fn (SunnahGuru $item) => [
+                    'tanggal' => $item->tanggal->toDateString(),
+                    'poin' => (int) $item->total_poin,
+                    'status_approval' => $item->status_approval,
+                ])->values()->all(),
+            ],
             'role' => 'guru',
         ]);
     }

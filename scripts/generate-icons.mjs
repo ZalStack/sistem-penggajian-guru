@@ -25,7 +25,7 @@ const srcDir = path.join(root, 'resources', 'js');
 const outFile = path.join(srcDir, 'lib', 'offline-icons.ts');
 
 /** Set ikon Iconify yang dipakai aplikasi. */
-const prefixes = ['lucide'];
+const prefixes = ['lucide', 'mdi'];
 
 /** Ekstensi file sumber yang dipindai. */
 const scanExtensions = new Set(['.ts', '.tsx', '.js', '.jsx']);

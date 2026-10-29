@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PerizinanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\SunnahGuruController;
 use App\Http\Controllers\TeachingSessionController;
 use App\Http\Controllers\TransportController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('my-perizinan', [PerizinanController::class, 'guruStore'])->name('my-perizinan.store');
     Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
     Route::get('my-salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('my-salary.payslip');
+
+    // Amalan 7SPS — checklist guru (hari ini & kemarin)
+    Route::get('my-sunnah', [SunnahGuruController::class, 'guruIndex'])->name('my-sunnah.index');
+    Route::post('my-sunnah', [SunnahGuruController::class, 'save'])->name('my-sunnah.save');
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
@@ -90,6 +95,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('perizinan', [PerizinanController::class, 'adminIndex'])->name('perizinan.index');
         Route::put('perizinan/{perizinan}', [PerizinanController::class, 'adminUpdate'])->name('perizinan.update');
+
+        // Amalan 7SPS — monitoring & approval admin
+        Route::get('sunnah-guru', [SunnahGuruController::class, 'adminIndex'])->name('sunnah-guru.index');
+        Route::post('sunnah-guru/bulk-approval', [SunnahGuruController::class, 'bulkApprove'])->name('sunnah-guru.bulk-approve');
+        Route::get('sunnah-guru/{sunnahGuru}', [SunnahGuruController::class, 'detail'])->name('sunnah-guru.show');
+        Route::put('sunnah-guru/{sunnahGuru}/approval', [SunnahGuruController::class, 'approve'])->name('sunnah-guru.approve');
 
         // Penggajian — rekap honor per guru & periode (dihitung dari presensi tervalidasi)
         Route::get('penggajian', [SalaryController::class, 'index'])->name('penggajian.index');

@@ -182,9 +182,39 @@ export interface Notification {
     judul: string;
     pesan: string;
     tipe: 'info' | 'success' | 'warning' | 'error';
-    kategori: 'sistem' | 'absensi' | 'perizinan' | 'gaji' | 'sesi';
+    kategori: 'sistem' | 'absensi' | 'perizinan' | 'gaji' | 'sesi' | 'sunnah';
     dibaca: boolean;
     dibaca_pada: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export type SunnahStatusApproval = 'pending' | 'approved' | 'rejected';
+
+export interface SunnahGuruChecklistItem {
+    key: string;
+    label: string;
+    icon: string;
+    poin: number;
+    has_jamaah: boolean;
+    checked: boolean;
+    berjamaah: boolean | null;
+}
+
+export interface SunnahGuru {
+    id: number;
+    guru_id: number;
+    tanggal: string;
+    total_poin: number;
+    poin_sholat_wajib: number;
+    jumlah_sholat_dikerjakan: number;
+    jumlah_sholat_berjamaah: number;
+    status_approval: SunnahStatusApproval;
+    status_label: string;
+    catatan: string | null;
+    approved_by: string | null;
+    approved_at: string | null;
+    guru?: Guru;
     created_at: string;
     updated_at: string;
 }

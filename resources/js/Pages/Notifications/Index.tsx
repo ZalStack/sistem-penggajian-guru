@@ -9,7 +9,7 @@ interface Notification {
     judul: string;
     pesan: string;
     tipe: 'info' | 'success' | 'warning' | 'error';
-    kategori: 'sistem' | 'absensi' | 'perizinan' | 'gaji' | 'sesi';
+    kategori: 'sistem' | 'absensi' | 'perizinan' | 'gaji' | 'sesi' | 'sunnah';
     dibaca: boolean;
     dibaca_pada: string | null;
     created_at: string;
@@ -58,6 +58,7 @@ const kategoriLabel: Record<string, string> = {
     perizinan: 'Perizinan',
     gaji: 'Gaji',
     sesi: 'Sesi',
+    sunnah: '7SPS',
 };
 
 function formatRelativeTime(dateStr: string): string {

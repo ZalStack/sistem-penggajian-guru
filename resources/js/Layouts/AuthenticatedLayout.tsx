@@ -28,6 +28,7 @@ const adminNavGroups = [
             { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Tampilan mingguan' },
             { href: 'session.index', pattern: 'session.*', label: 'Sesi Mengajar', icon: 'lucide:calendar-days', desc: 'Tugas & status' },
             { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'lucide:clipboard-check', desc: 'Kehadiran guru' },
+            { href: 'sunnah-guru.index', pattern: 'sunnah-guru.*', label: '7SPS Guru', icon: 'lucide:moon-star', desc: 'Amalan & approval' },
             { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'lucide:shield-check', desc: 'Izin & cuti' },
         ],
     },
@@ -59,6 +60,7 @@ const guruNavItems = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan hari ini' },
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Agenda mingguan' },
     { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check', desc: 'Check-in GPS' },
+    { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'lucide:moon-star', desc: 'Checklist & poin' },
     { href: 'my-bahan-ajar.index', pattern: 'my-bahan-ajar.*', label: 'Bahan Ajar', icon: 'lucide:book-open', desc: 'Materi ajar' },
     { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'lucide:shield-check', desc: 'Ajukan izin' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Slip Gaji', icon: 'lucide:banknote', desc: 'Honor & slip' },
@@ -67,7 +69,7 @@ const guruNavItems = [
 
 const guruBottomNav = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Beranda', icon: 'lucide:layout-dashboard' },
-    { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal', icon: 'lucide:calendar-range' },
+    { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: '7SPS', icon: 'lucide:moon-star' },
     { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji', icon: 'lucide:banknote' },
     { href: 'profile.edit', pattern: 'profile.*', label: 'Profil', icon: 'lucide:user' },

@@ -67,6 +67,26 @@ interface PendingPerizinan {
     guru: { nama: string; kode_grade?: string } | null;
 }
 
+interface SunnahHariIni {
+    id: number;
+    total_poin: number;
+    status_approval: 'pending' | 'approved' | 'rejected';
+    status_label: string;
+    catatan: string | null;
+}
+
+interface SunnahRiwayatItem {
+    tanggal: string;
+    poin: number;
+    status_approval: 'pending' | 'approved' | 'rejected';
+}
+
+interface SunnahBulanIni {
+    total_poin: number;
+    total_hari: number;
+    riwayat: SunnahRiwayatItem[];
+}
+
 interface DashboardProps {
     stats: AdminStats | GuruStats;
     todaySessions?: TodaySession[];
@@ -76,6 +96,8 @@ interface DashboardProps {
     upcomingSessions?: any[];
     todayAttendances?: Record<string, any>;
     izinHariIni?: { jenis: string; rentang: string; alasan?: string } | null;
+    sunnahHariIni?: SunnahHariIni | null;
+    sunnahBulanIni?: SunnahBulanIni | null;
     guru?: any;
     role: 'admin' | 'guru';
 }
@@ -803,11 +825,13 @@ export default function Dashboard(props: DashboardProps) {
     return <GuruDashboard {...props} stats={stats as GuruStats} />;
 }
 
-function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHariIni = null }: {
+function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHariIni = null, sunnahHariIni = null, sunnahBulanIni = null }: {
     stats: GuruStats;
     upcomingSessions?: any[];
     todayAttendances?: Record<string, any>;
     izinHariIni?: { jenis: string; rentang: string; alasan?: string } | null;
+    sunnahHariIni?: SunnahHariIni | null;
+    sunnahBulanIni?: SunnahBulanIni | null;
     guru?: any;
 }) {
     const izinAktif = Boolean(izinHariIni);
@@ -899,6 +923,8 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                     </div>
                 </div>
             </div>
+
+            <SunnahSummaryCard hariIni={sunnahHariIni} bulanIni={sunnahBulanIni} />
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <div className="lg:col-span-3">
@@ -999,5 +1025,69 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                 </div>
             </div>
         </AuthenticatedLayout>
+    );
+}
+
+/* Kartu ringkas Amalan 7SPS pada dashboard guru. */
+function SunnahSummaryCard({ hariIni, bulanIni }: {
+    hariIni: SunnahHariIni | null;
+    bulanIni: SunnahBulanIni | null;
+}) {
+    const poin = Math.max(0, Math.min(100, hariIni?.total_poin ?? 0));
+    const status = hariIni?.status_approval;
+    const statusMeta = status === 'approved'
+        ? { label: 'Disetujui', className: 'border-emerald-200 bg-emerald-50 text-emerald-700', icon: 'lucide:check-circle-2' }
+        : status === 'rejected'
+            ? { label: 'Ditolak — perlu diperbaiki', className: 'border-rose-200 bg-rose-50 text-rose-700', icon: 'lucide:x-circle' }
+            : status === 'pending'
+                ? { label: 'Menunggu approval', className: 'border-amber-200 bg-amber-50 text-amber-700', icon: 'lucide:hourglass' }
+                : { label: 'Belum mengisi hari ini', className: 'border-slate-200 bg-slate-50 text-slate-600', icon: 'lucide:moon' };
+
+    return (
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 sm:p-6 shadow-sm mb-6">
+            <div className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-amber-200/30 blur-3xl" />
+            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-start gap-3.5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-emerald-600 text-white shadow-lg shadow-amber-500/25">
+                        <Icon icon="lucide:moon-star" className="text-xl" />
+                    </span>
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-[15px] sm:text-base font-[800] tracking-[-0.015em] text-slate-900">Amalan 7SPS Hari Ini</h3>
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-bold ${statusMeta.className}`}>
+                                <Icon icon={statusMeta.icon} className="text-[11px]" /> {statusMeta.label}
+                            </span>
+                        </div>
+                        <p className="mt-1 text-[12px] sm:text-[13px] text-slate-600">
+                            {hariIni
+                                ? `Poin hari ini ${hariIni.total_poin}/100. ${hariIni.catatan ? `Catatan admin: ${hariIni.catatan}` : 'Lengkapi checklist agar poin bertambah.'}`
+                                : 'Belum ada checklist hari ini. Isi 12 amalan sunnah untuk mengumpulkan hingga 100 poin.'}
+                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-semibold text-slate-500">
+                            <span className="inline-flex items-center gap-1"><Icon icon="lucide:star" className="text-amber-500" /> {bulanIni?.total_poin ?? 0} poin bulan ini</span>
+                            <span className="inline-flex items-center gap-1"><Icon icon="lucide:calendar-check" className="text-emerald-500" /> {bulanIni?.total_hari ?? 0} hari terisi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 lg:shrink-0">
+                    <div className="min-w-[140px] flex-1 lg:w-48">
+                        <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-500">
+                            <span>Progress</span>
+                            <span className="tabular-nums">{poin}%</span>
+                        </div>
+                        <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-white/80 ring-1 ring-emerald-100">
+                            <div className="h-full rounded-full bg-gradient-to-r from-amber-400 via-emerald-500 to-teal-500 transition-all duration-700" style={{ width: `${poin}%` }} />
+                        </div>
+                    </div>
+                    <Link
+                        href={route('my-sunnah.index')}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-[0_6px_14px_-6px_rgba(16,185,129,0.8)] transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                        Isi Checklist <Icon icon="lucide:arrow-right" className="text-sm" />
+                    </Link>
+                </div>
+            </div>
+        </div>
     );
 }

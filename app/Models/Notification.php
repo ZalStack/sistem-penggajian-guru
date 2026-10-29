@@ -38,7 +38,7 @@ class Notification extends Model
      * Kirim notifikasi in-app ke satu pengguna.
      *
      * @param  'info'|'success'|'warning'|'error'  $tipe
-     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'  $kategori
+     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'|'sunnah'  $kategori
      */
     public static function send(User $user, string $judul, string $pesan, string $tipe = 'info', string $kategori = 'sistem'): void
     {
@@ -56,7 +56,7 @@ class Notification extends Model
      *
      * @param  'admin'|'guru'  $role
      * @param  'info'|'success'|'warning'|'error'  $tipe
-     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'  $kategori
+     * @param  'sistem'|'absensi'|'perizinan'|'gaji'|'sesi'|'sunnah'  $kategori
      */
     public static function sendToRole(string $role, string $judul, string $pesan, string $tipe = 'info', string $kategori = 'sistem'): void
     {

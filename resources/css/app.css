@@ -315,6 +315,33 @@
         animation: shimmer 1.5s infinite;
     }
 
+    /* Animasi kafilah 7SPS (journey bar & ring poin) */
+    .animate-jbar-shimmer {
+        animation: jbarShimmer 2.4s linear infinite;
+    }
+
+    .animate-jbar-float {
+        animation: jbarFloat 1.8s ease-in-out infinite;
+    }
+
+    .animate-jbar-walk {
+        animation: jbarWalk 0.9s ease-in-out infinite;
+    }
+
+    .animate-jbar-glow {
+        animation: jbarGlow 1.6s ease-in-out infinite;
+    }
+
+    .ring-aura {
+        background: conic-gradient(
+            from 90deg,
+            rgba(245, 158, 11, 0.45),
+            rgba(16, 185, 129, 0.45),
+            rgba(251, 191, 36, 0.45),
+            rgba(245, 158, 11, 0.45)
+        );
+    }
+
     /* Ambient mesh — indigo/violet identity */
     .mesh-gradient {
         background:
@@ -355,6 +382,35 @@
 @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
+}
+
+@keyframes jbarShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes jbarFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes jbarWalk {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-3px) rotate(1deg); }
+}
+
+@keyframes jbarGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(251, 191, 36, 1)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-jbar-shimmer,
+    .animate-jbar-float,
+    .animate-jbar-walk,
+    .animate-jbar-glow {
+        animation: none;
+    }
 }
 
 @media print {
