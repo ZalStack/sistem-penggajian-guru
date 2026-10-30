@@ -57,9 +57,9 @@ const adminNavGroups = [
 ];
 
 const guruNavItems = [
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check', desc: 'Check-in GPS & riwayat kehadiran' },
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan hari ini' },
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Agenda mingguan' },
-    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check', desc: 'Check-in GPS' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'lucide:moon-star', desc: 'Checklist & poin' },
     { href: 'my-bahan-ajar.index', pattern: 'my-bahan-ajar.*', label: 'Bahan Ajar', icon: 'lucide:book-open', desc: 'Materi ajar' },
     { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'lucide:shield-check', desc: 'Ajukan izin' },
@@ -127,8 +127,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const user = props.auth.user;
     const flash = props.flash;
     const unreadCount = props.unreadNotifications ?? 0;
-    const appName = props.app?.name || 'Satu Guru KPM';
-    const appTagline = props.app?.tagline || 'Sistem Administrasi Guru KPM';
+    const appName = props.app?.name || 'Satu Guru KPM (Sistem Informasi Terpadu Guru KPM)';
+    const appTagline = props.app?.tagline || 'Sistem Informasi Terpadu Guru KPM';
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 

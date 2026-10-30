@@ -906,20 +906,18 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
 
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="lucide:book-open" color="accent" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />
-                <StatCard title="Kehadiran" value={`${stats.total_hadir ?? 0}/${stats.total_sesi_bulan ?? 0}`} icon="lucide:check-circle" color="success" description="Valid & terverifikasi GPS" />
-                <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 lg:col-span-1 col-span-2">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-                    <div className="relative">
-                        <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Gaji Bulan Ini</p>
-                        <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-white mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                        <div className="mt-3 rounded-xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm px-3 py-2">
-                            <p className="text-[10px] font-[700] tracking-[0.08em] uppercase text-indigo-200">Potensi Gaji Bulan Ini</p>
-                            <p className="text-[16px] font-[800] tracking-[-0.02em] text-white mt-0.5 leading-tight break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
-                        </div>
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-[700] border bg-white/15 text-white border-white/25 backdrop-blur-sm">
-                            <Icon icon="lucide:wallet" className="text-[12px]" /> {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}
-                            <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-                        </div>
+                {/* Kehadiran sudah dipindahkan ke menu Presensi untuk navigasi yang fokus */}
+                {/* Potensi Gaji sekarang ditampilkan di menu Presensi */}
+                <div className="relative overflow-hidden rounded-2xl bg-white border border-indigo-100/50 p-6 shadow-[0_4px_12px_-4px_rgba(99,102,241,0.15)] hover:shadow-[0_8px_20px_-8px_rgba(99,102,241,0.2)] transition-all duration-200">
+                    <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-indigo-500 mb-3">Gaji Bulan Ini</p>
+                    <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-slate-900 break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
+                    <div className="mt-3">
+                        <p className="text-[10px] font-bold tracking-[0.06em] uppercase text-indigo-400">Potensi Gaji Bulan Ini</p>
+                        <p className="text-[16px] font-[800] tracking-[-0.02em] text-slate-900 mt-1 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-[11px] font-medium text-slate-500">
+                        <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
+                        <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                     </div>
                 </div>
             </div>
@@ -927,56 +925,6 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
             <SunnahSummaryCard hariIni={sunnahHariIni} bulanIni={sunnahBulanIni} />
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <div className="lg:col-span-3">
-                    <Card
-                        title="Jadwal Mengajar Terdekat"
-                        description="Jadwal hari ini & mendatang — absensi GPS berlaku untuk jadwal hari ini"
-                        headerAction={<span className="text-[11px] font-[700] tracking-[0.06em] uppercase px-2.5 py-1 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{upcomingSessions?.length ?? 0} sesi</span>}
-                    >
-                        {upcomingSessions && upcomingSessions.length > 0 ? (
-                            <div className="space-y-3">
-                                {upcomingSessions.map((session: any) => {
-                                    if (!session.is_today) {
-                                        return <UpcomingSessionCard key={session.id} session={session} />;
-                                    }
-                                    const attStatus = getGuruAttendanceStatus(todayAttendances?.[String(session.id)]);
-                                    const attendance = todayAttendances?.[String(session.id)];
-                                    return (
-                                        <SessionCard
-                                            key={session.id}
-                                            session={session}
-                                            attendance={attendance}
-                                            attStatus={attStatus}
-                                            position={position}
-                                            izinAktif={izinAktif}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="text-center py-10">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto">
-                                    <Icon icon="lucide:calendar-off" className="text-[28px] text-indigo-400" />
-                                </div>
-                                <p className="text-[13px] font-[600] text-slate-700 mt-3">Tidak ada jadwal mendatang</p>
-                                <p className="text-[12px] text-slate-500 mt-1">Jadwal mengajar Anda akan muncul di sini</p>
-                            </div>
-                        )}
-
-                        <div className="mt-4 pt-4 border-t border-slate-200/60">
-                            <a
-                                href={route('jadwal.index')}
-                                className="w-full flex items-center justify-between p-3 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl hover:border-indigo-200 hover:from-indigo-100/70 hover:to-violet-100/70 transition-colors"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Icon icon="lucide:calendar-range" className="text-indigo-600" />
-                                    <span className="text-sm font-semibold text-slate-900">Lihat Jadwal Mingguan Lengkap</span>
-                                </div>
-                                <Icon icon="lucide:chevron-right" className="text-indigo-400" />
-                            </a>
-                        </div>
-                    </Card>
-                </div>
 
                 <div className="lg:col-span-2 space-y-6">
                     <Card title="Ringkasan Pembayaran" description="Status honor bulan berjalan">
@@ -995,7 +943,7 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                                 <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
                                     <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
                                 </div>
-                                <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi • Kehadiran</p>
+                                <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">

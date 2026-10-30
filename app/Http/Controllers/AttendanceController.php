@@ -76,16 +76,30 @@ class AttendanceController extends Controller
     {
         $user = $request->user();
         $guru = $user->guru;
+        $now  = now();
+        $periode = $now->format('Y-m');
 
         if (! $guru) {
             return Inertia::render('Guru/Attendance/Index', [
-                'attendances' => [],
-                'totalHadir' => 0,
-                'totalJam' => 0,
-                'guru' => (object) ['nama' => $user->name],
-                'filters' => $request->only(['bulan']),
+                'attendances'       => [],
+                'totalHadir'        => 0,
+                'totalJam'          => 0,
+                'guru'              => (object) ['nama' => $user->name],
+                'filters'           => $request->only(['bulan']),
+                'upcomingSessions'  => [],
+                'todayAttendances'  => (object) [],
+                'izinHariIni'       => null,
+                'stats'             => [
+                    'total_sesi_bulan' => 0,
+                    'total_hadir'      => 0,
+                    'gaji_bulan'       => 0,
+                    'potensi_gaji'     => 0,
+                    'status_bayar'     => 'belum_dibayar',
+                ],
             ]);
         }
+
+        $guru->load(['grade', 'programs']);
 
         $attendances = Attendance::with('session.location', 'session.transport')
             ->where('guru_id', $guru->id)
@@ -94,14 +108,86 @@ class AttendanceController extends Controller
             ->get();
 
         $totalHadir = $attendances->where('status', 'valid')->count();
-        $totalJam = $attendances->where('status', 'valid')->sum('durasi');
+        $totalJam   = $attendances->where('status', 'valid')->sum('durasi');
+
+        // ── Jadwal mendatang (sama seperti di GuruDashboard) ──────────────────
+        $upcomingSessions = TeachingSession::with(['location', 'transport', 'program'])
+            ->aktif()
+            ->where('guru_id', $guru->id)
+            ->whereDate('tanggal', '>=', $now->toDateString())
+            ->orderBy('tanggal')
+            ->orderBy('jam_mulai')
+            ->limit(6)
+            ->get()
+            ->map(fn ($s) => [
+                'id'          => $s->id,
+                'tanggal'     => $s->tanggal->format('Y-m-d'),
+                'is_today'    => $s->tanggal->isSameDay($now),
+                'jam_mulai'   => $s->jam_mulai->format('H:i'),
+                'jam_selesai' => $s->jam_selesai->format('H:i'),
+                'mapel'       => $s->mapel,
+                'jumlah_sesi' => $s->jumlah_sesi,
+                'program'     => $s->program?->nama,
+                'location'    => [
+                    'nama_lokasi' => $s->location->nama_lokasi,
+                    'latitude'    => $s->location->latitude,
+                    'longitude'   => $s->location->longitude,
+                    'radius'      => $s->location->radius,
+                ],
+                'transport'   => $s->transport ? ['jenis' => $s->transport->jenis] : null,
+            ]);
+
+        // ── Presensi hari ini (untuk status check-in/out pada SessionCard) ────
+        $todayAttendances = Attendance::where('guru_id', $guru->id)
+            ->whereDate('tanggal', $now->toDateString())
+            ->get()
+            ->keyBy('session_id');
+
+        // ── Izin yang sedang berlaku hari ini ─────────────────────────────────
+        $izinHariIni = Perizinan::where('guru_id', $guru->id)
+            ->where('status', Perizinan::STATUS_DISETUJUI)
+            ->whereDate('tanggal_mulai', '<=', $now->toDateString())
+            ->whereDate('tanggal_selesai', '>=', $now->toDateString())
+            ->orderByDesc('tanggal_mulai')
+            ->first();
+
+        // ── Statistik gaji bulan berjalan ────────────────────────────────────
+        $totalHadirBulan = Attendance::where('guru_id', $guru->id)
+            ->whereYear('tanggal', $now->year)
+            ->whereMonth('tanggal', $now->month)
+            ->where('status', 'valid')
+            ->count();
+
+        $totalSesiBulan = (int) TeachingSession::aktif()
+            ->where('guru_id', $guru->id)
+            ->whereYear('tanggal', $now->year)
+            ->whereMonth('tanggal', $now->month)
+            ->sum('jumlah_sesi');
+
+        $honorPerSesi = (float) ($guru->grade?->honor_per_sesi ?? 0);
+        $potensiGaji  = ($totalHadirBulan * $honorPerSesi) + (float) $guru->tunjangan_khusus;
+        $penggajian   = \App\Models\Penggajian::where('guru_id', $guru->id)->where('periode', $periode)->first();
 
         return Inertia::render('Guru/Attendance/Index', [
-            'attendances' => $attendances,
-            'totalHadir' => $totalHadir,
-            'totalJam' => $totalJam,
-            'guru' => $guru,
-            'filters' => $request->only(['bulan']),
+            'attendances'      => $attendances,
+            'totalHadir'       => $totalHadir,
+            'totalJam'         => $totalJam,
+            'guru'             => $guru,
+            'filters'          => $request->only(['bulan']),
+            'upcomingSessions' => $upcomingSessions,
+            'todayAttendances' => $todayAttendances,
+            'izinHariIni'      => $izinHariIni ? [
+                'jenis'   => $izinHariIni->labelJenis(),
+                'rentang' => $izinHariIni->rentangTanggal(),
+                'alasan'  => $izinHariIni->alasan,
+            ] : null,
+            'stats' => [
+                'total_sesi_bulan' => $totalSesiBulan,
+                'total_hadir'      => $totalHadirBulan,
+                'gaji_bulan'       => (float) ($penggajian?->total ?? 0),
+                'potensi_gaji'     => $potensiGaji,
+                'status_bayar'     => $penggajian?->status_bayar ?? 'belum_dibayar',
+            ],
         ]);
     }
 
