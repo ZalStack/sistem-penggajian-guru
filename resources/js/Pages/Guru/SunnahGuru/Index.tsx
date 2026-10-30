@@ -545,45 +545,51 @@ export default function SunnahGuruIndex({
                         </div>
 
                         {/* Progress poin hari ini */}
-                        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:border-slate-200 hover:shadow-md sm:p-6">
-                            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-emerald-100/80 bg-gradient-to-r from-emerald-50/80 via-white to-teal-50/70 p-3 transition-all duration-700 sm:flex-row sm:items-center sm:p-4">
-                                <div className="flex items-center gap-3.5">
+                        <section className="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm transition-shadow duration-300 hover:shadow-md sm:p-5">
+                            <div className="flex flex-col gap-3.5 rounded-2xl border border-emerald-100/70 bg-gradient-to-r from-emerald-50/70 via-white to-teal-50/60 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-4">
+                                <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
                                     <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-emerald-600 text-white shadow-lg shadow-amber-500/30 sm:h-12 sm:w-12">
                                         <Icon icon="mdi:compass-rose" className="text-xl sm:text-2xl" />
-                                        <span className="absolute -right-1 -top-1 flex h-3 w-3">
+                                        <span className="absolute -right-1 -top-1 flex h-3 w-3" aria-hidden="true">
                                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                                             <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-400" />
                                         </span>
                                     </div>
-                                    <div>
-                                        <h3 className="text-sm font-extrabold text-slate-800 sm:text-base">
-                                            Progress Poin {selectedDate === today ? 'Hari Ini' : 'Kemarin'}
-                                        </h3>
-                                        <p className="mt-0.5 text-[11px] font-medium text-slate-500">
+
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                            <h3 className="text-sm font-extrabold leading-tight tracking-tight text-slate-800 sm:text-base">
+                                                Progress Poin {selectedDate === today ? 'Hari Ini' : 'Kemarin'}
+                                            </h3>
+                                            <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
+                                                {progressPercent}%
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-500 sm:text-xs">
                                             {checkedCount} dari 12 amalan · {jumlahBerjamaah}/5 berjamaah
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4 border-t border-slate-200/70 pt-3 sm:gap-5 sm:border-t-0 sm:pt-0">
-                                    <PoinRing poin={displayPoin} size={84} />
+                                <div className="flex items-center justify-between gap-4 rounded-xl bg-white/70 p-2.5 ring-1 ring-inset ring-slate-200/60 sm:justify-end sm:gap-5 sm:bg-transparent sm:p-0 sm:ring-0">
+                                    <PoinRing poin={displayPoin} size={78} />
 
-                                    <div className="min-w-0">
-                                        <div className="flex items-baseline gap-1.5">
-                                            <span className="bg-gradient-to-br from-amber-600 via-orange-600 to-emerald-600 bg-clip-text text-4xl font-black tabular-nums tracking-tight text-transparent sm:text-5xl">
+                                    <div className="min-w-0 text-right sm:text-left">
+                                        <div className="flex items-baseline justify-end gap-1.5 sm:justify-start">
+                                            <span className="bg-gradient-to-br from-amber-600 via-orange-600 to-emerald-600 bg-clip-text text-[2rem] font-black leading-none tabular-nums tracking-tight text-transparent sm:text-5xl">
                                                 {displayPoin}
                                             </span>
-                                            <span className="text-sm font-bold text-slate-500">poin</span>
+                                            <span className="text-xs font-bold text-slate-500 sm:text-sm">poin</span>
                                         </div>
-                                        <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                                        <p className="mt-1.5 text-[10.5px] font-semibold leading-snug text-slate-500 sm:text-[11px]">
                                             Poin wajib: {poinWajib} · Maksimal 100
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <JourneyProgressBar className="mt-4" progress={progressPercent} totalPoin={totalPoin} milestones={milestones} />
-                        </div>
+                            <JourneyProgressBar className="mt-3.5 sm:mt-4" progress={progressPercent} totalPoin={totalPoin} milestones={milestones} />
+                        </section>
 
                         {/* Checklist */}
                         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
