@@ -12,7 +12,7 @@ class Attendance extends Model
 
     protected $fillable = [
         'guru_id', 'session_id', 'checkin_time', 'checkin_lat', 'checkin_lng', 'checkin_accuracy',
-        'checkout_time', 'checkout_lat', 'checkout_lng', 'checkout_accuracy', 'durasi', 'status', 'tanggal',
+        'checkout_time', 'checkout_lat', 'checkout_lng', 'checkout_accuracy', 'durasi', 'status', 'tanggal', 'source',
     ];
 
     protected function casts(): array

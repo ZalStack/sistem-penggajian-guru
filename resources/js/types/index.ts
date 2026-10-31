@@ -152,6 +152,7 @@ export interface Attendance {
     checkout_accuracy: number | null;
     durasi: number;
     status: 'valid' | 'tidak_valid' | 'belum_checkin' | 'belum_checkout' | 'izin' | 'menunggu';
+    source?: 'siguru' | 'adik';
     tanggal: string;
     guru?: Guru;
     session?: TeachingSession;

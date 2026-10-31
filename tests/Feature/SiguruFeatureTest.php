@@ -15,6 +15,7 @@ use App\Models\Transport;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class SiguruFeatureTest extends TestCase
@@ -551,15 +552,36 @@ class SiguruFeatureTest extends TestCase
             'status' => Perizinan::STATUS_DISETUJUI,
         ]);
 
-        $response = $this->actingAs($this->guruUser)->post('/checkin', [
+        // Route web check-in penggajian sudah dinonaktifkan — presensi guru
+        // dilakukan di SI ADIK-KK (geofence GPS), bukan di aplikasi ini.
+        $this->actingAs($this->guruUser)->post('/checkin', [
+            'session_id' => $session->id,
+            'latitude' => -6.2,
+            'longitude' => 106.8451,
+            'accuracy' => 10,
+        ])->assertNotFound();
+        $this->actingAs($this->guruUser)->post('/checkout', [
+            'session_id' => $session->id,
+            'latitude' => -6.2,
+            'longitude' => 106.8451,
+            'accuracy' => 10,
+        ])->assertNotFound();
+
+        // Proteksi izin tetap berlaku pada endpoint API check-in yang dipertahankan.
+        Sanctum::actingAs($this->guruUser);
+        $response = $this->postJson('/api/v1/attendances/check-in', [
             'session_id' => $session->id,
             'latitude' => -6.2,
             'longitude' => 106.8451,
             'accuracy' => 10,
         ]);
 
-        $response->assertSessionHas('error');
-        $this->assertStringContainsString('izin', mb_strtolower((string) session('error')));
+        $response->assertStatus(422);
+        $message = mb_strtolower((string) ($response->json('message') ?? '').json_encode($response->json('errors') ?? []));
+        $this->assertTrue(
+            str_contains($message, 'izin') || str_contains($message, 'leave'),
+            "Pesan penolakan tidak menyebut izin/leave: {$message}"
+        );
         $this->assertSame(0, Attendance::count());
     }
 

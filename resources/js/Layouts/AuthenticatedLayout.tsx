@@ -57,7 +57,7 @@ const adminNavGroups = [
 ];
 
 const guruNavItems = [
-    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check', desc: 'Check-in GPS & riwayat kehadiran' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Riwayat Kehadiran', icon: 'lucide:clipboard-check', desc: 'Riwayat presensi dari SI ADIK-KK' },
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard', desc: 'Ringkasan hari ini' },
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'lucide:calendar-range', desc: 'Agenda mingguan' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'lucide:moon-star', desc: 'Checklist & poin' },
@@ -70,7 +70,7 @@ const guruNavItems = [
 const guruBottomNav = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Beranda', icon: 'lucide:layout-dashboard' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: '7SPS', icon: 'lucide:moon-star' },
-    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Presensi', icon: 'lucide:clipboard-check' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Hadir', icon: 'lucide:clipboard-check' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji', icon: 'lucide:banknote' },
     { href: 'profile.edit', pattern: 'profile.*', label: 'Profil', icon: 'lucide:user' },
 ];

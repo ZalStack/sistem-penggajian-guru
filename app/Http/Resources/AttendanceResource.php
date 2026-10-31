@@ -22,6 +22,7 @@ class AttendanceResource extends JsonResource
             'checkout_lng' => $this->checkout_lng !== null ? (float) $this->checkout_lng : null,
             'checkout_accuracy' => $this->checkout_accuracy !== null ? (float) $this->checkout_accuracy : null,
             'durasi' => (int) $this->durasi,
+            'source' => $this->source ?? 'siguru',
             'guru' => new TeacherResource($this->whenLoaded('guru')),
             'session' => new TeachingSessionResource($this->whenLoaded('session')),
             'created_at' => $this->created_at?->toIso8601String(),

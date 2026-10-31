@@ -30,6 +30,7 @@ interface AttendanceIndexProps {
         periode?: string;
         filter_guru?: string;
         filter_status?: string;
+        filter_source?: string;
         tanggal?: string;
     };
     recap: AttendanceRecap;
@@ -200,6 +201,16 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                         ]}
                         placeholder="Semua Status"
                     />
+                    <Select
+                        label="Sumber"
+                        value={filters.filter_source ?? ''}
+                        onChange={(e) => handleFilterChange('filter_source', e.target.value)}
+                        options={[
+                            { value: 'adik', label: 'SI ADIK-KK (GPS)' },
+                            { value: 'siguru', label: 'SiGuru (Langsung)' },
+                        ]}
+                        placeholder="Semua Sumber"
+                    />
                     <div className="flex items-end">
                         <Button
                             variant="secondary"
@@ -238,13 +249,14 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                     <TableHead>Check-out</TableHead>
                                     <TableHead>Akurasi</TableHead>
                                     <TableHead>Durasi</TableHead>
+                                    <TableHead>Sumber</TableHead>
                                     <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {attendanceList.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={11}>
+                                        <TableCell colSpan={12}>
                                             <div className="text-center py-16">
                                                 <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
                                                     <Icon icon="lucide:inbox" className="text-3xl" />
@@ -326,6 +338,11 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                                     {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
                                                 </span>
                                             </TableCell>
+                                            <TableCell>
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                                    {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
+                                                </span>
+                                            </TableCell>
                                             <TableCell>{getStatusBadge(att.status)}</TableCell>
                                         </TableRow>
                                     ))
@@ -366,6 +383,9 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-500">
                                                 #{index + 1}
+                                            </span>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                                {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                             </span>
                                             {getStatusBadge(att.status)}
                                         </div>

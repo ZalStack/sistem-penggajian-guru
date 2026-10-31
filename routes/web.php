@@ -34,8 +34,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['patch', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('checkin', [AttendanceController::class, 'checkin'])->name('checkin')->middleware('throttle:10,1');
-    Route::post('checkout', [AttendanceController::class, 'checkout'])->name('checkout')->middleware('throttle:10,1');
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
     Route::get('my-perizinan', [PerizinanController::class, 'guruIndex'])->name('my-perizinan');
     Route::post('my-perizinan', [PerizinanController::class, 'guruStore'])->name('my-perizinan.store');

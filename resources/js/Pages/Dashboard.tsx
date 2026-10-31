@@ -835,12 +835,10 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
     guru?: any;
 }) {
     const izinAktif = Boolean(izinHariIni);
-    // Geolocation HANYA diminta untuk role guru yang punya sesi hari ini
-    // dengan antrean check-in/check-out — bukan otomatis setiap kunjungan.
-    const needsGps = !izinAktif && (upcomingSessions ?? []).some(
-        (s: any) => s.is_today && ['none', 'checkin'].includes(getGuruAttendanceStatus(todayAttendances?.[String(s.id)]))
-    );
-    const position = useCurrentPosition(needsGps);
+    // Presensi check-in/check-out dilakukan di aplikasi SI ADIK-KK (Kelas Khusus)
+    // berbasis geofence GPS. Dashboard ini hanya menampilkan riwayat dari sinkronisasi.
+    const hasTodaySessions = (upcomingSessions ?? []).some((s: any) => s.is_today);
+    const position = null;
 
     const hour = new Date().getHours();
     const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam';
@@ -904,10 +902,36 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                 </div>
             )}
 
+            {/* Banner: presensi dipindah ke SI ADIK-KK (geofence GPS) */}
+            {hasTodaySessions && (
+                <div className="mb-6 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                        <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(14,165,233,0.7)]">
+                            <Icon icon="lucide:map-pin-check" className="text-base" />
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900">
+                                Presensi hari ini dilakukan di aplikasi SI ADIK-KK (Kelas Khusus)
+                            </p>
+                            <p className="text-sm text-slate-600 mt-0.5 break-words leading-relaxed">
+                                Check-in & check-out berbasis geofence GPS dilakukan melalui menu <strong>Absensi Guru</strong> di SI ADIK-KK sesuai ploting sesi admin.
+                                Data kehadiran akan otomatis tersinkron ke halaman ini dan memengaruhi penghitungan gaji.
+                            </p>
+                        </div>
+                    </div>
+                    <a
+                        href="/guru/siguru"
+                        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm transition-colors"
+                    >
+                        <Icon icon="lucide:external-link" className="text-xs" /> Buka Absensi SI ADIK-KK
+                    </a>
+                </div>
+            )}
+
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="lucide:book-open" color="accent" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />
-                {/* Kehadiran sudah dipindahkan ke menu Presensi untuk navigasi yang fokus */}
-                {/* Potensi Gaji sekarang ditampilkan di menu Presensi */}
+                {/* Presensi check-in/out pindah ke SI ADIK-KK; menu ini jadi riwayat read-only */}
+                {/* Potensi Gaji tampil di kartu Gaji Bulan Ini */}
                 <div className="relative overflow-hidden rounded-2xl bg-white border border-indigo-100/50 p-6 shadow-[0_4px_12px_-4px_rgba(99,102,241,0.15)] hover:shadow-[0_8px_20px_-8px_rgba(99,102,241,0.2)] transition-all duration-200">
                     <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-indigo-500 mb-3">Gaji Bulan Ini</p>
                     <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-slate-900 break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
