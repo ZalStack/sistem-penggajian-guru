@@ -154,6 +154,22 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
 
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                                <div className="w-9 h-9 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center flex-shrink-0">
+                                    <Icon icon="tabler:school" className="text-base" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[11px] font-medium text-slate-400">Pelatihan Suprarasional</p>
+                                    {guru.pelatihan_suprarasional == null ? (
+                                        <p className="text-sm font-semibold text-slate-400">Belum diisi</p>
+                                    ) : (
+                                        <p className={`text-sm font-bold ${guru.pelatihan_suprarasional ? 'text-emerald-600' : 'text-slate-600'}`}>
+                                            {guru.pelatihan_suprarasional ? 'IYA — Pernah ikut' : 'TIDAK — Belum pernah ikut'}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                                     <Icon icon="tabler:cash" className="text-base" />
                                 </div>

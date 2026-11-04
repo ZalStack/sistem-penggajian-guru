@@ -147,6 +147,7 @@ class Schemas
                 'jenjang' => ['type' => 'string', 'nullable' => true, 'example' => 'SMP'],
                 'domisili' => ['type' => 'string', 'nullable' => true, 'example' => 'Jakarta Selatan'],
                 'tanggal_bergabung' => ['type' => 'string', 'format' => 'date', 'nullable' => true, 'example' => '2026-01-15'],
+                'pelatihan_suprarasional' => ['type' => 'boolean', 'nullable' => true, 'description' => 'Pernah ikut pelatihan Suprarasional (true=IYA, false=TIDAK, null=belum diisi).', 'example' => true],
                 'keterangan_mengajar' => ['type' => 'string', 'nullable' => true],
                 'grade' => [
                     'description' => 'Related salary grade (present when loaded).',

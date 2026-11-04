@@ -68,6 +68,11 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
 
     const hasActiveFilters = Boolean(filters.search || filters.filter_grade || filters.filter_mapel || filters.filter_program);
 
+    const formatTanggalBergabung = (tanggal: string | null): string =>
+        tanggal
+            ? new Date(tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            : '-';
+
     const openDeleteModal = (guru: Guru) => {
         setGuruToDelete(guru);
         setDeleteId(guru.id);
@@ -188,6 +193,8 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                         <TableHead>Nama Guru</TableHead>
                                         <TableHead>Kontak</TableHead>
                                         <TableHead>Kota Domisili</TableHead>
+                                        <TableHead>Tanggal Bergabung</TableHead>
+                                        <TableHead>Pelatihan Suprarasional</TableHead>
                                         <TableHead>Grade</TableHead>
                                         <TableHead>Mapel</TableHead>
                                         <TableHead>Program</TableHead>
@@ -218,6 +225,20 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                                 <span className="text-sm text-slate-600 flex items-center gap-1">
                                                     <Icon icon="tabler:map-pin" className="text-slate-400 text-xs" /> {guru.domisili || '-'}
                                                 </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-slate-600 flex items-center gap-1 whitespace-nowrap">
+                                                    <Icon icon="tabler:calendar-event" className="text-slate-400 text-xs" /> {formatTanggalBergabung(guru.tanggal_bergabung)}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {guru.pelatihan_suprarasional == null ? (
+                                                    <span className="text-xs text-slate-400">Belum diisi</span>
+                                                ) : (
+                                                    <Badge variant={guru.pelatihan_suprarasional ? 'success' : 'default'} size="sm">
+                                                        {guru.pelatihan_suprarasional ? 'IYA' : 'TIDAK'}
+                                                    </Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant="purple">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
@@ -270,6 +291,15 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-slate-900 text-sm truncate">{guru.nama}</p>
                                                 <p className="text-xs text-slate-500 truncate">{guru.domisili || '-'} • {guru.nomor_telepon || '-'}</p>
+                                                <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+                                                    <Icon icon="tabler:calendar-event" className="text-[11px] shrink-0" />
+                                                    Bergabung {formatTanggalBergabung(guru.tanggal_bergabung)}
+                                                    {guru.pelatihan_suprarasional != null && (
+                                                        <span className={`font-bold ${guru.pelatihan_suprarasional ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                                            • Suprarasional: {guru.pelatihan_suprarasional ? 'IYA' : 'TIDAK'}
+                                                        </span>
+                                                    )}
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="flex gap-1">
@@ -316,6 +346,20 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                         <div className="bg-gradient-to-br from-indigo-50/70 to-violet-50/50 rounded-lg p-2.5">
                                             <p className="text-slate-400 text-[10px] font-bold uppercase">Rekening</p>
                                             <p className="font-semibold text-slate-700 truncate">{guru.bank ? `${guru.bank} - ${guru.nomor_rekening}` : '-'}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-indigo-50/70 to-violet-50/50 rounded-lg p-2.5">
+                                            <p className="text-slate-400 text-[10px] font-bold uppercase">Bergabung di KPM</p>
+                                            <p className="font-semibold text-slate-700 truncate">{formatTanggalBergabung(guru.tanggal_bergabung)}</p>
+                                        </div>
+                                        <div className="bg-gradient-to-br from-indigo-50/70 to-violet-50/50 rounded-lg p-2.5">
+                                            <p className="text-slate-400 text-[10px] font-bold uppercase">Pelatihan Suprarasional</p>
+                                            {guru.pelatihan_suprarasional == null ? (
+                                                <p className="font-semibold text-slate-400">Belum diisi</p>
+                                            ) : (
+                                                <p className={`font-bold ${guru.pelatihan_suprarasional ? 'text-emerald-600' : 'text-slate-600'}`}>
+                                                    {guru.pelatihan_suprarasional ? 'IYA' : 'TIDAK'}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 

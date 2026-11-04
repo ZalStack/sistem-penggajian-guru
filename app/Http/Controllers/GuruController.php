@@ -77,7 +77,7 @@ class GuruController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            $guru = Guru::create($this->guruPayload($validated));
+            $guru = Guru::create([...$this->guruPayload($validated), 'user_id' => $user->id]);
             $guru->programs()->sync($programIds->all());
 
             $user->update(['guru_id' => $guru->id]);
@@ -231,6 +231,7 @@ class GuruController extends Controller
             'riwayat_pendidikan' => 'nullable|string|max:2000',
             'pendidikan_terakhir' => 'nullable|string|max:100',
             'tanggal_bergabung' => 'nullable|date',
+            'pelatihan_suprarasional' => 'nullable|boolean',
             'lama_mengajar' => 'nullable|integer|min:0|max:60',
             'riwayat_mengajar' => 'nullable|string|max:2000',
             'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
@@ -259,6 +260,7 @@ class GuruController extends Controller
             'riwayat_pendidikan' => $validated['riwayat_pendidikan'] ?? null,
             'pendidikan_terakhir' => $validated['pendidikan_terakhir'] ?? null,
             'tanggal_bergabung' => $validated['tanggal_bergabung'] ?? null,
+            'pelatihan_suprarasional' => $validated['pelatihan_suprarasional'] ?? null,
             'lama_mengajar' => $validated['lama_mengajar'] ?? null,
             'riwayat_mengajar' => $validated['riwayat_mengajar'] ?? null,
             'nomor_telepon' => $validated['nomor_telepon'] ?? null,

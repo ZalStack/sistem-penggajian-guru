@@ -56,6 +56,8 @@ export default function Edit({
         riwayat_pendidikan: guru?.riwayat_pendidikan || '',
         pendidikan_terakhir: guru?.pendidikan_terakhir || '',
         tanggal_bergabung: guru?.tanggal_bergabung ? guru.tanggal_bergabung.substring(0, 10) : '',
+        pelatihan_suprarasional:
+            guru?.pelatihan_suprarasional == null ? '' : guru.pelatihan_suprarasional ? '1' : '0',
         lama_mengajar: (guru?.lama_mengajar ?? '') as string | number,
         riwayat_mengajar: guru?.riwayat_mengajar || '',
         nomor_telepon: guru?.nomor_telepon || '',
@@ -434,6 +436,23 @@ export default function Edit({
                                                 error={errors.tanggal_bergabung}
                                                 hint="Kapan Anda bergabung mengajar di KPM"
                                             />
+                                            <div className="space-y-1.5">
+                                                <Select
+                                                    label="Pernah Ikut Pelatihan Suprarasional"
+                                                    value={data.pelatihan_suprarasional}
+                                                    onChange={(e) => setData('pelatihan_suprarasional', e.target.value)}
+                                                    options={[
+                                                        { value: '1', label: 'IYA — Pernah ikut' },
+                                                        { value: '0', label: 'TIDAK — Belum pernah ikut' },
+                                                    ]}
+                                                    placeholder="Belum diisi"
+                                                    error={errors.pelatihan_suprarasional}
+                                                />
+                                                <p className="text-[11px] leading-4 text-slate-500 font-[450] flex items-center gap-1">
+                                                    <Icon icon="tabler:school" className="text-[12px] shrink-0" />
+                                                    Pilih IYA jika pernah mengikuti pelatihan Suprarasional.
+                                                </p>
+                                            </div>
                                             <Input
                                                 label="Lama Mengajar (tahun)"
                                                 type="number"

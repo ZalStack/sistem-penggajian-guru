@@ -24,6 +24,7 @@ class Guru extends Model
         'riwayat_pendidikan',
         'pendidikan_terakhir',
         'tanggal_bergabung',
+        'pelatihan_suprarasional',
         'lama_mengajar',
         'riwayat_mengajar',
         'nomor_telepon',
@@ -35,7 +36,8 @@ class Guru extends Model
 
     protected $casts = [
         'tunjangan_khusus' => 'decimal:2',
-        'tanggal_bergabung' => 'date',
+        'tanggal_bergabung' => 'date:Y-m-d',
+        'pelatihan_suprarasional' => 'boolean',
         'lama_mengajar' => 'integer',
     ];
 

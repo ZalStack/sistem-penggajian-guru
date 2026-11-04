@@ -189,6 +189,68 @@ class SiguruFeatureTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page->has('gurus.data', 0));
     }
 
+    public function test_admin_can_store_and_update_pelatihan_suprarasional(): void
+    {
+        $this->actingAs($this->user)
+            ->post('/guru', [
+                'nama' => 'Guru Pelatihan Baru',
+                'grade_id' => $this->grade->id,
+                'mapel' => 'MTK',
+                'pelatihan_suprarasional' => '1',
+                'tanggal_bergabung' => '2022-05-10',
+                'email' => 'pelatihan.baru@satugurukpm.id',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('guru.index'));
+
+        $guru = Guru::where('nama', 'Guru Pelatihan Baru')->firstOrFail();
+
+        $this->assertTrue($guru->pelatihan_suprarasional);
+        $this->assertSame('2022-05-10', $guru->tanggal_bergabung->toDateString());
+
+        // Ubah status menjadi TIDAK
+        $this->actingAs($this->user)
+            ->put('/guru/'.$guru->id, [
+                'nama' => $guru->nama,
+                'grade_id' => $this->grade->id,
+                'mapel' => 'MTK',
+                'pelatihan_suprarasional' => '0',
+                'tanggal_bergabung' => '2022-05-10',
+                'email' => 'pelatihan.baru@satugurukpm.id',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertFalse($guru->refresh()->pelatihan_suprarasional);
+
+        // Nilai di luar IYA/TIDAK ditolak
+        $this->actingAs($this->user)
+            ->put('/guru/'.$guru->id, [
+                'nama' => $guru->nama,
+                'grade_id' => $this->grade->id,
+                'mapel' => 'MTK',
+                'pelatihan_suprarasional' => 'ya-tidak',
+                'tanggal_bergabung' => '2022-05-10',
+                'email' => 'pelatihan.baru@satugurukpm.id',
+            ])
+            ->assertSessionHasErrors('pelatihan_suprarasional');
+
+        $this->assertFalse($guru->refresh()->pelatihan_suprarasional);
+    }
+
+    public function test_guru_index_exposes_tanggal_bergabung_and_pelatihan_suprarasional(): void
+    {
+        $this->guru->update(['pelatihan_suprarasional' => true]);
+
+        $this->actingAs($this->user)
+            ->get('/guru')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Guru/Index')
+                ->where('gurus.data.0.pelatihan_suprarasional', true)
+                ->where('gurus.data.0.tanggal_bergabung', '2021-08-01')
+            );
+    }
+
     public function test_teaching_session_store_with_program_and_status(): void
     {
         $location = Location::create([

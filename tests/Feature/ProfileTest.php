@@ -144,6 +144,7 @@ class ProfileTest extends TestCase
                 'riwayat_pendidikan' => 'S1 Pendidikan Matematika — UI',
                 'pendidikan_terakhir' => 'S.Pd, M.Pd',
                 'tanggal_bergabung' => '2024-01-15',
+                'pelatihan_suprarasional' => '1',
                 'lama_mengajar' => 4,
                 'riwayat_mengajar' => '2020–2024 — SMPN 1 Bogor',
                 'nomor_telepon' => '0812-3456-7890',
@@ -168,6 +169,7 @@ class ProfileTest extends TestCase
         $this->assertSame('S1 Pendidikan Matematika — UI', $guru->riwayat_pendidikan);
         $this->assertSame('S.Pd, M.Pd', $guru->pendidikan_terakhir);
         $this->assertSame('2024-01-15', $guru->tanggal_bergabung->toDateString());
+        $this->assertTrue($guru->pelatihan_suprarasional);
         $this->assertSame(4, $guru->lama_mengajar);
         $this->assertSame('2020–2024 — SMPN 1 Bogor', $guru->riwayat_mengajar);
         $this->assertSame('0812-3456-7890', $guru->nomor_telepon);
@@ -175,6 +177,55 @@ class ProfileTest extends TestCase
         $this->assertSame('1234567890', $guru->nomor_rekening);
         $this->assertSame('IPA Kelas 8 dan 9', $guru->keterangan_mengajar);
         $this->assertTrue($guru->programs->contains($program->id));
+    }
+
+    public function test_guru_can_set_and_clear_pelatihan_suprarasional_from_profile(): void
+    {
+        [$user, $guru] = $this->createGuruUser();
+
+        $payload = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'mapel' => $guru->mapel,
+        ];
+
+        // TIDAK
+        $this->actingAs($user)
+            ->patch('/profile', [...$payload, 'pelatihan_suprarasional' => '0'])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $this->assertFalse($guru->refresh()->pelatihan_suprarasional);
+
+        // IYA
+        $this->actingAs($user)
+            ->patch('/profile', [...$payload, 'pelatihan_suprarasional' => '1'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertTrue($guru->refresh()->pelatihan_suprarasional);
+
+        // Dikosongkan kembali (belum diisi)
+        $this->actingAs($user)
+            ->patch('/profile', [...$payload, 'pelatihan_suprarasional' => ''])
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull($guru->refresh()->pelatihan_suprarasional);
+    }
+
+    public function test_guru_profile_rejects_invalid_pelatihan_suprarasional_value(): void
+    {
+        [$user, $guru] = $this->createGuruUser();
+
+        $this->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'mapel' => $guru->mapel,
+                'pelatihan_suprarasional' => 'mungkin',
+            ])
+            ->assertSessionHasErrors('pelatihan_suprarasional');
+
+        $this->assertNull($guru->refresh()->pelatihan_suprarasional);
     }
 
     public function test_guru_cannot_change_grade_or_special_allowance_from_profile(): void

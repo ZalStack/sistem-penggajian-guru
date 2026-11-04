@@ -25,6 +25,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
         riwayat_pendidikan: '',
         pendidikan_terakhir: '',
         tanggal_bergabung: '',
+        pelatihan_suprarasional: '',
         lama_mengajar: '' as string | number,
         riwayat_mengajar: '',
         nomor_telepon: '',
@@ -230,6 +231,23 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                                         error={errors.tanggal_bergabung}
                                         hint="Kapan guru bergabung mengajar di KPM"
                                     />
+                                    <div className="space-y-1.5">
+                                        <Select
+                                            label="Pernah Ikut Pelatihan Suprarasional"
+                                            value={data.pelatihan_suprarasional}
+                                            onChange={(e) => setData('pelatihan_suprarasional', e.target.value)}
+                                            options={[
+                                                { value: '1', label: 'IYA — Pernah ikut' },
+                                                { value: '0', label: 'TIDAK — Belum pernah ikut' },
+                                            ]}
+                                            placeholder="Belum diisi"
+                                            error={errors.pelatihan_suprarasional}
+                                        />
+                                        <p className="text-[11px] leading-4 text-slate-500 font-[450] flex items-center gap-1">
+                                            <Icon icon="tabler:school" className="text-[12px] shrink-0" />
+                                            Pilih IYA jika guru pernah mengikuti pelatihan Suprarasional.
+                                        </p>
+                                    </div>
                                     <Input
                                         label="Lama Mengajar (tahun)"
                                         type="number"

@@ -51,6 +51,7 @@ export interface Guru {
     lama_mengajar: number | null;
     riwayat_mengajar: string | null;
     tanggal_bergabung: string | null;
+    pelatihan_suprarasional: boolean | null;
     nomor_telepon: string | null;
     tunjangan_khusus: number | string;
     grade_kode?: string | null;
