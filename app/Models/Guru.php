@@ -14,6 +14,7 @@ class Guru extends Model
 
     protected $fillable = [
         'nama',
+        'foto',
         'grade_id',
         'mapel',
         'jenjang',
@@ -79,6 +80,19 @@ class Guru extends Model
     public function sunnahGurus(): HasMany
     {
         return $this->hasMany(SunnahGuru::class);
+    }
+
+    /**
+     * URL foto profil guru (dilayani route profile.photo milik pemilik akun).
+     * Parameter versi dari updated_at agar browser tidak menampilkan foto lama.
+     */
+    public function fotoUrl(): ?string
+    {
+        if (! $this->foto) {
+            return null;
+        }
+
+        return url('/profile/foto?v='.($this->updated_at?->timestamp ?? 0));
     }
 
     /**

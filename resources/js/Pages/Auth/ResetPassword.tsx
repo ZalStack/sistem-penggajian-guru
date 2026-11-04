@@ -25,7 +25,7 @@ export default function ResetPassword({ token, email }: { token: string; email: 
 
             <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-brand">
-                    <Icon icon="lucide:key-round" className="text-[20px]" />
+                    <Icon icon="tabler:key" className="text-[20px]" />
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Atur Ulang Kata Sandi</h1>
@@ -75,9 +75,9 @@ export default function ResetPassword({ token, email }: { token: string; email: 
 
                 <button type="submit" className="btn-primary w-full" disabled={processing}>
                     {processing ? (
-                        <Icon icon="lucide:loader-2" className="animate-spin text-[16px]" />
+                        <Icon icon="tabler:loader-2" className="animate-spin text-[16px]" />
                     ) : (
-                        <Icon icon="lucide:key-round" className="text-[16px]" />
+                        <Icon icon="tabler:key" className="text-[16px]" />
                     )}
                     {processing ? 'Menyimpan...' : 'Simpan Kata Sandi Baru'}
                 </button>

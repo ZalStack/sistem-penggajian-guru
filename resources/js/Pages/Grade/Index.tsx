@@ -80,7 +80,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                     }}
                     className="shrink-0"
                 >
-                    <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
+                    <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Grade Baru'}
                 </Button>
             </div>
@@ -114,7 +114,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
-                                    <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Grade'}
+                                    <Icon icon="tabler:device-floppy" /> {editId ? 'Simpan Perubahan' : 'Tambah Grade'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
                                     Batal
@@ -170,7 +170,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                                     className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Edit Grade"
                                                 >
-                                                    <Icon icon="lucide:pencil" className="text-base" />
+                                                    <Icon icon="tabler:pencil" className="text-base" />
                                                 </button>
                                                 <button
                                                     type="button"
@@ -178,7 +178,7 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                                     className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                     title="Hapus Grade"
                                                 >
-                                                    <Icon icon="lucide:trash-2" className="text-base" />
+                                                    <Icon icon="tabler:trash" className="text-base" />
                                                 </button>
                                             </div>
                                         </TableCell>
@@ -217,14 +217,14 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
                                         onClick={() => handleEdit(grade)}
                                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
                                     >
-                                        <Icon icon="lucide:pencil" /> Edit
+                                        <Icon icon="tabler:pencil" /> Edit
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => openDeleteModal(grade)}
                                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1"
                                     >
-                                        <Icon icon="lucide:trash-2" /> Hapus
+                                        <Icon icon="tabler:trash" /> Hapus
                                     </button>
                                 </div>
                             </div>
@@ -236,12 +236,12 @@ export default function GradeIndex({ grades }: GradeIndexProps) {
             <Modal show={gradeToDelete !== null} onClose={() => setGradeToDelete(null)}>
                 <div className="p-8 text-center">
                     <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
-                        <Icon icon="lucide:alert-triangle" className="text-2xl" />
+                        <Icon icon="tabler:alert-triangle" className="text-2xl" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2 break-words">Hapus Grade {gradeToDelete?.kode_grade}?</h3>
                     {gradeToDelete && gradeToDelete.gurus_count > 0 ? (
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-6 text-left flex gap-2.5">
-                            <Icon icon="lucide:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
+                            <Icon icon="tabler:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
                             <span>
                                 <strong>Perhatian:</strong> Grade ini saat ini sedang digunakan oleh <strong>{gradeToDelete.gurus_count} orang guru</strong>. Sistem akan menolak penghapusan untuk melindungi integritas data guru.
                             </span>

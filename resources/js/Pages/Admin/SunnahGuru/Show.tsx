@@ -85,7 +85,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                             className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-800"
                             aria-label="Kembali"
                         >
-                            <Icon icon="lucide:arrow-left" className="text-base" />
+                            <Icon icon="tabler:arrow-left" className="text-base" />
                         </Link>
                         <div>
                             <h1 className="page-title">Detail Checklist 7SPS</h1>

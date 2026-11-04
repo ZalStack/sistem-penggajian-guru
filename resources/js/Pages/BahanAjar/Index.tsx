@@ -36,10 +36,10 @@ const mapelOptions = [
 ];
 
 const fileIcons: Record<string, string> = {
-    'application/pdf': 'lucide:file-text',
-    'image/jpeg': 'lucide:image',
-    'image/png': 'lucide:image',
-    'image/webp': 'lucide:image',
+    'application/pdf': 'tabler:file-text',
+    'image/jpeg': 'tabler:photo',
+    'image/png': 'tabler:photo',
+    'image/webp': 'tabler:photo',
 };
 
 function formatBytes(bytes: number): string {
@@ -51,11 +51,11 @@ function formatBytes(bytes: number): string {
 
 function fileIcon(mime: string | null): string {
     if (mime && fileIcons[mime]) return fileIcons[mime];
-    if (mime?.includes('word')) return 'lucide:file-type-2';
-    if (mime?.includes('sheet') || mime?.includes('excel')) return 'lucide:sheet';
-    if (mime?.includes('presentation') || mime?.includes('powerpoint')) return 'lucide:presentation';
-    if (mime === 'application/zip') return 'lucide:file-archive';
-    return 'lucide:file';
+    if (mime?.includes('word')) return 'tabler:file-code';
+    if (mime?.includes('sheet') || mime?.includes('excel')) return 'tabler:table';
+    if (mime?.includes('presentation') || mime?.includes('powerpoint')) return 'tabler:presentation';
+    if (mime === 'application/zip') return 'tabler:file-zip';
+    return 'tabler:file';
 }
 
 function fileExtension(name: string): string {
@@ -138,7 +138,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                     </p>
                 </div>
                 <Button onClick={() => (showForm ? resetForm() : setShowForm(true))} className="shrink-0 w-full sm:w-auto">
-                    <Icon icon={showForm ? 'lucide:x' : 'lucide:upload'} className="text-base" />
+                    <Icon icon={showForm ? 'tabler:x' : 'tabler:upload'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Upload Materi Baru'}
                 </Button>
             </div>
@@ -205,11 +205,11 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                     }`}
                                 >
                                     <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
-                                        <Icon icon="lucide:cloud-upload" className="text-xl" />
+                                        <Icon icon="tabler:cloud-upload" className="text-xl" />
                                     </span>
                                     {data.file ? (
                                         <span className="text-[13px] font-bold text-indigo-700 break-all flex items-center gap-2">
-                                            <Icon icon="lucide:file-check" className="text-base shrink-0" />
+                                            <Icon icon="tabler:file-check" className="text-base shrink-0" />
                                             {data.file.name}
                                         </span>
                                     ) : (
@@ -236,7 +236,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
 
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
-                                    <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Upload Materi'}
+                                    <Icon icon="tabler:device-floppy" /> {editId ? 'Simpan Perubahan' : 'Upload Materi'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
                                     Batal
@@ -257,7 +257,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                             }}
                         >
                             <div className="relative flex-1 min-w-0 sm:min-w-[220px]">
-                                <Icon icon="lucide:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                <Icon icon="tabler:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                 <input
                                     type="search"
                                     value={search}
@@ -282,7 +282,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                 <option value="MTK">MTK</option>
                             </select>
                             <Button type="submit" size="sm" className="shrink-0">
-                                <Icon icon="lucide:search" /> Cari
+                                <Icon icon="tabler:search" /> Cari
                             </Button>
                         </form>
                     </div>
@@ -342,7 +342,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                                             className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
                                                             title="Unduh File"
                                                         >
-                                                            <Icon icon="lucide:download" className="text-base" />
+                                                            <Icon icon="tabler:download" className="text-base" />
                                                         </a>
                                                         <button
                                                             type="button"
@@ -350,7 +350,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                                             className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                             title="Edit Bahan Ajar"
                                                         >
-                                                            <Icon icon="lucide:pencil" className="text-base" />
+                                                            <Icon icon="tabler:pencil" className="text-base" />
                                                         </button>
                                                         <button
                                                             type="button"
@@ -358,7 +358,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                                             className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                             title="Hapus Bahan Ajar"
                                                         >
-                                                            <Icon icon="lucide:trash-2" className="text-base" />
+                                                            <Icon icon="tabler:trash" className="text-base" />
                                                         </button>
                                                     </div>
                                                 </TableCell>
@@ -369,7 +369,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                             <TableCell colSpan={6}>
                                                 <div className="text-center py-14">
                                                     <div className="empty-state-icon">
-                                                        <Icon icon="lucide:book-open" className="text-2xl" />
+                                                        <Icon icon="tabler:books" className="text-2xl" />
                                                     </div>
                                                     <p className="text-[14px] font-bold text-slate-900">Belum ada bahan ajar</p>
                                                     <p className="text-[12.5px] text-slate-500 mt-1">
@@ -410,21 +410,21 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                                                 href={route('bahan-ajar.download', item.id)}
                                                 className="flex-1 min-w-[110px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-[0_4px_10px_-4px_rgba(5,150,105,0.7)]"
                                             >
-                                                <Icon icon="lucide:download" /> Unduh
+                                                <Icon icon="tabler:download" /> Unduh
                                             </a>
                                             <button
                                                 type="button"
                                                 onClick={() => handleEdit(item)}
                                                 className="flex-1 min-w-[90px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors"
                                             >
-                                                <Icon icon="lucide:pencil" /> Edit
+                                                <Icon icon="tabler:pencil" /> Edit
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setItemToDelete(item)}
                                                 className="flex-1 min-w-[90px] inline-flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
                                             >
-                                                <Icon icon="lucide:trash-2" /> Hapus
+                                                <Icon icon="tabler:trash" /> Hapus
                                             </button>
                                         </div>
                                     </div>
@@ -432,7 +432,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
                             ) : (
                                 <div className="text-center py-12 px-4">
                                     <div className="empty-state-icon">
-                                        <Icon icon="lucide:book-open" className="text-2xl" />
+                                        <Icon icon="tabler:books" className="text-2xl" />
                                     </div>
                                     <p className="text-[14px] font-bold text-slate-900">Belum ada bahan ajar</p>
                                     <p className="text-[12.5px] text-slate-500 mt-1">
@@ -451,7 +451,7 @@ export default function BahanAjarIndex({ bahanAjar, filters }: BahanAjarIndexPro
             <Modal show={itemToDelete !== null} onClose={() => setItemToDelete(null)}>
                 <div className="p-8 text-center">
                     <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
-                        <Icon icon="lucide:alert-triangle" className="text-2xl" />
+                        <Icon icon="tabler:alert-triangle" className="text-2xl" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2 break-words">
                         Hapus Bahan Ajar?

@@ -8,7 +8,7 @@ interface EmptyStateProps {
     children?: ReactNode;
 }
 
-export default function EmptyState({ icon = 'lucide:inbox', title = 'Tidak ada data', description, children }: EmptyStateProps) {
+export default function EmptyState({ icon = 'tabler:inbox', title = 'Tidak ada data', description, children }: EmptyStateProps) {
     return (
         <div className="text-center py-16 px-6">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-5 shadow-soft">

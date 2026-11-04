@@ -26,10 +26,10 @@ interface BahanAjarGuruProps {
 }
 
 const fileIcons: Record<string, string> = {
-    'application/pdf': 'lucide:file-text',
-    'image/jpeg': 'lucide:image',
-    'image/png': 'lucide:image',
-    'image/webp': 'lucide:image',
+    'application/pdf': 'tabler:file-text',
+    'image/jpeg': 'tabler:photo',
+    'image/png': 'tabler:photo',
+    'image/webp': 'tabler:photo',
 };
 
 function formatBytes(bytes: number): string {
@@ -41,11 +41,11 @@ function formatBytes(bytes: number): string {
 
 function fileIcon(mime: string | null): string {
     if (mime && fileIcons[mime]) return fileIcons[mime];
-    if (mime?.includes('word')) return 'lucide:file-type-2';
-    if (mime?.includes('sheet') || mime?.includes('excel')) return 'lucide:sheet';
-    if (mime?.includes('presentation') || mime?.includes('powerpoint')) return 'lucide:presentation';
-    if (mime === 'application/zip') return 'lucide:file-archive';
-    return 'lucide:file';
+    if (mime?.includes('word')) return 'tabler:file-code';
+    if (mime?.includes('sheet') || mime?.includes('excel')) return 'tabler:table';
+    if (mime?.includes('presentation') || mime?.includes('powerpoint')) return 'tabler:presentation';
+    if (mime === 'application/zip') return 'tabler:file-zip';
+    return 'tabler:file';
 }
 
 function fileExtension(name: string): string {
@@ -94,7 +94,7 @@ export default function BahanAjarGuruIndex({ bahanAjar, filters }: BahanAjarGuru
                         onSubmit={handleSubmit}
                     >
                         <div className="relative flex-1 min-w-0 sm:min-w-[220px]">
-                            <Icon icon="lucide:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <Icon icon="tabler:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                             <input
                                 type="search"
                                 value={search}
@@ -119,7 +119,7 @@ export default function BahanAjarGuruIndex({ bahanAjar, filters }: BahanAjarGuru
                             <option value="MTK">MTK</option>
                         </select>
                         <Button type="submit" size="sm" className="shrink-0">
-                            <Icon icon="lucide:search" /> Cari
+                            <Icon icon="tabler:search" /> Cari
                         </Button>
                     </form>
 
@@ -164,7 +164,7 @@ export default function BahanAjarGuruIndex({ bahanAjar, filters }: BahanAjarGuru
                                                 size="sm"
                                                 className="w-full"
                                             >
-                                                <Icon icon="lucide:download" /> Unduh Materi
+                                                <Icon icon="tabler:download" /> Unduh Materi
                                             </Button>
                                         </div>
                                     </div>
@@ -173,7 +173,7 @@ export default function BahanAjarGuruIndex({ bahanAjar, filters }: BahanAjarGuru
                         ) : (
                             <div className="text-center py-14 px-4">
                                 <div className="empty-state-icon">
-                                    <Icon icon="lucide:book-open" className="text-2xl" />
+                                    <Icon icon="tabler:books" className="text-2xl" />
                                 </div>
                                 <p className="text-[14px] font-bold text-slate-900">Belum ada bahan ajar</p>
                                 <p className="text-[12.5px] text-slate-500 mt-1">

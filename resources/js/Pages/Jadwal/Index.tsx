@@ -109,7 +109,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                         </div>
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" onClick={() => navigateWeek(-1)} aria-label="Minggu sebelumnya">
-                                <Icon icon="lucide:chevron-left" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-left" className="text-[16px]" />
                                 <span className="hidden sm:inline">Sebelumnya</span>
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => navigateWeek(0)}>
@@ -117,7 +117,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => navigateWeek(1)} aria-label="Minggu berikutnya">
                                 <span className="hidden sm:inline">Berikutnya</span>
-                                <Icon icon="lucide:chevron-right" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-right" className="text-[16px]" />
                             </Button>
                         </div>
                     </div>
@@ -310,7 +310,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                     {days.every((d) => d.sessions.length === 0) && (
                         <Card className="mt-6">
                             <EmptyState
-                                icon="lucide:calendar-x"
+                                icon="tabler:calendar-x"
                                 title="Tidak ada jadwal minggu ini"
                                 description={
                                     filters.filter_guru || filters.filter_program || filters.filter_status

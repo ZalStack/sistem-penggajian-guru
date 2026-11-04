@@ -78,13 +78,13 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                     </div>
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
                         <button onClick={handlePrint} className="btn-secondary">
-                            <Icon icon="lucide:printer" className="w-4 h-4" /> Cetak
+                            <Icon icon="tabler:printer" className="w-4 h-4" /> Cetak
                         </button>
                         <button onClick={handleExportExcel} className="btn-secondary">
-                            <Icon icon="lucide:file-spreadsheet" className="w-4 h-4 text-emerald-600" /> Export Excel
+                            <Icon icon="tabler:file-spreadsheet" className="w-4 h-4 text-emerald-600" /> Export Excel
                         </button>
                         <button onClick={handleExportPdf} className="btn-secondary">
-                            <Icon icon="lucide:file-text" className="w-4 h-4 text-rose-600" /> Export PDF
+                            <Icon icon="tabler:file-text" className="w-4 h-4 text-rose-600" /> Export PDF
                         </button>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                         <p className="text-lg font-semibold text-slate-900 mt-1 break-words">{displayCount} <span className="font-normal text-slate-600">Guru</span></p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:clipboard-list" className="w-4 h-4" />
+                        <Icon icon="tabler:clipboard-list" className="w-4 h-4" />
                     </div>
                 </div>
                 <div className="card-modern hover:border-indigo-200 px-4 sm:px-5 py-4 flex items-start justify-between gap-3 transition-colors">
@@ -107,7 +107,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                         <p className="text-lg font-semibold text-slate-900 mt-1 break-words">{displaySesi} <span className="font-normal text-slate-600">Sesi</span></p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:clock-3" className="w-4 h-4" />
+                        <Icon icon="tabler:clock" className="w-4 h-4" />
                     </div>
                 </div>
                 <div className="card-modern hover:border-indigo-200 px-4 sm:px-5 py-4 flex items-start justify-between gap-3 transition-colors">
@@ -116,7 +116,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                         <p className="text-lg font-semibold text-indigo-600 mt-1 break-words">{formatCurrency(displayTotal)}</p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:wallet" className="w-4 h-4" />
+                        <Icon icon="tabler:wallet" className="w-4 h-4" />
                     </div>
                 </div>
             </div>
@@ -142,7 +142,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                     return <option key={val} value={val}>{label}</option>;
                                 })}
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
 
                         <div className="relative w-full sm:w-auto">
@@ -154,7 +154,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                 <option value="">Semua Grade</option>
                                 {grades.map(g => <option key={g.id} value={g.id}>Grade {g.kode_grade}</option>)}
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
 
                         <div className="relative w-full sm:w-auto">
@@ -167,7 +167,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                 <option value="IPA">IPA</option>
                                 <option value="MTK">MTK</option>
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
 
                         <div className="relative w-full sm:w-auto">
@@ -179,14 +179,14 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                 <option value="">Semua Program</option>
                                 {programs.map(p => <option key={p.id} value={p.id}>{p.nama}</option>)}
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
                     </div>
 
                     {/* Right: search + actions */}
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div className="relative flex-1 sm:flex-none sm:w-[260px]">
-                            <Icon icon="lucide:search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                            <Icon icon="tabler:search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                             <input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -199,7 +199,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                             Reset
                         </button>
                         <button onClick={handleSearch} className="btn-primary rounded-full shrink-0">
-                            <Icon icon="lucide:filter" className="w-4 h-4" /> Filter
+                            <Icon icon="tabler:filter" className="w-4 h-4" /> Filter
                         </button>
                     </div>
                 </div>
@@ -276,7 +276,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                                         {p.status_bayar === 'sudah_dibayar' ? 'Disetujui' : 'Menunggu'}
                                                     </span>
                                                     <button onClick={handlePrint} className="w-7 h-7 rounded-full hover:bg-indigo-50 flex items-center justify-center text-slate-400 hover:text-indigo-700 transition-colors">
-                                                        <Icon icon="lucide:printer" className="w-4 h-4" />
+                                                        <Icon icon="tabler:printer" className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -306,7 +306,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                                     <td colSpan={11} className="px-6 py-16 text-center">
                                         <div className="flex flex-col items-center">
                                             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-brand">
-                                                <Icon icon="lucide:inbox" className="w-6 h-6" />
+                                                <Icon icon="tabler:inbox" className="w-6 h-6" />
                                             </div>
                                             <p className="text-sm font-medium text-slate-900 mt-3">Tidak ada data rekapitulasi</p>
                                             <p className="text-xs text-slate-500 mt-1">Coba ubah filter atau periode untuk menampilkan data</p>
@@ -365,7 +365,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                     ) : (
                         <div className="py-12 text-center px-4">
                             <div className="empty-state-icon">
-                                <Icon icon="lucide:inbox" className="w-6 h-6" />
+                                <Icon icon="tabler:inbox" className="w-6 h-6" />
                             </div>
                             <p className="text-sm font-medium text-slate-900">Tidak ada data</p>
                             <p className="text-xs text-slate-500 mt-1">Coba ubah filter atau periode untuk menampilkan data</p>

@@ -16,9 +16,9 @@ interface TransportIndexProps {
 }
 
 const transportIcons: Record<string, string> = {
-    'Online': 'lucide:wifi',
-    'Dalam Kota': 'lucide:map-pin',
-    'Luar Kota': 'lucide:map-pin-off',
+    'Online': 'tabler:wifi',
+    'Dalam Kota': 'tabler:map-pin',
+    'Luar Kota': 'tabler:map-pin-off',
 };
 
 export default function TransportIndex({ transports }: TransportIndexProps) {
@@ -86,7 +86,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                     }}
                     className="shrink-0"
                 >
-                    <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
+                    <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-base" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Transport Baru'}
                 </Button>
             </div>
@@ -120,7 +120,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                             </div>
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
-                                    <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Transport'}
+                                    <Icon icon="tabler:device-floppy" /> {editId ? 'Simpan Perubahan' : 'Tambah Transport'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
                                     Batal
@@ -152,7 +152,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center text-lg shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                                    <Icon icon={transportIcons[transport.jenis] || 'lucide:car'} />
+                                                    <Icon icon={transportIcons[transport.jenis] || 'tabler:car'} />
                                                 </div>
                                                 <span className="font-bold text-slate-900">{transport.jenis}</span>
                                             </div>
@@ -176,7 +176,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                                     className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Edit Transport"
                                                 >
-                                                    <Icon icon="lucide:pencil" className="text-base" />
+                                                    <Icon icon="tabler:pencil" className="text-base" />
                                                 </button>
                                                 <button
                                                     type="button"
@@ -184,7 +184,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                                     className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                     title="Hapus Transport"
                                                 >
-                                                    <Icon icon="lucide:trash-2" className="text-base" />
+                                                    <Icon icon="tabler:trash" className="text-base" />
                                                 </button>
                                             </div>
                                         </TableCell>
@@ -203,7 +203,7 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-3 min-w-0">
                                         <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                            <Icon icon={transportIcons[transport.jenis] || 'lucide:car'} />
+                                            <Icon icon={transportIcons[transport.jenis] || 'tabler:car'} />
                                         </div>
                                         <div className="min-w-0">
                                             <p className="font-bold text-slate-900 text-sm truncate">{transport.jenis}</p>
@@ -223,14 +223,14 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
                                         onClick={() => handleEdit(transport)}
                                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
                                     >
-                                        <Icon icon="lucide:pencil" /> Edit
+                                        <Icon icon="tabler:pencil" /> Edit
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => openDeleteModal(transport)}
                                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1"
                                     >
-                                        <Icon icon="lucide:trash-2" /> Hapus
+                                        <Icon icon="tabler:trash" /> Hapus
                                     </button>
                                 </div>
                             </div>
@@ -242,14 +242,14 @@ export default function TransportIndex({ transports }: TransportIndexProps) {
             <Modal show={transportToDelete !== null} onClose={() => setTransportToDelete(null)}>
                 <div className="p-8 text-center">
                     <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
-                        <Icon icon="lucide:alert-triangle" className="text-2xl" />
+                        <Icon icon="tabler:alert-triangle" className="text-2xl" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2 break-words">
                         Hapus Transport {transportToDelete?.jenis}?
                     </h3>
                     {transportToDelete && transportToDelete.penggajians_count > 0 ? (
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 mb-6 text-left flex gap-2.5">
-                            <Icon icon="lucide:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
+                            <Icon icon="tabler:alert-circle" className="text-base text-amber-600 flex-shrink-0 mt-0.5" />
                             <span>
                                 <strong>Perhatian:</strong> Transport ini telah digunakan pada <strong>{transportToDelete.penggajians_count} riwayat penggajian</strong>. Sistem akan menolak penghapusan untuk melindungi integritas rekap penggajian.
                             </span>

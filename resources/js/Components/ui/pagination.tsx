@@ -43,9 +43,9 @@ export default function Pagination({ links, from, to, total }: PaginationProps) 
                             preserveScroll
                         >
                             {link.label === '&laquo; Previous' ? (
-                                <Icon icon="lucide:chevron-left" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-left" className="text-[16px]" />
                             ) : link.label === 'Next &raquo;' ? (
-                                <Icon icon="lucide:chevron-right" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-right" className="text-[16px]" />
                             ) : (
                                 link.label
                             )}
@@ -53,9 +53,9 @@ export default function Pagination({ links, from, to, total }: PaginationProps) 
                     ) : (
                         <span key={index} className="min-w-[36px] h-9 inline-flex items-center justify-center px-2.5 text-[13px] text-slate-300">
                             {link.label === '&laquo; Previous' ? (
-                                <Icon icon="lucide:chevron-left" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-left" className="text-[16px]" />
                             ) : link.label === 'Next &raquo;' ? (
-                                <Icon icon="lucide:chevron-right" className="text-[16px]" />
+                                <Icon icon="tabler:chevron-right" className="text-[16px]" />
                             ) : (
                                 link.label
                             )}

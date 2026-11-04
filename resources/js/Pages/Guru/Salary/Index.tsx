@@ -32,7 +32,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 animate-fade-in">
                 <div className="flex items-start gap-3.5 min-w-0">
                     <span className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:wallet" className="text-xl" />
+                        <Icon icon="tabler:wallet" className="text-[20px]" />
                     </span>
                     <div className="min-w-0">
                         <h1 className="page-title">Penggajian</h1>
@@ -48,25 +48,25 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                 <StatCard
                     title="Total Gaji"
                     value={formatCurrency(totalGaji)}
-                    icon="lucide:wallet"
+                    icon="tabler:wallet"
                     color="blue"
                 />
                 <StatCard
                     title="Total Sudah Dibayar"
                     value={formatCurrency(totalBayar)}
-                    icon="lucide:check-circle"
+                    icon="tabler:circle-check"
                     color="green"
                 />
                 <StatCard
                     title="Gaji Bulan Ini"
                     value={gajiBulanIni ? formatCurrency(gajiBulanIni.total) : formatCurrency(0)}
-                    icon="lucide:calendar"
+                    icon="tabler:calendar-week"
                     color="purple"
                 />
                 <StatCard
                     title="Status Pembayaran"
                     value={belumBayar > 0 ? formatCurrency(belumBayar) : 'Lunas'}
-                    icon="lucide:alert-circle"
+                    icon="tabler:alert-triangle"
                     color={belumBayar > 0 ? 'amber' : 'green'}
                     description={belumBayar > 0 ? 'Belum dibayar' : 'Semua sudah dibayar'}
                 />
@@ -129,7 +129,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
                                                     title="Download Slip Gaji PDF"
                                                 >
-                                                    <Icon icon="lucide:download" className="text-sm" />
+                                                    <Icon icon="tabler:download" className="text-[16px]" />
                                                     <span className="hidden sm:inline">Slip Gaji</span>
                                                 </a>
                                             </TableCell>
@@ -161,12 +161,12 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                             {penggajians.map((pg, index) => (
                                 <div
                                     key={pg.id}
-                                    className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all space-y-3"
+                                    className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all space-y-3"
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex items-start gap-3 min-w-0">
                                             <span className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
-                                                <Icon icon="lucide:receipt-text" className="text-lg" />
+                                                <Icon icon="tabler:receipt" className="text-[18px]" />
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-slate-900 text-sm break-words">{pg.periode}</p>
@@ -201,12 +201,12 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                         </div>
                                     </div>
 
-                                    <div className="pt-3 border-t border-indigo-100/70">
+                                    <div className="pt-3 border-t border-slate-100">
                                         <a
                                             href={route('my-salary.payslip', pg.id)}
                                             className="flex w-full items-center justify-center gap-1.5 px-3 py-2.5 min-h-[42px] text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 border border-indigo-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25 break-words"
                                         >
-                                            <Icon icon="lucide:download" className="text-sm shrink-0" />
+                                            <Icon icon="tabler:download" className="text-[16px] shrink-0" />
                                             Download Slip Gaji
                                         </a>
                                     </div>
@@ -236,7 +236,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                 ) : (
                     <div className="text-center py-16 sm:py-20 px-2">
                         <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
-                            <Icon icon="lucide:wallet" className="text-3xl" />
+                            <Icon icon="tabler:wallet" className="text-[28px]" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">Belum ada data penggajian</h3>
                         <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">

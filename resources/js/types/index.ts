@@ -40,6 +40,7 @@ export interface Program {
 export interface Guru {
     id: number;
     nama: string;
+    foto?: string | null;
     grade_id: number;
     mapel: 'IPA' | 'MTK';
     jenjang: string | null;
@@ -223,6 +224,7 @@ export interface SunnahGuru {
 export interface PageProps {
     auth: {
         user: User & { role: string };
+        fotoUrl?: string | null;
     };
     flash?: {
         success?: string;

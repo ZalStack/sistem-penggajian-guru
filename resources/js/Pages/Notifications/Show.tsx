@@ -20,10 +20,10 @@ interface Props {
 }
 
 const tipeIcon: Record<string, string> = {
-    info: 'lucide:info',
-    success: 'lucide:check-circle',
-    warning: 'lucide:alert-triangle',
-    error: 'lucide:x-circle',
+    info: 'tabler:info-circle',
+    success: 'tabler:circle-check',
+    warning: 'tabler:alert-triangle',
+    error: 'tabler:circle-x',
 };
 
 const tipeColor: Record<string, string> = {
@@ -50,12 +50,12 @@ const kategoriLabel: Record<string, string> = {
 };
 
 const kategoriIcon: Record<string, string> = {
-    sistem: 'lucide:settings',
-    absensi: 'lucide:clipboard-check',
-    perizinan: 'lucide:shield-check',
-    gaji: 'lucide:banknote',
-    sesi: 'lucide:book-open',
-    sunnah: 'lucide:moon-star',
+    sistem: 'tabler:settings',
+    absensi: 'tabler:clipboard-check',
+    perizinan: 'tabler:shield-check',
+    gaji: 'tabler:cash',
+    sesi: 'tabler:books',
+    sunnah: 'tabler:moon-stars',
 };
 
 export default function NotificationsShow({ notification }: Props) {
@@ -69,7 +69,7 @@ export default function NotificationsShow({ notification }: Props) {
                         href={route('notifications.index')}
                         className="inline-flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-colors"
                     >
-                        <Icon icon="lucide:arrow-left" className="text-base" />
+                        <Icon icon="tabler:arrow-left" className="text-base" />
                     </Link>
                     <div className="min-w-0">
                         <h1 className="page-title">Detail Notifikasi</h1>
@@ -128,7 +128,7 @@ export default function NotificationsShow({ notification }: Props) {
                             <div className="flex items-center gap-2 text-xs text-slate-500">
                                 {notification.dibaca ? (
                                     <span className="inline-flex items-center gap-1">
-                                        <Icon icon="lucide:check-circle" className="text-sm text-emerald-500" />
+                                        <Icon icon="tabler:circle-check" className="text-sm text-emerald-500" />
                                         Dibaca pada {new Date(notification.dibaca_pada!).toLocaleDateString('id-ID', {
                                             day: 'numeric',
                                             month: 'short',
@@ -139,7 +139,7 @@ export default function NotificationsShow({ notification }: Props) {
                                     </span>
                                 ) : (
                                     <span className="inline-flex items-center gap-1">
-                                        <Icon icon="lucide:circle" className="text-sm text-indigo-500" />
+                                        <Icon icon="tabler:circle" className="text-sm text-indigo-500" />
                                         Belum dibaca
                                     </span>
                                 )}
@@ -149,7 +149,7 @@ export default function NotificationsShow({ notification }: Props) {
                                 className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
                             >
                                 Kembali ke daftar
-                                <Icon icon="lucide:arrow-right" className="text-sm" />
+                                <Icon icon="tabler:arrow-right" className="text-sm" />
                             </Link>
                         </div>
                     </div>

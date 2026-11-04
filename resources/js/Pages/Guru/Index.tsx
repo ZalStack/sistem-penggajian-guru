@@ -100,13 +100,13 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                         href={route('guru.exportCredentialsPdf', { search: filters.search, filter_grade: filters.filter_grade, filter_mapel: filters.filter_mapel })}
                         className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:bg-rose-50/50 hover:border-rose-200 hover:text-rose-700 transition-all shadow-sm hover:shadow active:scale-98 w-full sm:w-auto"
                     >
-                        <Icon icon="lucide:file-down" className="text-base text-rose-500" /> Download PDF Login
+                        <Icon icon="tabler:file-download" className="text-base text-rose-500" /> Download PDF Login
                     </a>
                     <Link
                         href={route('guru.create')}
                         className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)] active:scale-98 w-full sm:w-auto"
                     >
-                        <Icon icon="lucide:plus" className="text-base" /> Tambah Guru Baru
+                        <Icon icon="tabler:plus" className="text-base" /> Tambah Guru Baru
                     </Link>
                 </div>
             </div>
@@ -114,7 +114,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
             <Card>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap mb-6 sm:mb-8">
                     <div className="relative w-full sm:flex-1 sm:min-w-[220px]">
-                        <Icon icon="lucide:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
+                        <Icon icon="tabler:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none" />
                         <input
                             type="search"
                             value={searchTerm}
@@ -137,7 +137,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                     </option>
                                 ))}
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
                         </div>
                         <div className="relative flex-1 sm:flex-none sm:w-[164px] min-w-0">
                             <select
@@ -149,7 +149,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                 <option value="IPA">IPA</option>
                                 <option value="MTK">MTK</option>
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
                         </div>
                         <div className="relative flex-1 sm:flex-none sm:w-[176px] min-w-0">
                             <select
@@ -164,7 +164,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                     </option>
                                 ))}
                             </select>
-                            <Icon icon="lucide:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
+                            <Icon icon="tabler:chevron-down" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
                         </div>
                         {hasActiveFilters && (
                             <button
@@ -172,7 +172,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                 onClick={resetFilters}
                                 className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-colors whitespace-nowrap shrink-0"
                             >
-                                <Icon icon="lucide:rotate-ccw" className="text-sm" /> Reset
+                                <Icon icon="tabler:rotate-clockwise" className="text-sm" /> Reset
                             </button>
                         )}
                     </div>
@@ -216,7 +216,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                             </TableCell>
                                             <TableCell>
                                                 <span className="text-sm text-slate-600 flex items-center gap-1">
-                                                    <Icon icon="lucide:map-pin" className="text-slate-400 text-xs" /> {guru.domisili || '-'}
+                                                    <Icon icon="tabler:map-pin" className="text-slate-400 text-xs" /> {guru.domisili || '-'}
                                                 </span>
                                             </TableCell>
                                             <TableCell>
@@ -244,13 +244,13 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <Link href={route('guru.show', guru.id)} className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Detail">
-                                                        <Icon icon="lucide:eye" className="text-base" />
+                                                        <Icon icon="tabler:eye" className="text-base" />
                                                     </Link>
                                                     <Link href={route('guru.edit', guru.id)} className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
-                                                        <Icon icon="lucide:pencil" className="text-base" />
+                                                        <Icon icon="tabler:pencil" className="text-base" />
                                                     </Link>
                                                     <button type="button" onClick={() => openDeleteModal(guru)} className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors" title="Hapus">
-                                                        <Icon icon="lucide:trash-2" className="text-base" />
+                                                        <Icon icon="tabler:trash" className="text-base" />
                                                     </button>
                                                 </div>
                                             </TableCell>
@@ -273,8 +273,8 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                             </div>
                                         </div>
                                         <div className="flex gap-1">
-                                            <Link href={route('guru.show', guru.id)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><Icon icon="lucide:eye" /></Link>
-                                            <Link href={route('guru.edit', guru.id)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><Icon icon="lucide:pencil" /></Link>
+                                            <Link href={route('guru.show', guru.id)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><Icon icon="tabler:eye" /></Link>
+                                            <Link href={route('guru.edit', guru.id)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"><Icon icon="tabler:pencil" /></Link>
                                         </div>
                                     </div>
                                 ))}
@@ -293,7 +293,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                             <div className="min-w-0">
                                                 <p className="font-bold text-slate-900 text-sm truncate">{guru.nama}</p>
                                                 <p className="text-xs text-slate-400 truncate">{guru.user?.email ?? '-'}</p>
-                                                <p className="text-xs text-slate-500 flex items-center gap-1 mt-1"><Icon icon="lucide:phone" className="text-[11px]" />{guru.nomor_telepon || '-'}</p>
+                                                <p className="text-xs text-slate-500 flex items-center gap-1 mt-1"><Icon icon="tabler:phone" className="text-[11px]" />{guru.nomor_telepon || '-'}</p>
                                             </div>
                                         </div>
                                         <span className="text-xs font-semibold text-slate-400">#{gurus.from + index}</span>
@@ -321,19 +321,19 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
 
                                     {guru.keterangan_mengajar && (
                                         <p className="text-xs text-slate-500 bg-indigo-50 border border-indigo-100 rounded-xl p-2.5 line-clamp-2">
-                                            <Icon icon="lucide:info" className="inline mr-1 text-indigo-500" />{guru.keterangan_mengajar}
+                                            <Icon icon="tabler:info-circle" className="inline mr-1 text-indigo-500" />{guru.keterangan_mengajar}
                                         </p>
                                     )}
 
                                     <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-slate-100">
                                         <Link href={route('guru.show', guru.id)} className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-700 inline-flex items-center gap-1 transition-colors">
-                                            <Icon icon="lucide:eye" /> Detail
+                                            <Icon icon="tabler:eye" /> Detail
                                         </Link>
                                         <Link href={route('guru.edit', guru.id)} className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 inline-flex items-center gap-1 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)] transition-all">
-                                            <Icon icon="lucide:pencil" /> Edit
+                                            <Icon icon="tabler:pencil" /> Edit
                                         </Link>
                                         <button type="button" onClick={() => openDeleteModal(guru)} className="px-3.5 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center gap-1 transition-colors">
-                                            <Icon icon="lucide:trash-2" /> Hapus
+                                            <Icon icon="tabler:trash" /> Hapus
                                         </button>
                                     </div>
                                 </div>
@@ -347,18 +347,18 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                 ) : (
                     <div className="text-center py-16 sm:py-20">
                         <div className="empty-state-icon !w-16 !h-16 !rounded-3xl">
-                            <Icon icon="lucide:users" className="text-3xl" />
+                            <Icon icon="tabler:users" className="text-3xl" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900">{hasActiveFilters ? 'Tidak ada guru yang sesuai' : 'Belum ada data guru'}</h3>
                         <p className="text-sm text-slate-500 mt-1 w-full mx-auto">{hasActiveFilters ? 'Coba ubah atau reset kata kunci pencarian dan filter.' : 'Mulai dengan menambahkan data guru baru.'}</p>
                         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                             {hasActiveFilters ? (
                                 <button type="button" onClick={resetFilters} className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition-colors">
-                                    <Icon icon="lucide:rotate-ccw" /> Reset Semua Filter
+                                    <Icon icon="tabler:rotate-clockwise" /> Reset Semua Filter
                                 </button>
                             ) : (
                                 <Link href={route('guru.create')} className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="lucide:plus" /> Tambah Guru Sekarang
+                                    <Icon icon="tabler:plus" /> Tambah Guru Sekarang
                                 </Link>
                             )}
                         </div>
@@ -369,7 +369,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
             <Modal show={deleteId !== null} onClose={() => setDeleteId(null)}>
                 <div className="p-6 text-center">
                     <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-1 ring-rose-100">
-                        <Icon icon="lucide:alert-triangle" className="text-2xl" />
+                        <Icon icon="tabler:alert-triangle" className="text-2xl" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">Hapus Data Guru?</h3>
                     <p className="text-sm text-slate-500 mb-6">Apakah yakin ingin menghapus <strong className="text-slate-800">{guruToDelete?.nama}</strong>? Data terkait juga akan terhapus.</p>

@@ -26,9 +26,9 @@ interface PerizinanIndexProps {
 }
 
 const jenisConfig: Record<string, { label: string; icon: string; color: string }> = {
-    izin: { label: 'Izin', icon: 'lucide:calendar-minus', color: 'blue' },
-    sakit: { label: 'Sakit', icon: 'lucide:thermometer', color: 'red' },
-    cuti: { label: 'Cuti', icon: 'lucide:tree-palm', color: 'purple' },
+    izin: { label: 'Izin', icon: 'tabler:calendar-minus', color: 'blue' },
+    sakit: { label: 'Sakit', icon: 'tabler:temperature', color: 'red' },
+    cuti: { label: 'Cuti', icon: 'tabler:trees', color: 'purple' },
 };
 
 const statusConfig: Record<string, { label: string; variant: 'success' | 'danger' | 'warning' | 'default' }> = {
@@ -104,7 +104,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(245,158,11,0.7)]">
-                            <Icon icon="lucide:clock" className="text-xl" />
+                            <Icon icon="tabler:clock" className="text-xl" />
                         </div>
                         <div>
                             <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{pendingCount}</p>
@@ -115,7 +115,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(16,185,129,0.7)]">
-                            <Icon icon="lucide:check-circle" className="text-xl" />
+                            <Icon icon="tabler:circle-check" className="text-xl" />
                         </div>
                         <div>
                             <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{approvedCount}</p>
@@ -126,7 +126,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-5 hover:border-indigo-200 hover:shadow-brand transition-all duration-200">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]">
-                            <Icon icon="lucide:x-circle" className="text-xl" />
+                            <Icon icon="tabler:circle-x" className="text-xl" />
                         </div>
                         <div>
                             <p className="text-lg sm:text-2xl font-extrabold text-slate-900 break-words">{rejectedCount}</p>
@@ -183,7 +183,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                             variant="secondary"
                             onClick={() => router.get(route('perizinan.index'), {}, { preserveState: true, replace: true })}
                         >
-                            <Icon icon="lucide:rotate-ccw" className="text-base" />
+                            <Icon icon="tabler:rotate-clockwise" className="text-base" />
                             Reset Filter
                         </Button>
                     </div>
@@ -218,7 +218,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                                        <Icon icon="lucide:user" className="text-base" />
+                                                        <Icon icon="tabler:user" className="text-base" />
                                                     </div>
                                                     <div>
                                                         <span className="font-medium text-slate-900">{p.guru?.nama ?? '-'}</span>
@@ -235,7 +235,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                         p.jenis === 'sakit' ? 'bg-rose-50 text-rose-600 ring-1 ring-rose-100' :
                                                         'bg-violet-50 text-violet-600 ring-1 ring-violet-100'
                                                     }`}>
-                                                        <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-sm" />
+                                                        <Icon icon={jenisConfig[p.jenis]?.icon ?? 'tabler:help-circle'} className="text-sm" />
                                                     </div>
                                                     <span className="font-medium text-slate-900 text-sm">{jenisConfig[p.jenis]?.label ?? p.jenis}</span>
                                                 </div>
@@ -248,13 +248,13 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                     )}
                                                     {p.session && (
                                                         <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="lucide:book-open" className="text-[10px]" />
+                                                            <Icon icon="tabler:books" className="text-[10px]" />
                                                             Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
                                                         </p>
                                                     )}
                                                     {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                         <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1" title="Sesi mengajar yang jatuh pada rentang tanggal perizinan">
-                                                            <Icon icon="lucide:calendar-clock" className="text-[10px]" />
+                                                            <Icon icon="tabler:calendar-clock" className="text-[10px]" />
                                                             {p.jumlah_sesi_terdampak} sesi terdampak
                                                         </p>
                                                     )}
@@ -271,7 +271,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                             <TableCell>
                                                 {p.catatan_admin ? (
                                                     <div className="flex items-start gap-2 max-w-[200px]">
-                                                        <Icon icon="lucide:message-square" className="text-indigo-400 text-xs mt-0.5 flex-shrink-0" />
+                                                        <Icon icon="tabler:message-circle" className="text-indigo-400 text-xs mt-0.5 flex-shrink-0" />
                                                         <p className="text-sm text-slate-600" title={p.catatan_admin}>{p.catatan_admin}</p>
                                                     </div>
                                                 ) : (
@@ -286,14 +286,14 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                             className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
                                                             title="Setujui"
                                                         >
-                                                            <Icon icon="lucide:check" className="text-base" />
+                                                            <Icon icon="tabler:check" className="text-base" />
                                                         </button>
                                                         <button
                                                             onClick={() => openActionModal('ditolak', p)}
                                                             className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                             title="Tolak"
                                                         >
-                                                            <Icon icon="lucide:x" className="text-base" />
+                                                            <Icon icon="tabler:x" className="text-base" />
                                                         </button>
                                                     </div>
                                                 ) : (
@@ -307,7 +307,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                         ) : (
                             <div className="text-center py-16">
                                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
-                                    <Icon icon="lucide:shield-check" className="text-3xl" />
+                                    <Icon icon="tabler:shield-check" className="text-3xl" />
                                 </div>
                                 <h3 className="text-base font-bold text-slate-900">Tidak ada data perizinan</h3>
                                 <p className="text-sm text-slate-500 mt-1">Belum ada pengajuan perizinan dari guru</p>
@@ -323,7 +323,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                                <Icon icon="lucide:user" className="text-base" />
+                                                <Icon icon="tabler:user" className="text-base" />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-bold text-slate-900 text-sm truncate">{p.guru?.nama ?? '-'}</p>
@@ -333,7 +333,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 </p>
                                                 {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                        <Icon icon="lucide:calendar-clock" className="text-[11px]" />
+                                                        <Icon icon="tabler:calendar-clock" className="text-[11px]" />
                                                         {p.jumlah_sesi_terdampak} sesi mengajar terdampak
                                                     </p>
                                                 )}
@@ -355,7 +355,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                     {p.catatan_admin && (
                                         <div className="p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Icon icon="lucide:message-square" className="text-indigo-500 text-xs" />
+                                                <Icon icon="tabler:message-circle" className="text-indigo-500 text-xs" />
                                                 <p className="text-xs font-medium text-slate-600">Catatan Admin</p>
                                             </div>
                                             <p className="text-sm text-slate-700 break-words">{p.catatan_admin}</p>
@@ -370,7 +370,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 className="flex-1"
                                                 onClick={() => openActionModal('disetujui', p)}
                                             >
-                                                <Icon icon="lucide:check" /> Setujui
+                                                <Icon icon="tabler:check" /> Setujui
                                             </Button>
                                             <Button
                                                 variant="danger"
@@ -378,7 +378,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 className="flex-1"
                                                 onClick={() => openActionModal('ditolak', p)}
                                             >
-                                                <Icon icon="lucide:x" /> Tolak
+                                                <Icon icon="tabler:x" /> Tolak
                                             </Button>
                                         </div>
                                     )}
@@ -387,7 +387,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                         ) : (
                             <div className="text-center py-16">
                                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
-                                    <Icon icon="lucide:shield-check" className="text-3xl" />
+                                    <Icon icon="tabler:shield-check" className="text-3xl" />
                                 </div>
                                 <p className="text-sm text-slate-500">Tidak ada data perizinan</p>
                             </div>
@@ -408,7 +408,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                     ? 'bg-gradient-to-br from-emerald-400 to-emerald-500 text-white shadow-[0_6px_16px_-6px_rgba(16,185,129,0.7)]'
                                     : 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_16px_-6px_rgba(244,63,94,0.7)]'
                             }`}>
-                                <Icon icon={actionModal.type === 'disetujui' ? 'lucide:check-circle' : 'lucide:x-circle'} className="text-lg" />
+                                <Icon icon={actionModal.type === 'disetujui' ? 'tabler:circle-check' : 'tabler:circle-x'} className="text-lg" />
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-slate-900">
@@ -467,7 +467,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                     variant={actionModal.type === 'disetujui' ? 'success' : 'danger'}
                                     processing={processing}
                                 >
-                                    <Icon icon={actionModal.type === 'disetujui' ? 'lucide:check' : 'lucide:x'} className="text-base" />
+                                    <Icon icon={actionModal.type === 'disetujui' ? 'tabler:check' : 'tabler:x'} className="text-base" />
                                     {actionModal.type === 'disetujui' ? 'Setujui' : 'Tolak'}
                                 </Button>
                                 <Button variant="secondary" type="button" onClick={closeModal}>

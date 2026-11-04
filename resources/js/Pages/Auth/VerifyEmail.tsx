@@ -22,7 +22,7 @@ export default function VerifyEmail({ status }: Props) {
 
             <div className="mb-6">
                 <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-brand">
-                    <Icon icon="lucide:mail-check" className="text-white text-[21px]" />
+                    <Icon icon="tabler:mail-check" className="text-white text-[21px]" />
                 </div>
                 <h2 className="text-[22px] font-extrabold tracking-[-0.03em] text-slate-900 mt-4">
                     Verifikasi <span className="text-brand-gradient">Email Anda</span>
@@ -35,7 +35,7 @@ export default function VerifyEmail({ status }: Props) {
             {status === 'verification-link-sent' && (
                 <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[13px] font-semibold text-emerald-800 flex items-center gap-2.5">
                     <span className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(16,185,129,0.6)]">
-                        <Icon icon="lucide:check" className="text-base" />
+                        <Icon icon="tabler:check" className="text-base" />
                     </span>
                     <span className="leading-5">
                         Tautan verifikasi baru telah dikirim ke alamat email yang Anda berikan saat pendaftaran.
@@ -50,7 +50,7 @@ export default function VerifyEmail({ status }: Props) {
                         processing={processing}
                         className="w-full justify-center py-3.5 text-[14px]"
                     >
-                        <Icon icon="lucide:send" className="text-base" />
+                        <Icon icon="tabler:send" className="text-base" />
                         <span>Kirim Ulang Email Verifikasi</span>
                     </Button>
                 </div>
@@ -62,7 +62,7 @@ export default function VerifyEmail({ status }: Props) {
                         as="button"
                         className="inline-flex items-center justify-center gap-2 w-full min-h-[44px] px-4 rounded-xl text-[13px] font-semibold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:ring-offset-2"
                     >
-                        <Icon icon="lucide:log-out" className="text-base" />
+                        <Icon icon="tabler:logout" className="text-base" />
                         <span>Keluar</span>
                     </Link>
                 </div>

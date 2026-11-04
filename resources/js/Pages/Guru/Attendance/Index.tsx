@@ -79,7 +79,7 @@ function UpcomingSessionCard({ session }: { session: any }) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3 min-w-0">
                     <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Icon icon="lucide:calendar-clock" className="text-indigo-500 text-sm" />
+                        <Icon icon="tabler:calendar-clock" className="text-indigo-500 text-[18px]" />
                     </div>
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
@@ -94,7 +94,7 @@ function UpcomingSessionCard({ session }: { session: any }) {
                 <Badge variant="info" size="sm">{upcomingDateLabel(session.tanggal)}</Badge>
             </div>
             <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-                <Icon icon="lucide:map-pin-check" className="text-[11px] shrink-0" /> Presensi dilakukan di aplikasi SI ADIK-KK sesuai ploting sesi admin.
+                <Icon icon="tabler:map-pin" className="text-[11px] shrink-0" /> Presensi dilakukan di aplikasi SI ADIK-KK sesuai ploting sesi admin.
             </p>
         </div>
     );
@@ -127,12 +127,12 @@ export default function AttendanceIndex({
             <Head title="Riwayat Kehadiran" />
 
             {/* Hero header */}
-            <div className="bg-gradient-to-b from-indigo-600 to-violet-600 text-white rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl p-6 sm:p-8 mb-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
                 <div className="relative z-10">
                     <div className="flex items-start gap-4 sm:items-center sm:flex-row-reverse">
                         <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shadow-xl">
-                            <Icon icon="lucide:clipboard-check" className="text-2xl" />
+                            <Icon icon="tabler:clipboard-check" className="text-[24px]" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Riwayat Kehadiran</h1>
@@ -143,10 +143,10 @@ export default function AttendanceIndex({
             </div>
 
             {/* Banner: presensi di SI ADIK-KK */}
-            <div className="mb-8 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="mb-8 rounded-2xl border border-sky-200 bg-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
                 <div className="flex items-start gap-3 min-w-0">
                     <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(14,165,233,0.7)]">
-                        <Icon icon="lucide:map-pin-check" className="text-base" />
+                        <Icon icon="tabler:map-pin" className="text-[18px]" />
                     </span>
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900">
@@ -161,15 +161,15 @@ export default function AttendanceIndex({
                     href="/guru/siguru"
                     className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm transition-colors"
                 >
-                    <Icon icon="lucide:external-link" className="text-xs" /> Buka Absensi SI ADIK-KK
+                    <Icon icon="tabler:external-link" className="text-[14px]" /> Buka Absensi SI ADIK-KK
                 </a>
             </div>
 
             {/* Izin aktif banner */}
             {izinHariIni && (
-                <div className="mb-8 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 sm:p-5 flex items-start gap-3">
+                <div className="mb-8 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 sm:p-5 flex items-start gap-3">
                     <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:shield-check" className="text-base" />
+                        <Icon icon="tabler:shield-check" className="text-[18px]" />
                     </span>
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900">
@@ -187,14 +187,14 @@ export default function AttendanceIndex({
                 <StatCard
                     title="Total Hadir"
                     value={`${totalHadir} kali`}
-                    icon="lucide:check-circle"
+                    icon="tabler:circle-check"
                     color="success"
                     description="Kehadiran valid terverifikasi geofence GPS"
                 />
                 <StatCard
                     title="Total Jam Mengajar"
                     value={formatDuration(totalJam)}
-                    icon="lucide:clock"
+                    icon="tabler:clock"
                     color="indigo"
                     description="Total waktu mengajar tercatat"
                 />
@@ -206,7 +206,7 @@ export default function AttendanceIndex({
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-center gap-3">
                             <span className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-md">
-                                <Icon icon="lucide:calendar" className="text-sm" />
+                                <Icon icon="tabler:calendar-week" className="text-[18px]" />
                             </span>
                             <div>
                                 <span className="text-sm font-semibold text-slate-700">Filter Bulan</span>
@@ -226,7 +226,7 @@ export default function AttendanceIndex({
                                     onClick={() => handleFilterBulan('')}
                                     className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[40px] text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 active:bg-rose-100 rounded-xl transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                 >
-                                    <Icon icon="lucide:rotate-ccw" /> Reset
+                                    <Icon icon="tabler:refresh" className="text-[16px]" /> Reset
                                 </button>
                             )}
                         </div>
@@ -254,8 +254,8 @@ export default function AttendanceIndex({
                         </div>
                     ) : (
                         <div className="text-center py-8">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
-                                <Icon icon="lucide:calendar-off" className="text-[28px] text-indigo-400" />
+                            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
+                                <Icon icon="tabler:calendar-off" className="text-[28px] text-indigo-400" />
                             </div>
                             <p className="text-[13px] font-medium text-slate-700">Jadwal Mengajar</p>
                             <p className="text-[12px] text-slate-500">Tidak ada jadwal mendatang. Lihat jadwal mingguan di menu Jadwal.</p>
@@ -279,7 +279,7 @@ export default function AttendanceIndex({
                                 <p className="text-[16px] font-[800] tracking-[-0.02em] text-slate-900 mt-1 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
                             </div>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-indigo-100/30">
+                        <div className="mt-4 pt-4 border-t border-slate-100">
                             <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
                                 <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
                                 <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
@@ -384,12 +384,12 @@ export default function AttendanceIndex({
                             {attendances.map((att, index) => (
                                 <div
                                     key={att.id}
-                                    className="rounded-2xl border border-indigo-100/50 bg-white p-5 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all"
+                                    className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all"
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-start gap-3 min-w-0">
                                             <span className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
-                                                <Icon icon="lucide:calendar-days" className="text-lg" />
+                                                <Icon icon="tabler:calendar-week" className="text-[18px]" />
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-slate-900 text-sm break-words">
@@ -401,7 +401,7 @@ export default function AttendanceIndex({
                                                     })}
                                                 </p>
                                                 <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                                                    <Icon icon="lucide:clock" className="text-indigo-500" />
+                                                    <Icon icon="tabler:clock" className="text-indigo-500 text-[14px]" />
                                                     <span className="break-words">
                                                         {att.session?.jam_mulai} - {att.session?.jam_selesai}
                                                     </span>
@@ -438,7 +438,7 @@ export default function AttendanceIndex({
                                         </div>
                                     </div>
 
-                                    <div className="pt-4 border-t border-indigo-100/30 mt-3 flex items-center justify-between gap-2">
+                                    <div className="pt-4 border-t border-slate-100 mt-3 flex items-center justify-between gap-2">
                                         <Badge variant={statusConfig[att.status]?.variant || 'default'}>
                                             {statusConfig[att.status]?.label || att.status}
                                         </Badge>
@@ -452,8 +452,8 @@ export default function AttendanceIndex({
                     </>
                 ) : (
                     <div className="text-center py-20 sm:py-24 px-4">
-                        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-5 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.5)]">
-                            <Icon icon="lucide:clipboard-check" className="text-4xl text-indigo-400" />
+                        <div className="w-16 h-16 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-5 shadow-sm">
+                            <Icon icon="tabler:clipboard-check" className="text-[32px] text-indigo-400" />
                         </div>
                         <h3 className="text-xl font-bold text-slate-900">Belum ada data absensi</h3>
                         <p className="text-sm text-slate-500 mt-2 mx-auto max-w-sm break-words">

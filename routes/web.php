@@ -32,6 +32,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::match(['patch', 'put'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/foto', [ProfileController::class, 'photo'])->name('profile.photo');
+    Route::delete('/profile/foto', [ProfileController::class, 'destroyFoto'])->name('profile.foto.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');

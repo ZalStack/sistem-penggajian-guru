@@ -84,7 +84,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                         href={route('guru.index')}
                         className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
                     >
-                        <Icon icon="lucide:arrow-left" className="text-lg" />
+                        <Icon icon="tabler:arrow-left" className="text-lg" />
                     </Link>
                     <div className="min-w-0">
                         <h1 className="page-title">Edit Data Guru</h1>
@@ -96,7 +96,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                         onClick={handleResetPassword}
                         className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)] w-full sm:w-auto"
                     >
-                        <Icon icon="lucide:key-round" /> Reset Password
+                        <Icon icon="tabler:key" /> Reset Password
                     </button>
                 )}
             </div>
@@ -156,7 +156,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                                                         : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
                                                 }`}
                                             >
-                                                {active && <Icon icon="lucide:check" className="text-[13px]" />}
+                                                {active && <Icon icon="tabler:check" className="text-[13px]" />}
                                                 {p.nama}
                                             </button>
                                         );
@@ -315,7 +315,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                 <Card title="Informasi Keuangan (Admin Only untuk Tunjangan)" description="Tunjangan khusus hanya admin yang dapat mengubah">
                     <div className="space-y-5">
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
-                            <Icon icon="lucide:lock" className="text-amber-600 text-base flex-shrink-0 mt-0.5" />
+                            <Icon icon="tabler:lock" className="text-amber-600 text-base flex-shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-700 leading-relaxed">
                                 <span className="font-bold">Tunjangan Khusus bersifat sensitif.</span> Hanya Admin yang dapat mengubah nominal ini. Guru melihatnya sebagai read-only di profil mereka.
                             </p>
@@ -360,7 +360,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                         Batal
                     </Link>
                     <Button type="submit" processing={processing} className="w-full sm:w-auto">
-                        <Icon icon="lucide:save" /> Simpan Perubahan
+                        <Icon icon="tabler:device-floppy" /> Simpan Perubahan
                     </Button>
                 </div>
             </form>

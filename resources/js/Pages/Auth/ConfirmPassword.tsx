@@ -19,7 +19,7 @@ export default function ConfirmPassword() {
 
             <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-brand">
-                    <Icon icon="lucide:shield-check" className="text-[20px]" />
+                    <Icon icon="tabler:shield-check" className="text-[20px]" />
                 </div>
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">Konfirmasi Kata Sandi</h1>
@@ -42,7 +42,7 @@ export default function ConfirmPassword() {
                 </div>
 
                 <button type="submit" className="btn-primary w-full" disabled={processing}>
-                    {processing && <Icon icon="lucide:loader-2" className="animate-spin text-[16px]" />}
+                    {processing && <Icon icon="tabler:loader-2" className="animate-spin text-[16px]" />}
                     {processing ? 'Memverifikasi...' : 'Konfirmasi & Lanjutkan'}
                 </button>
             </form>

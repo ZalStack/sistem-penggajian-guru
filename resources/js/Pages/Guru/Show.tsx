@@ -67,7 +67,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         href={route('guru.index')}
                         className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
                     >
-                        <Icon icon="lucide:arrow-left" className="text-lg" />
+                        <Icon icon="tabler:arrow-left" className="text-lg" />
                     </Link>
                     <div className="min-w-0">
                         <h1 className="page-title truncate">Detail Profil Guru</h1>
@@ -80,14 +80,14 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             onClick={handleResetPassword}
                             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)]"
                         >
-                            <Icon icon="lucide:key-round" /> Reset Password
+                            <Icon icon="tabler:key" /> Reset Password
                         </button>
                     )}
                     <Link
                         href={route('guru.edit', guru.id)}
                         className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)]"
                     >
-                        <Icon icon="lucide:pencil" /> Edit Data
+                        <Icon icon="tabler:pencil" /> Edit Data
                     </Link>
                 </div>
             </div>
@@ -101,7 +101,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         </div>
                         <h3 className="text-xl font-bold text-slate-900">{guru.nama}</h3>
                         <p className="text-xs text-slate-500 mt-1 flex items-center justify-center gap-1">
-                            <Icon icon="lucide:mail" className="text-slate-400" /> {guru.user?.email ?? '-'}
+                            <Icon icon="tabler:mail" className="text-slate-400" /> {guru.user?.email ?? '-'}
                         </p>
                         <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
                             <Badge variant="purple">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
@@ -118,7 +118,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         <div className="mt-6 space-y-2.5 text-left">
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="lucide:book-open" className="text-base" />
+                                    <Icon icon="tabler:books" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[11px] font-medium text-slate-400">Mata Pelajaran</p>
@@ -128,7 +128,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
 
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                                    <Icon icon="lucide:layers" className="text-base" />
+                                    <Icon icon="tabler:layers-intersect" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[11px] font-medium text-slate-400">Kelas yang Diajar</p>
@@ -138,7 +138,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
 
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
-                                    <Icon icon="lucide:calendar-heart" className="text-base" />
+                                    <Icon icon="tabler:calendar-heart" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[11px] font-medium text-slate-400">Mulai Mengajar di KPM</p>
@@ -155,7 +155,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
 
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                                    <Icon icon="lucide:banknote" className="text-base" />
+                                    <Icon icon="tabler:cash" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[11px] font-medium text-slate-400">Honor per Sesi</p>
@@ -165,7 +165,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
 
                             <div className="flex items-center gap-3 p-3.5 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="lucide:gift" className="text-base" />
+                                    <Icon icon="tabler:gift" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[11px] font-medium text-indigo-500">Tunjangan Khusus</p>
@@ -288,7 +288,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                         href={route('penggajian.payslip', penggajian.id)}
                                         className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white text-indigo-700 rounded-xl hover:bg-indigo-50 transition-colors"
                                     >
-                                        <Icon icon="lucide:download" className="text-[13px]" /> Slip PDF
+                                        <Icon icon="tabler:download" className="text-[13px]" /> Slip PDF
                                     </a>
                                 </div>
                             </div>
@@ -300,7 +300,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:map-pin" className="text-slate-500 text-base" />
+                                    <Icon icon="tabler:map-pin" className="text-slate-500 text-base" />
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kota Domisili</span>
                                 </div>
                                 <p className="text-sm font-semibold text-slate-900">{guru.domisili || '-'}</p>
@@ -308,33 +308,33 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
                             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:phone" className="text-emerald-600 text-base" />
+                                    <Icon icon="tabler:phone" className="text-emerald-600 text-base" />
                                     <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Nomor WA</span>
                                 </div>
                                 <p className="text-sm font-bold text-emerald-900">{guru.nomor_telepon || '-'}</p>
                                 {guru.nomor_telepon && (
                                     <a href={`https://wa.me/${guru.nomor_telepon.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-1">
-                                        <Icon icon="lucide:message-circle" /> Chat WhatsApp
+                                        <Icon icon="tabler:message-circle" /> Chat WhatsApp
                                     </a>
                                 )}
                             </div>
                             <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:mail" className="text-indigo-600 text-base" />
+                                    <Icon icon="tabler:mail" className="text-indigo-600 text-base" />
                                     <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Email Login</span>
                                 </div>
                                 <p className="text-sm font-bold text-slate-900 break-all">{guru.user?.email ?? '-'}</p>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:graduation-cap" className="text-slate-600 text-base" />
+                                    <Icon icon="tabler:school" className="text-slate-600 text-base" />
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pendidikan Terakhir</span>
                                 </div>
                                 <p className="text-sm font-semibold text-slate-900">{guru.pendidikan_terakhir || '-'}</p>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 sm:col-span-2">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:home" className="text-slate-600 text-base" />
+                                    <Icon icon="tabler:home" className="text-slate-600 text-base" />
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Alamat Lengkap</span>
                                 </div>
                                 <p className="text-sm font-semibold text-slate-900 leading-relaxed">{guru.alamat || '-'}</p>
@@ -345,7 +345,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         {guru.riwayat_pendidikan && (
                             <div className="mt-4 p-4 bg-violet-50/60 rounded-xl border border-violet-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:graduation-cap" className="text-violet-600" />
+                                    <Icon icon="tabler:school" className="text-violet-600" />
                                     <span className="text-xs font-bold text-violet-700 uppercase tracking-wider">Riwayat Pendidikan</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_pendidikan}</p>
@@ -355,7 +355,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         {guru.riwayat_mengajar && (
                             <div className="mt-4 p-4 bg-sky-50/60 rounded-xl border border-sky-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:briefcase" className="text-sky-600" />
+                                    <Icon icon="tabler:briefcase" className="text-sky-600" />
                                     <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Riwayat Mengajar</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_mengajar}</p>
@@ -365,7 +365,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         {guru.keterangan_mengajar && (
                             <div className="mt-4 p-4 bg-gradient-to-br from-indigo-50/70 to-violet-50/50 rounded-xl border border-indigo-100">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:info" className="text-indigo-500" />
+                                    <Icon icon="tabler:info-circle" className="text-indigo-500" />
                                     <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Keterangan Mengajar</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.keterangan_mengajar}</p>
@@ -378,7 +378,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-4 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl shadow-[0_8px_20px_-8px_rgba(99,102,241,0.7)]">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:building-2" className="text-indigo-200" />
+                                    <Icon icon="tabler:buildings" className="text-indigo-200" />
                                     <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Bank</span>
                                 </div>
                                 <p className="text-lg font-extrabold break-words">{guru.bank || '-'}</p>
@@ -386,7 +386,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
                             <div className="p-4 bg-white border-2 border-indigo-100 rounded-xl">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="lucide:credit-card" className="text-indigo-500" />
+                                    <Icon icon="tabler:credit-card" className="text-indigo-500" />
                                     <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Rekening</span>
                                 </div>
                                 <p className="text-lg font-mono font-bold text-slate-900 tracking-wide break-all">{guru.nomor_rekening || '-'}</p>
@@ -394,7 +394,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
                         </div>
                         <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
-                            <Icon icon="lucide:shield-check" className="text-amber-600 text-base mt-0.5 flex-shrink-0" />
+                            <Icon icon="tabler:shield-check" className="text-amber-600 text-base mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-amber-700 leading-relaxed">
                                 <b>Tunjangan Khusus:</b> {formatCurrency(Number(guru.tunjangan_khusus))} — Hanya Admin yang dapat mengubah nominal ini.
                             </p>
@@ -407,14 +407,14 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Icon icon="lucide:mail" className="text-emerald-600 text-base" />
+                                        <Icon icon="tabler:mail" className="text-emerald-600 text-base" />
                                         <span className="text-xs font-semibold text-emerald-700">Email</span>
                                     </div>
                                     <p className="text-sm font-extrabold text-emerald-900 break-all">{guru.user.email}</p>
                                 </div>
                                 <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Icon icon="lucide:shield" className="text-indigo-600 text-base" />
+                                        <Icon icon="tabler:shield" className="text-indigo-600 text-base" />
                                         <span className="text-xs font-semibold text-indigo-700">Role</span>
                                     </div>
                                     <p className="text-sm font-extrabold text-slate-900">Guru</p>
@@ -422,7 +422,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
                             <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="flex items-start gap-2">
-                                    <Icon icon="lucide:info" className="text-slate-400 text-base mt-0.5 flex-shrink-0" />
+                                    <Icon icon="tabler:info-circle" className="text-slate-400 text-base mt-0.5 flex-shrink-0" />
                                     <p className="text-xs text-slate-500">Password dapat direset melalui tombol <span className="font-semibold">Reset Password</span> di pojok kanan atas. Password baru akan ditampilkan sekali setelah reset.</p>
                                 </div>
                             </div>
@@ -431,7 +431,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         <Card>
                             <div className="text-center py-8">
                                 <div className="empty-state-icon !w-14 !h-14 !rounded-2xl">
-                                    <Icon icon="lucide:alert-circle" className="text-2xl text-amber-500" />
+                                    <Icon icon="tabler:alert-circle" className="text-2xl text-amber-500" />
                                 </div>
                                 <p className="text-sm font-semibold text-slate-800">Belum Memiliki Akun Login</p>
                                 <p className="text-xs text-slate-500 mt-1">Edit data guru untuk menambahkan akun login.</p>
@@ -477,7 +477,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                                     className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-block"
                                                     title="Unduh Slip Gaji"
                                                 >
-                                                    <Icon icon="lucide:download" className="text-base" />
+                                                    <Icon icon="tabler:download" className="text-base" />
                                                 </a>
                                             </TableCell>
                                         </TableRow>
@@ -487,7 +487,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         ) : (
                             <div className="text-center py-12">
                                 <div className="empty-state-icon !w-14 !h-14 !rounded-2xl">
-                                    <Icon icon="lucide:file-text" className="text-2xl" />
+                                    <Icon icon="tabler:file-text" className="text-2xl" />
                                 </div>
                                 <p className="text-sm font-semibold text-slate-800">Belum Ada Riwayat Penggajian</p>
                                 <p className="text-xs text-slate-500 mt-1">Guru ini belum memiliki catatan penggajian.</p>

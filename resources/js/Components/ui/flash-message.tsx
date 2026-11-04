@@ -34,28 +34,28 @@ export default function FlashMessage({ type, message, onClose }: FlashMessagePro
         success: {
             container: 'bg-white border-slate-200/70 text-slate-900 shadow-float',
             accent: 'bg-emerald-500',
-            icon: 'lucide:check',
+            icon: 'tabler:check',
             iconBg: 'bg-emerald-50 text-emerald-600 ring-emerald-200',
             title: 'Berhasil',
         },
         error: {
             container: 'bg-white border-rose-200 text-slate-900 shadow-float',
             accent: 'bg-rose-500',
-            icon: 'lucide:alert-circle',
+            icon: 'tabler:alert-circle',
             iconBg: 'bg-rose-50 text-rose-600 ring-rose-200',
             title: 'Gagal',
         },
         warning: {
             container: 'bg-white border-amber-200 text-slate-900 shadow-float',
             accent: 'bg-amber-500',
-            icon: 'lucide:alert-triangle',
+            icon: 'tabler:alert-triangle',
             iconBg: 'bg-amber-50 text-amber-600 ring-amber-200',
             title: 'Perhatian',
         },
         info: {
             container: 'bg-white border-indigo-200 text-slate-900 shadow-float',
             accent: 'bg-gradient-to-b from-indigo-500 to-violet-500',
-            icon: 'lucide:info',
+            icon: 'tabler:info-circle',
             iconBg: 'bg-indigo-50 text-indigo-600 ring-indigo-200',
             title: 'Info',
         },
@@ -80,7 +80,7 @@ export default function FlashMessage({ type, message, onClose }: FlashMessagePro
                 className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
                 aria-label="Tutup"
             >
-                <Icon icon="lucide:x" className="text-[16px]" />
+                <Icon icon="tabler:x" className="text-[16px]" />
             </button>
             <div className="absolute bottom-0 left-0 h-0.5 bg-slate-900/10 w-full">
                 <div className={`h-full transition-all duration-100 ease-linear ${config.accent}`} style={{ width: `${progress}%` }} />

@@ -38,6 +38,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'auth' => [
                 'user' => $request->user(),
+                'fotoUrl' => fn () => $request->user()?->guru?->fotoUrl(),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

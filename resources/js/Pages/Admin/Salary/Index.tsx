@@ -70,19 +70,25 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
         <AuthenticatedLayout>
             <Head title="Penggajian Guru" />
 
+            {/* Page Header */}
             <div className="page-header animate-fade-in mb-8">
-                <h1 className="page-title">Penggajian Guru</h1>
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
+                        <Icon icon="tabler:wallet" className="text-[18px]" />
+                    </div>
+                    <h1 className="page-title">Penggajian Guru</h1>
+                </div>
                 <p className="page-subtitle mt-1">
                     Rekap honor per guru per periode, dihitung otomatis dari sesi mengajar yang tervalidasi lewat presensi.
                 </p>
             </div>
 
-            {/* Ringkasan periode aktif */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Stat Cards — Ringkasan Periode Aktif */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <StatCard
                     title={`Total Honor (${periodeLabel})`}
                     value={formatCurrency(ringkasan.grand_total)}
-                    icon="lucide:wallet"
+                    icon="tabler:wallet"
                     color="slate"
                     description={`Honor ${formatCurrency(ringkasan.total_honor)} + transport ${formatCurrency(ringkasan.total_transport)}`}
                     className="break-words"
@@ -90,7 +96,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 <StatCard
                     title="Sudah Dibayar"
                     value={formatCurrency(ringkasan.grand_total - ringkasan.nominal_belum_dibayar)}
-                    icon="lucide:check-circle"
+                    icon="tabler:circle-check"
                     color="success"
                     description={`${ringkasan.sudah_dibayar} dari ${ringkasan.total_guru} guru`}
                     className="break-words"
@@ -98,7 +104,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 <StatCard
                     title="Belum Dibayar"
                     value={formatCurrency(ringkasan.nominal_belum_dibayar)}
-                    icon="lucide:clock"
+                    icon="tabler:clock"
                     color="warning"
                     description={`${ringkasan.belum_dibayar} guru menunggu pembayaran`}
                     className="break-words"
@@ -106,7 +112,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 <StatCard
                     title="Total Sesi / Hadir"
                     value={`${ringkasan.total_sesi} / ${ringkasan.total_hadir}`}
-                    icon="lucide:book-open"
+                    icon="tabler:books"
                     color="accent"
                     description="Sesi terjadwal & kehadiran valid"
                 />
@@ -161,7 +167,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                             error={calculateForm.errors.guru_id}
                         />
                         <Button type="submit" processing={calculateForm.processing} className="w-full justify-center py-3">
-                            <Icon icon="lucide:calculator" className="w-4 h-4" />
+                            <Icon icon="tabler:calculator" className="text-[18px]" />
                             Hitung Gaji Sekarang
                         </Button>
                         <p className="text-xs text-center text-slate-500">
@@ -171,15 +177,15 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 </Card>
             </div>
 
-            {/* Tabel rekap */}
+            {/* Tabel Rekap */}
             <Card
                 title="Daftar Rekap Honor"
                 description={`Menampilkan ${penggajians.total} rekap honor${filters.periode ? ` periode ${periodeLabel}` : ' seluruh periode'}`}
             >
                 {penggajians.data.length === 0 ? (
                     <div className="text-center py-16">
-                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                            <Icon icon="lucide:inbox" className="text-2xl" />
+                        <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+                            <Icon icon="tabler:inbox" className="text-[32px]" />
                         </div>
                         <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
                         <p className="text-xs text-slate-500 mt-1">Gunakan filter atau hitung gaji untuk periode baru</p>
@@ -208,7 +214,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                     {penggajians.data.map((p, index) => (
                                         <Fragment key={p.id}>
                                             <TableRow className="hover:bg-indigo-50/40">
-                                                <TableCell className="font-medium text-slate-500">
+                                                <TableCell className="font-medium text-slate-400 text-sm">
                                                     {(penggajians.current_page - 1) * penggajians.per_page + index + 1}
                                                 </TableCell>
                                                 <TableCell>
@@ -218,7 +224,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                         className="flex items-center gap-3 text-left group"
                                                         title="Lihat rincian perhitungan"
                                                     >
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs">
                                                             {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
                                                         </div>
                                                         <div className="min-w-0">
@@ -226,7 +232,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                                 {p.guru?.nama ?? '-'}
                                                             </span>
                                                             <span className="text-[11px] text-slate-400 inline-flex items-center gap-1">
-                                                                <Icon icon={expandedId === p.id ? 'lucide:chevron-up' : 'lucide:chevron-down'} className="text-[11px]" />
+                                                                <Icon icon={expandedId === p.id ? 'tabler:chevron-up' : 'tabler:chevron-down'} className="text-[11px]" />
                                                                 Rincian perhitungan
                                                             </span>
                                                         </div>
@@ -238,7 +244,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-bold shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">{p.jumlah_sesi}</span>
+                                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">{p.jumlah_sesi}</span>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <span className="text-slate-700 font-medium">{p.jumlah_hadir}</span>
@@ -277,7 +283,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors shadow-sm"
                                                             title="Unduh Slip Gaji PDF"
                                                         >
-                                                            <Icon icon="lucide:download" className="w-3.5 h-3.5" />
+                                                            <Icon icon="tabler:download" className="text-[14px]" />
                                                             PDF
                                                         </a>
                                                         {p.status_bayar === 'belum_dibayar' && (
@@ -287,7 +293,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                                 onClick={() => handlePay(p.id)}
                                                                 className="shadow-sm px-4"
                                                             >
-                                                                <Icon icon="lucide:credit-card" className="w-4 h-4" />
+                                                                <Icon icon="tabler:credit-card" className="text-[16px]" />
                                                                 Bayar
                                                             </Button>
                                                         )}
@@ -367,7 +373,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                            <div className="w-11 h-11 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs">
                                                 {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
                                             </div>
                                             <div>
@@ -395,7 +401,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Transport</p>
                                             <p className="text-sm font-bold text-slate-900 mt-1 break-words">{formatCurrency(p.total_transport)}</p>
                                         </div>
-                                        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                        <div className="bg-indigo-600 rounded-xl p-3 text-white">
                                             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Total</p>
                                             <p className="text-sm font-bold mt-1 break-words">{formatCurrency(p.total)}</p>
                                         </div>
@@ -420,7 +426,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             href={route('penggajian.payslip', p.id)}
                                             className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
                                         >
-                                            <Icon icon="lucide:download" className="w-4 h-4" />
+                                            <Icon icon="tabler:download" className="text-[16px]" />
                                             Slip PDF
                                         </a>
                                         {p.status_bayar === 'belum_dibayar' && (
@@ -429,7 +435,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                 onClick={() => handlePay(p.id)}
                                                 className="flex-1 justify-center py-2.5"
                                             >
-                                                <Icon icon="lucide:credit-card" className="w-4 h-4" />
+                                                <Icon icon="tabler:credit-card" className="text-[16px]" />
                                                 Bayar Sekarang
                                             </Button>
                                         )}

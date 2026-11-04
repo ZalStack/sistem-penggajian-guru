@@ -93,73 +93,81 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
         <AuthenticatedLayout>
             <Head title="Rekap Absensi" />
 
-            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Page Header */}
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div className="min-w-0">
-                    <h1 className="page-title">Rekap Absensi</h1>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center">
+                            <Icon icon="tabler:clipboard-check" className="text-[18px]" />
+                        </div>
+                        <h1 className="page-title">Rekap Absensi</h1>
+                    </div>
                     <p className="page-subtitle">
                         Pantau dan kelola data kehadiran guru seluruh sesi mengajar
                     </p>
                 </div>
                 <Link
                     href={route('penggajian.index')}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)] hover:-translate-y-[1px] shrink-0"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:-translate-y-[1px] shrink-0"
                 >
-                    <Icon icon="lucide:banknote" className="text-base" />
+                    <Icon icon="tabler:cash" className="text-[18px]" />
                     Hitung Gaji
                 </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 animate-fade-in">
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5 animate-fade-in mb-8">
                 <StatCard
                     title="Hadir Valid"
                     value={recap.valid}
-                    icon="lucide:check-circle"
+                    icon="tabler:circle-check"
                     color="success"
                     description={`${recap.guru_hadir} guru hadir`}
                 />
                 <StatCard
                     title="Belum Check-in"
                     value={recap.belum_checkin}
-                    icon="lucide:user-x"
+                    icon="tabler:user-x"
                     color="warning"
                     description="Waktu sesi sudah lewat"
                 />
                 <StatCard
                     title="Belum Check-out"
                     value={recap.belum_checkout}
-                    icon="lucide:log-out"
+                    icon="tabler:logout"
                     color="accent"
                     description="Check-in tanpa check-out"
                 />
                 <StatCard
                     title="Izin Disetujui"
                     value={recap.izin ?? 0}
-                    icon="lucide:shield-check"
+                    icon="tabler:shield-check"
                     color="neutral"
                     description="Sesi tertutup perizinan"
                 />
                 <StatCard
                     title="Menunggu Presensi"
                     value={recap.menunggu ?? 0}
-                    icon="lucide:hourglass"
+                    icon="tabler:clock"
                     color="slate"
                     description="Sesi belum dimulai"
                 />
                 <StatCard
                     title="Total Jam Mengajar"
                     value={`${recap.total_jam} jam`}
-                    icon="lucide:clock"
+                    icon="tabler:clock"
                     color="slate"
                     description="Dari presensi valid"
                 />
             </div>
 
+            {/* Filter Card */}
             <Card
                 title="Filter Presensi"
                 description="Saring data kehadiran sesuai kebutuhan"
-                className="mt-8"
+                className="mb-8"
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <Input
                         label="Periode"
                         type="month"
@@ -222,227 +230,229 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                 );
                             }}
                         >
-                            <Icon icon="lucide:rotate-ccw" className="text-base" />
+                            <Icon icon="tabler:refresh" className="text-[18px]" />
                             Reset Filter
                         </Button>
                     </div>
                 </div>
             </Card>
 
-            <div className="mt-8">
-                <Card
-                    title="Daftar Absensi"
-                    description={`Menampilkan ${attendances.total} baris presensi — termasuk sesi yang belum check-in`}
-                >
-                    {/* Desktop Table */}
-                    <div className="hidden lg:block">
-                        <Table>
-                            <TableHeader>
+            {/* Table Card */}
+            <Card
+                title="Daftar Absensi"
+                description={`Menampilkan ${attendances.total} baris presensi — termasuk sesi yang belum check-in`}
+            >
+                {/* Desktop Table */}
+                <div className="hidden lg:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-12">No</TableHead>
+                                <TableHead>Guru</TableHead>
+                                <TableHead>Grade</TableHead>
+                                <TableHead>Tanggal</TableHead>
+                                <TableHead>Sesi</TableHead>
+                                <TableHead>Lokasi</TableHead>
+                                <TableHead>Check-in</TableHead>
+                                <TableHead>Check-out</TableHead>
+                                <TableHead>Akurasi</TableHead>
+                                <TableHead>Durasi</TableHead>
+                                <TableHead>Sumber</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {attendanceList.length === 0 ? (
                                 <TableRow>
-                                    <TableHead className="w-12">No</TableHead>
-                                    <TableHead>Guru</TableHead>
-                                    <TableHead>Grade</TableHead>
-                                    <TableHead>Tanggal</TableHead>
-                                    <TableHead>Sesi</TableHead>
-                                    <TableHead>Lokasi</TableHead>
-                                    <TableHead>Check-in</TableHead>
-                                    <TableHead>Check-out</TableHead>
-                                    <TableHead>Akurasi</TableHead>
-                                    <TableHead>Durasi</TableHead>
-                                    <TableHead>Sumber</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableCell colSpan={12}>
+                                        <div className="text-center py-16">
+                                            <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+                                                <Icon icon="tabler:inbox" className="text-[32px]" />
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-700 mb-1">Tidak ada data absensi</p>
+                                            <p className="text-xs text-slate-400">Coba ubah filter atau tambahkan data baru</p>
+                                        </div>
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {attendanceList.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={12}>
-                                            <div className="text-center py-16">
-                                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                                    <Icon icon="lucide:inbox" className="text-3xl" />
+                            ) : (
+                                attendanceList.map((att, index) => (
+                                    <TableRow key={att.id}>
+                                        <TableCell className="font-medium text-slate-400 text-sm">
+                                            {index + 1}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                    <Icon icon="tabler:user" className="text-[18px]" />
                                                 </div>
-                                                <p className="text-sm text-slate-500">
-                                                    Tidak ada data absensi ditemukan
-                                                </p>
+                                                <span className="font-semibold text-slate-900 text-sm">
+                                                    {att.guru?.nama ?? '-'}
+                                                </span>
                                             </div>
                                         </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    attendanceList.map((att, index) => (
-                                        <TableRow key={att.id}>
-                                            <TableCell className="font-medium text-slate-500">
-                                                {index + 1}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.6)]">
-                                                        <Icon icon="lucide:user" className="text-base" />
-                                                    </div>
-                                                    <span className="font-medium text-slate-900">
-                                                        {att.guru?.nama ?? '-'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="info">
-                                                    {att.guru?.grade?.kode_grade ?? '-'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-slate-700 text-sm">{formatDisplayDate(att.tanggal)}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-xs font-medium text-slate-600 block">
-                                                    {att.session
-                                                        ? `${att.session.jam_mulai?.substring(0,5)} – ${att.session.jam_selesai?.substring(0,5)}`
-                                                        : '-'}
-                                                </span>
-                                                <span className="text-[10.5px] text-slate-400">
-                                                    {att.session?.program?.nama ?? att.session?.mapel ?? ''}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-slate-600 text-sm truncate max-w-[160px] block">{att.session?.location?.nama_lokasi ?? '-'}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <span className="font-medium text-xs text-slate-700">
-                                                        {formatDisplayTime(att.checkin_time)}
-                                                    </span>
-                                                    {att.checkin_accuracy != null && (
-                                                        <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <span className="font-medium text-xs text-slate-700">
-                                                        {formatDisplayTime(att.checkout_time)}
-                                                    </span>
-                                                    {att.checkout_accuracy != null && (
-                                                        <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-xs text-slate-600">
-                                                    {att.checkin_accuracy != null && att.checkout_accuracy != null
-                                                        ? `±${Math.round((att.checkin_accuracy + att.checkout_accuracy) / 2)}m`
-                                                        : att.checkin_accuracy != null
-                                                            ? `±${Math.round(att.checkin_accuracy)}m`
-                                                            : '-'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className="text-sm font-medium text-slate-700">
-                                                    {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                                                    {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(att.status)}</TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="lg:hidden space-y-3">
-                        {attendanceList.length === 0 ? (
-                            <div className="text-center py-16">
-                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="lucide:inbox" className="text-3xl" />
-                                </div>
-                                <p className="text-sm text-slate-500">Tidak ada data absensi ditemukan</p>
-                            </div>
-                        ) : (
-                            attendanceList.map((att, index) => (
-                                <div
-                                    key={att.id}
-                                    className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
-                                >
-                                    <div className="flex items-start justify-between gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.6)]">
-                                                <Icon icon="lucide:user" className="text-base" />
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-slate-900 text-sm">
-                                                    {att.guru?.nama ?? '-'}
-                                                </p>
-                                                <p className="text-xs text-slate-500">
-                                                    Grade {att.guru?.grade?.kode_grade ?? '-'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-semibold text-slate-500">
-                                                #{index + 1}
+                                        <TableCell>
+                                            <Badge variant="info">
+                                                {att.guru?.grade?.kode_grade ?? '-'}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-slate-700 text-sm">{formatDisplayDate(att.tanggal)}</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-xs font-medium text-slate-700 block">
+                                                {att.session
+                                                    ? `${att.session.jam_mulai?.substring(0,5)} – ${att.session.jam_selesai?.substring(0,5)}`
+                                                    : '-'}
                                             </span>
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                            <span className="text-[10.5px] text-slate-400">
+                                                {att.session?.program?.nama ?? att.session?.mapel ?? ''}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5">
+                                                <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                <span className="text-slate-600 text-sm truncate max-w-[140px]">{att.session?.location?.nama_lokasi ?? '-'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <span className="font-medium text-xs text-slate-700">
+                                                    {formatDisplayTime(att.checkin_time)}
+                                                </span>
+                                                {att.checkin_accuracy != null && (
+                                                    <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div>
+                                                <span className="font-medium text-xs text-slate-700">
+                                                    {formatDisplayTime(att.checkout_time)}
+                                                </span>
+                                                {att.checkout_accuracy != null && (
+                                                    <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-xs text-slate-600">
+                                                {att.checkin_accuracy != null && att.checkout_accuracy != null
+                                                    ? `±${Math.round((att.checkin_accuracy + att.checkout_accuracy) / 2)}m`
+                                                    : att.checkin_accuracy != null
+                                                        ? `±${Math.round(att.checkin_accuracy)}m`
+                                                        : '-'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-sm font-medium text-slate-700">
+                                                {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                                 {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                             </span>
-                                            {getStatusBadge(att.status)}
+                                        </TableCell>
+                                        <TableCell>{getStatusBadge(att.status)}</TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-3">
+                    {attendanceList.length === 0 ? (
+                        <div className="text-center py-16">
+                            <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
+                                <Icon icon="tabler:inbox" className="text-[32px]" />
+                            </div>
+                            <p className="text-sm font-medium text-slate-700">Tidak ada data absensi ditemukan</p>
+                            <p className="text-xs text-slate-400 mt-1">Coba ubah filter atau tambahkan data baru</p>
+                        </div>
+                    ) : (
+                        attendanceList.map((att, index) => (
+                            <div
+                                key={att.id}
+                                className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
+                            >
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <Icon icon="tabler:user" className="text-[18px]" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-900 text-sm">
+                                                {att.guru?.nama ?? '-'}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                Grade {att.guru?.grade?.kode_grade ?? '-'}
+                                            </p>
                                         </div>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-3 text-xs">
-                                        <div>
-                                            <p className="text-slate-500">Tanggal</p>
-                                            <p className="font-medium text-slate-700">{att.tanggal}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500">Sesi</p>
-                                            <p className="font-medium text-slate-700 font-mono">
-                                                {att.session
-                                                    ? `${att.session.jam_mulai} - ${att.session.jam_selesai}`
-                                                    : '-'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500">Lokasi</p>
-                                            <p className="font-medium text-slate-700">
-                                                {att.session?.location?.nama_lokasi ?? '-'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500">Durasi</p>
-                                            <p className="font-medium text-slate-700">
-                                                {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500">Check-in</p>
-                                            <p className="font-medium text-slate-700 font-mono">
-                                                {att.checkin_time ?? '-'}
-                                            </p>
-                                            {att.checkin_accuracy != null && (
-                                                <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-slate-500">Check-out</p>
-                                            <p className="font-medium text-slate-700 font-mono">
-                                                {att.checkout_time ?? '-'}
-                                            </p>
-                                            {att.checkout_accuracy != null && (
-                                                <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
-                                            )}
-                                        </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-semibold text-slate-400">
+                                            #{index + 1}
+                                        </span>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                            {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
+                                        </span>
+                                        {getStatusBadge(att.status)}
                                     </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
 
-                    {attendances.links && <Pagination links={attendances.links} />}
-                </Card>
-            </div>
+                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                    <div>
+                                        <p className="text-slate-500">Tanggal</p>
+                                        <p className="font-medium text-slate-700">{att.tanggal}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Sesi</p>
+                                        <p className="font-medium text-slate-700 font-mono">
+                                            {att.session
+                                                ? `${att.session.jam_mulai} - ${att.session.jam_selesai}`
+                                                : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Lokasi</p>
+                                        <p className="font-medium text-slate-700">
+                                            {att.session?.location?.nama_lokasi ?? '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Durasi</p>
+                                        <p className="font-medium text-slate-700">
+                                            {att.durasi > 0 ? formatDuration(att.durasi) : '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Check-in</p>
+                                        <p className="font-medium text-slate-700 font-mono">
+                                            {att.checkin_time ?? '-'}
+                                        </p>
+                                        {att.checkin_accuracy != null && (
+                                            <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500">Check-out</p>
+                                        <p className="font-medium text-slate-700 font-mono">
+                                            {att.checkout_time ?? '-'}
+                                        </p>
+                                        {att.checkout_accuracy != null && (
+                                            <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {attendances.links && <Pagination links={attendances.links} />}
+            </Card>
         </AuthenticatedLayout>
     );
 }

@@ -15,9 +15,9 @@ interface PerizinanIndexProps {
 }
 
 const jenisConfig: Record<string, { label: string; icon: string; color: string }> = {
-    izin: { label: 'Izin', icon: 'lucide:calendar-minus', color: 'blue' },
-    sakit: { label: 'Sakit', icon: 'lucide:thermometer', color: 'red' },
-    cuti: { label: 'Cuti', icon: 'lucide:tree-palm', color: 'purple' },
+    izin: { label: 'Izin', icon: 'tabler:calendar-minus', color: 'blue' },
+    sakit: { label: 'Sakit', icon: 'tabler:thermometer', color: 'red' },
+    cuti: { label: 'Cuti', icon: 'tabler:tree', color: 'purple' },
 };
 
 const statusConfig: Record<string, { label: string; variant: 'success' | 'danger' | 'warning' | 'default' }> = {
@@ -97,7 +97,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 animate-fade-in">
                 <div className="flex items-start gap-3.5 min-w-0">
                     <span className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(99,102,241,0.7)]">
-                        <Icon icon="lucide:shield-check" className="text-xl" />
+                        <Icon icon="tabler:shield-check" className="text-[20px]" />
                     </span>
                     <div className="min-w-0">
                         <h1 className="page-title">Perizinan Saya</h1>
@@ -107,7 +107,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                     </div>
                 </div>
                 <Button onClick={() => setShowForm(!showForm)} className="w-full sm:w-auto">
-                    <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
+                    <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-[18px]" />
                     {showForm ? 'Tutup' : 'Ajukan Perizinan'}
                 </Button>
             </div>
@@ -117,7 +117,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                 <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
                     <div className="flex items-center gap-3.5">
                         <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(245,158,11,0.7)]">
-                            <Icon icon="lucide:clock" className="text-lg" />
+                            <Icon icon="tabler:clock" className="text-[20px]" />
                         </div>
                         <div className="min-w-0">
                             <p className="text-2xl font-extrabold text-slate-900 leading-none">{pendingCount}</p>
@@ -128,7 +128,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                 <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
                     <div className="flex items-center gap-3.5">
                         <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(16,185,129,0.7)]">
-                            <Icon icon="lucide:check-circle" className="text-lg" />
+                            <Icon icon="tabler:circle-check" className="text-[20px]" />
                         </div>
                         <div className="min-w-0">
                             <p className="text-2xl font-extrabold text-slate-900 leading-none">{approvedCount}</p>
@@ -139,7 +139,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                 <div className="card-modern hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all p-4 sm:p-5">
                     <div className="flex items-center gap-3.5">
                         <div className="w-11 h-11 shrink-0 bg-gradient-to-br from-rose-400 to-rose-600 text-white rounded-xl flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(244,63,94,0.7)]">
-                            <Icon icon="lucide:x-circle" className="text-lg" />
+                            <Icon icon="tabler:circle-x" className="text-[20px]" />
                         </div>
                         <div className="min-w-0">
                             <p className="text-2xl font-extrabold text-slate-900 leading-none">{rejectedCount}</p>
@@ -168,7 +168,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                     : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700 active:bg-indigo-100'
                                             }`}
                                         >
-                                            <Icon icon={config.icon} className="text-base" />
+                                            <Icon icon={config.icon} className="text-[18px]" />
                                             {config.label}
                                         </button>
                                     ))}
@@ -245,7 +245,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                         )}
                         <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
                             <Button type="submit" processing={processing} className="w-full sm:w-auto">
-                                <Icon icon="lucide:send" className="text-base" />
+                                <Icon icon="tabler:send" className="text-[18px]" />
                                 Kirim Pengajuan
                             </Button>
                             <Button variant="secondary" type="button" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
@@ -284,7 +284,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                         p.jenis === 'sakit' ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_14px_-6px_rgba(244,63,94,0.5)]' :
                                                         'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-[0_6px_14px_-6px_rgba(139,92,246,0.5)]'
                                                     }`}>
-                                                        <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-sm" />
+                                                        <Icon icon={jenisConfig[p.jenis]?.icon ?? 'tabler:info-circle'} className="text-[16px]" />
                                                     </div>
                                                     <span className="font-medium text-slate-900">{jenisConfig[p.jenis]?.label ?? p.jenis}</span>
                                                 </div>
@@ -297,13 +297,13 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                     )}
                                                     {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                         <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="lucide:calendar-clock" className="text-[10px]" />
+                                                            <Icon icon="tabler:calendar-clock" className="text-[12px]" />
                                                             {p.jumlah_sesi_terdampak} sesi terdampak
                                                         </p>
                                                     )}
                                                     {p.session && (
                                                         <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="lucide:book-open" className="text-[10px]" />
+                                                            <Icon icon="tabler:books" className="text-[12px]" />
                                                             Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
                                                         </p>
                                                     )}
@@ -320,7 +320,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                             <TableCell>
                                                 {p.catatan_admin ? (
                                                     <div className="flex items-start gap-2 max-w-[250px]">
-                                                        <Icon icon="lucide:message-square" className="text-indigo-500 text-xs mt-0.5 flex-shrink-0" />
+                                                        <Icon icon="tabler:message-circle" className="text-indigo-500 text-[14px] mt-0.5 flex-shrink-0" />
                                                         <p className="text-sm text-slate-600" title={p.catatan_admin}>{p.catatan_admin}</p>
                                                     </div>
                                                 ) : (
@@ -334,7 +334,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                         ) : (
                             <div className="text-center py-16 sm:py-20 px-2">
                                 <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="lucide:shield-check" className="text-3xl" />
+                                    <Icon icon="tabler:shield-check" className="text-[28px]" />
                                 </div>
                                 <h3 className="text-base font-bold text-slate-900">Belum ada pengajuan perizinan</h3>
                                 <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">Klik tombol "Ajukan Perizinan" untuk membuat pengajuan baru</p>
@@ -346,7 +346,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                     <div className="md:hidden space-y-4">
                         {perizinan.length > 0 ? (
                             perizinan.map((p, index) => (
-                                <div key={p.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:border-indigo-200 hover:shadow-[0_10px_24px_rgba(79,70,229,0.12)] transition-all space-y-3">
+                                <div key={p.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all space-y-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${
@@ -354,14 +354,14 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                 p.jenis === 'sakit' ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-[0_6px_14px_-6px_rgba(244,63,94,0.5)]' :
                                                 'bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-[0_6px_14px_-6px_rgba(139,92,246,0.5)]'
                                             }`}>
-                                                <Icon icon={jenisConfig[p.jenis]?.icon ?? 'lucide:help-circle'} className="text-lg" />
+                                                <Icon icon={jenisConfig[p.jenis]?.icon ?? 'tabler:info-circle'} className="text-[20px]" />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-bold text-slate-900 text-sm">{jenisConfig[p.jenis]?.label ?? p.jenis}</p>
                                                 <p className="text-xs text-slate-500 break-words">{formatDate(p.tanggal_mulai)}{p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}</p>
                                                 {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                        <Icon icon="lucide:calendar-clock" className="text-[11px]" />
+                                                        <Icon icon="tabler:calendar-clock" className="text-[13px]" />
                                                         {p.jumlah_sesi_terdampak} sesi terdampak
                                                     </p>
                                                 )}
@@ -379,9 +379,9 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                         <p className="text-sm text-slate-700 break-words">{p.alasan}</p>
                                     </div>
                                     {p.catatan_admin && (
-                                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
+                                        <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Icon icon="lucide:message-square" className="text-indigo-500 text-xs" />
+                                                <Icon icon="tabler:message-circle" className="text-indigo-500 text-[14px]" />
                                                 <p className="text-xs font-medium text-indigo-700">Catatan Admin</p>
                                             </div>
                                             <p className="text-sm text-slate-700 break-words">{p.catatan_admin}</p>
@@ -392,7 +392,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                         ) : (
                             <div className="text-center py-12 px-2">
                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-3 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.6)]">
-                                    <Icon icon="lucide:shield-check" className="text-2xl" />
+                                    <Icon icon="tabler:shield-check" className="text-[24px]" />
                                 </div>
                                 <p className="text-sm text-slate-500">Belum ada pengajuan perizinan</p>
                             </div>

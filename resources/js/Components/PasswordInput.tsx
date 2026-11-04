@@ -27,7 +27,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                 error={error}
                 hint={hint}
                 type={visible ? 'text' : 'password'}
-                icon={icon ?? <Icon icon="lucide:lock" className="text-[16px]" />}
+                icon={icon ?? <Icon icon="tabler:lock" className="text-[16px]" />}
                 trailing={
                     <button
                         type="button"
@@ -37,7 +37,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
                         aria-pressed={visible}
                         className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 transition-colors"
                     >
-                        <Icon icon={visible ? 'lucide:eye-off' : 'lucide:eye'} className="text-[16px]" />
+                        <Icon icon={visible ? 'tabler:eye-off' : 'tabler:eye'} className="text-[16px]" />
                     </button>
                 }
                 {...props}

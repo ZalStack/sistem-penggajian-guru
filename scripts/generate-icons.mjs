@@ -25,7 +25,7 @@ const srcDir = path.join(root, 'resources', 'js');
 const outFile = path.join(srcDir, 'lib', 'offline-icons.ts');
 
 /** Set ikon Iconify yang dipakai aplikasi. */
-const prefixes = ['lucide', 'mdi'];
+const prefixes = ['lucide', 'mdi', 'tabler', 'solar', 'heroicons'];
 
 /** Ekstensi file sumber yang dipindai. */
 const scanExtensions = new Set(['.ts', '.tsx', '.js', '.jsx']);
@@ -53,7 +53,12 @@ for (const prefix of prefixes) {
     }
 
     const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-    collections.set(prefix, { icons: data.icons ?? {}, aliases: data.aliases ?? {} });
+    collections.set(prefix, {
+        icons: data.icons ?? {},
+        aliases: data.aliases ?? {},
+        width: data.width,
+        height: data.height,
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -141,7 +146,13 @@ const collectIcon = (prefix, name, stack = []) => {
 };
 
 for (const prefix of prefixes) {
-    collected.set(prefix, { icons: {}, aliases: {} });
+    const raw = collections.get(prefix);
+    collected.set(prefix, {
+        icons: {},
+        aliases: {},
+        width: raw?.width,
+        height: raw?.height,
+    });
     for (const name of used.get(prefix)) {
         collectIcon(prefix, name);
     }
@@ -155,11 +166,13 @@ const totalAliases = [...collected.values()].reduce((sum, c) => sum + Object.key
 
 const collectionsLiteral = prefixes
     .map((prefix) => {
-        const { icons, aliases } = collected.get(prefix);
+        const { icons, aliases, width, height } = collected.get(prefix);
         const aliasesBlock = Object.keys(aliases).length ? `,\n        aliases: ${JSON.stringify(aliases)}` : '';
+        const widthBlock = width !== undefined ? `,\n        width: ${width}` : '';
+        const heightBlock = height !== undefined ? `,\n        height: ${height}` : '';
         return `    {
         prefix: '${prefix}',
-        icons: ${JSON.stringify(icons)}${aliasesBlock},
+        icons: ${JSON.stringify(icons)}${aliasesBlock}${widthBlock}${heightBlock},
     }`;
     })
     .join(',\n');

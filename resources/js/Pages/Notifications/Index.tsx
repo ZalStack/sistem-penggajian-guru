@@ -32,10 +32,10 @@ interface Props {
 }
 
 const tipeIcon: Record<string, string> = {
-    info: 'lucide:info',
-    success: 'lucide:check-circle',
-    warning: 'lucide:alert-triangle',
-    error: 'lucide:x-circle',
+    info: 'tabler:info-circle',
+    success: 'tabler:circle-check',
+    warning: 'tabler:alert-triangle',
+    error: 'tabler:circle-x',
 };
 
 const tipeColor: Record<string, string> = {
@@ -96,7 +96,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                             onClick={handleMarkAllRead}
                             className="btn-secondary w-full sm:w-auto"
                         >
-                            <Icon icon="lucide:check-check" className="text-sm" />
+                            <Icon icon="tabler:checks" className="text-sm" />
                             Tandai semua sudah dibaca
                         </button>
                     )}
@@ -106,7 +106,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     <div className="card-modern-hover p-4">
                         <div className="flex items-center gap-2.5 mb-2">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                <Icon icon="lucide:bell" className="text-sm" />
+                                <Icon icon="tabler:bell" className="text-sm" />
                             </span>
                             <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Total</span>
                         </div>
@@ -115,7 +115,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     <div className="card-modern-hover p-4">
                         <div className="flex items-center gap-2.5 mb-2">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100">
-                                <Icon icon="lucide:mail" className="text-sm text-rose-600" />
+                                <Icon icon="tabler:mail" className="text-sm text-rose-600" />
                             </span>
                             <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Belum Dibaca</span>
                         </div>
@@ -124,7 +124,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     <div className="card-modern-hover p-4">
                         <div className="flex items-center gap-2.5 mb-2">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100">
-                                <Icon icon="lucide:check-circle" className="text-sm text-emerald-600" />
+                                <Icon icon="tabler:circle-check" className="text-sm text-emerald-600" />
                             </span>
                             <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Dibaca</span>
                         </div>
@@ -133,7 +133,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     <div className="card-modern-hover p-4">
                         <div className="flex items-center gap-2.5 mb-2">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100">
-                                <Icon icon="lucide:filter" className="text-sm text-indigo-600" />
+                                <Icon icon="tabler:filter" className="text-sm text-indigo-600" />
                             </span>
                             <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Halaman</span>
                         </div>
@@ -145,7 +145,7 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     {notifications.data.length === 0 ? (
                         <div className="text-center py-20 px-6">
                             <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-brand">
-                                <Icon icon="lucide:inbox" className="text-3xl text-white" />
+                                <Icon icon="tabler:inbox" className="text-3xl text-white" />
                             </div>
                             <p className="text-sm font-semibold text-slate-900 mb-1">Tidak ada notifikasi</p>
                             <p className="text-xs text-slate-500 leading-relaxed">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>

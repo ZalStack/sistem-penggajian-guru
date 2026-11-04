@@ -79,7 +79,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                         href={route('guru.index')}
                         className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
                     >
-                        <Icon icon="lucide:arrow-left" className="text-lg" />
+                        <Icon icon="tabler:arrow-left" className="text-lg" />
                     </Link>
                     <div className="min-w-0">
                         <h1 className="page-title">Tambah Guru Baru</h1>
@@ -144,7 +144,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                                                         : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
                                                 }`}
                                             >
-                                                {active && <Icon icon="lucide:check" className="text-[13px]" />}
+                                                {active && <Icon icon="tabler:check" className="text-[13px]" />}
                                                 {p.nama}
                                             </button>
                                         );
@@ -306,7 +306,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                         <div className="pt-4 border-t border-slate-100">
                             <h3 className="text-sm font-semibold text-slate-900 mb-1 flex items-center gap-2">
                                 <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0">
-                                    <Icon icon="lucide:key-round" className="text-sm" />
+                                    <Icon icon="tabler:key" className="text-sm" />
                                 </span>
                                 Password Akun
                             </h3>
@@ -340,7 +340,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                 >
                     <div className="space-y-5">
                         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
-                            <Icon icon="lucide:shield-check" className="text-amber-600 text-lg flex-shrink-0 mt-0.5" />
+                            <Icon icon="tabler:shield-check" className="text-amber-600 text-lg flex-shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-xs font-bold text-amber-800">Akses Tunjangan Khusus</p>
                                 <p className="text-xs text-amber-700 leading-relaxed">Tunjangan khusus hanya dapat diubah oleh <b>Admin</b>. Guru tidak memiliki akses mengubah nominal ini via profil pribadi.</p>
@@ -387,7 +387,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                         Batal
                     </Link>
                     <Button type="submit" processing={processing} className="w-full sm:w-auto">
-                        <Icon icon="lucide:save" /> Simpan & Buat Akun
+                        <Icon icon="tabler:device-floppy" /> Simpan & Buat Akun
                     </Button>
                 </div>
             </form>

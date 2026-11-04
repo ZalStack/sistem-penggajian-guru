@@ -150,9 +150,15 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
         <AuthenticatedLayout>
             <Head title="Kelola Sesi Mengajar" />
 
-            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Page Header */}
+            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div className="min-w-0">
-                    <h1 className="page-title">Sesi Mengajar</h1>
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-8 h-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center">
+                            <Icon icon="tabler:calendar-event" className="text-[18px]" />
+                        </div>
+                        <h1 className="page-title">Sesi Mengajar</h1>
+                    </div>
                     <p className="page-subtitle">
                         Kelola jadwal sesi mengajar guru: program kelas, status, dan lokasi.
                     </p>
@@ -164,12 +170,13 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                     }}
                     className="shrink-0"
                 >
-                    <Icon icon={showForm ? 'lucide:x' : 'lucide:plus'} className="text-base" />
+                    <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-[18px]" />
                     {showForm ? 'Tutup Formulir' : 'Tambah Sesi Baru'}
                 </Button>
             </div>
 
             <div className="space-y-8">
+                {/* Add/Edit Form */}
                 {showForm && (
                     <Card
                         title={editId ? 'Edit Sesi Mengajar' : 'Tambah Sesi Mengajar Baru'}
@@ -287,7 +294,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                             </div>
                             <div className="flex flex-wrap items-center gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
-                                    <Icon icon="lucide:save" /> {editId ? 'Simpan Perubahan' : 'Tambah Sesi'}
+                                    <Icon icon="tabler:device-floppy" className="text-[18px]" /> {editId ? 'Simpan Perubahan' : 'Tambah Sesi'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
                                     Batal
@@ -297,6 +304,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                     </Card>
                 )}
 
+                {/* Sessions List Card */}
                 <Card>
                     {/* Filter Bar */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -345,7 +353,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                 onClick={resetFilters}
                                 className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors whitespace-nowrap"
                             >
-                                <Icon icon="lucide:rotate-ccw" /> Reset Filter
+                                <Icon icon="tabler:refresh" className="text-[14px]" /> Reset Filter
                             </button>
                         </div>
                     )}
@@ -371,12 +379,12 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     <TableBody>
                                         {sessions.data.map((session, index) => (
                                             <TableRow key={session.id}>
-                                                <TableCell className="font-medium text-slate-500">
+                                                <TableCell className="font-medium text-slate-400 text-sm">
                                                     {(sessions.current_page - 1) * sessions.per_page + index + 1}
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                        <div className="w-9 h-9 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
                                                             {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
                                                         </div>
                                                         <div className="min-w-0">
@@ -398,18 +406,27 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Icon icon="tabler:calendar-event" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                        <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-slate-600 text-sm">
-                                                        {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
-                                                    </span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Icon icon="tabler:clock" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                        <span className="text-slate-600 text-sm">
+                                                            {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
+                                                        </span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge variant="default">{session.jumlah_sesi}</Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                        <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-1">
@@ -419,15 +436,15 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                             className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                                             title="Edit Sesi"
                                                         >
-                                                            <Icon icon="lucide:pencil" className="text-base" />
+                                                            <Icon icon="tabler:edit" className="text-[18px]" />
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => openDeleteModal(session)}
-                                                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                            className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                             title="Hapus Sesi"
                                                         >
-                                                            <Icon icon="lucide:trash-2" className="text-base" />
+                                                            <Icon icon="tabler:trash" className="text-[18px]" />
                                                         </button>
                                                     </div>
                                                 </TableCell>
@@ -446,7 +463,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
                                                     {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
                                                 </div>
                                                 <div>
@@ -478,20 +495,20 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                             <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
                                         </div>
 
-                                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                                             <button
                                                 type="button"
                                                 onClick={() => handleEdit(session)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1"
+                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1.5"
                                             >
-                                                <Icon icon="lucide:pencil" /> Edit
+                                                <Icon icon="tabler:edit" className="text-[14px]" /> Edit
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => openDeleteModal(session)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1"
+                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1.5"
                                             >
-                                                <Icon icon="lucide:trash-2" /> Hapus
+                                                <Icon icon="tabler:trash" className="text-[14px]" /> Hapus
                                             </button>
                                         </div>
                                     </div>
@@ -502,8 +519,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                         </>
                     ) : (
                         <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-500 text-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]">
-                                <Icon icon="lucide:calendar-x" className="text-3xl" />
+                            <div className="w-16 h-16 bg-violet-50 text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-violet-100">
+                                <Icon icon="tabler:calendar-off" className="text-[32px]" />
                             </div>
                             <h3 className="text-base font-bold text-slate-900">
                                 {hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
@@ -520,7 +537,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                         onClick={resetFilters}
                                         className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
                                     >
-                                        <Icon icon="lucide:rotate-ccw" /> Reset Semua Filter
+                                        <Icon icon="tabler:refresh" className="text-[14px]" /> Reset Semua Filter
                                     </button>
                                 ) : (
                                     <Button
@@ -529,7 +546,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                             setShowForm(true);
                                         }}
                                     >
-                                        <Icon icon="lucide:plus" /> Tambah Sesi Sekarang
+                                        <Icon icon="tabler:plus" className="text-[18px]" /> Tambah Sesi Sekarang
                                     </Button>
                                 )}
                             </div>
@@ -541,8 +558,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
             {/* Modal Konfirmasi Hapus */}
             <Modal show={sessionToDelete !== null} onClose={() => setSessionToDelete(null)}>
                 <div className="p-6 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Icon icon="lucide:alert-triangle" className="text-2xl" />
+                    <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-100">
+                        <Icon icon="tabler:alert-triangle" className="text-[28px]" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-1">Hapus Sesi Mengajar?</h3>
                     <p className="text-sm text-slate-500 mb-6">

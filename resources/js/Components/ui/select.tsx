@@ -35,7 +35,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                         ))}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 group-focus-within:text-slate-600 transition-colors">
-                        <Icon icon="lucide:chevron-down" className="text-[16px]" />
+                        <Icon icon="tabler:chevron-down" className="text-[16px]" />
                     </div>
                 </div>
                 {error && <p className="text-[11px] leading-4 text-rose-600 font-[600]">{error}</p>}
