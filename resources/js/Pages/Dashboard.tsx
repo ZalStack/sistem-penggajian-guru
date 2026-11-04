@@ -837,8 +837,6 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
     const izinAktif = Boolean(izinHariIni);
     // Presensi check-in/check-out dilakukan di aplikasi SI ADIK-KK (Kelas Khusus)
     // berbasis geofence GPS. Dashboard ini hanya menampilkan riwayat dari sinkronisasi.
-    const hasTodaySessions = (upcomingSessions ?? []).some((s: any) => s.is_today);
-    const position = null;
 
     const hour = new Date().getHours();
     const greeting = hour < 11 ? 'Selamat Pagi' : hour < 15 ? 'Selamat Siang' : hour < 18 ? 'Selamat Sore' : 'Selamat Malam';
@@ -903,8 +901,7 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
             )}
 
             {/* Banner: presensi dipindah ke SI ADIK-KK (geofence GPS) */}
-            {hasTodaySessions && (
-                <div className="mb-6 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="mb-6 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0">
                         <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(14,165,233,0.7)]">
                             <Icon icon="tabler:map-pin-check" className="text-base" />
@@ -926,7 +923,6 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                         <Icon icon="tabler:external-link" className="text-xs" /> Buka Absensi SI ADIK-KK
                     </a>
                 </div>
-            )}
 
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="tabler:books" color="accent" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />

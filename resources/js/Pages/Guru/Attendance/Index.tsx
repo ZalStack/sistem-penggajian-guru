@@ -86,6 +86,9 @@ function UpcomingSessionCard({ session }: { session: any }) {
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
                             {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
                         </p>
+                        {session.location?.radius != null && (
+                            <p className="text-xs text-slate-500 mt-0.5 break-words">Radius absensi: {session.location.radius} m</p>
+                        )}
                         {session.transport && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">Transport: {session.transport.jenis}</p>
                         )}
