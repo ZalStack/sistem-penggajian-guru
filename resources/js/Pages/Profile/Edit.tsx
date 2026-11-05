@@ -38,7 +38,7 @@ const parseRiwayatMengajarItem = (raw: string): RiwayatMengajarRow => {
         const start = match[1] || '';
         const rawEnd = (match[2] || '').toLowerCase();
         const isCurrent = rawEnd === 'sekarang' || rawEnd === 'skrg' || rawEnd === 'present';
-        const end = isCurrent ? '' : (rawEnd.match(/^\d{4}$/) ? rawEnd : '');
+        const end = isCurrent ? 'sekarang' : rawEnd.match(/^\d{4}$/) ? rawEnd : '';
         const instansi = (match[3] || '').trim().replace(/^[–\-—:\s]+/, '');
 
         return {
@@ -71,7 +71,8 @@ const parseRiwayatMengajarItem = (raw: string): RiwayatMengajarRow => {
 const formatRiwayatMengajarItem = (item: RiwayatMengajarRow): string => {
     const instansi = (item.instansi || '').trim();
     const start = item.tahun_mulai ? String(item.tahun_mulai).trim() : '';
-    const end = item.is_current ? 'sekarang' : (item.tahun_selesai ? String(item.tahun_selesai).trim() : '');
+    const isCurrent = item.is_current || String(item.tahun_selesai).toLowerCase() === 'sekarang';
+    const end = isCurrent ? 'sekarang' : (item.tahun_selesai ? String(item.tahun_selesai).trim() : '');
 
     let period = '';
     if (start && end) {
@@ -763,7 +764,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                                 />
 
                                                 <div className="flex items-center gap-1 shrink-0">
-                                                    <div className="w-24">
+                                                    <div className="w-22">
                                                         <YearPicker
                                                             value={item.tahun_mulai}
                                                             onChange={(val) => updateRiwayatMengajar(idx, 'tahun_mulai', val)}
@@ -771,37 +772,18 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                                         />
                                                     </div>
                                                     <span className="text-xs text-slate-400 font-bold select-none">—</span>
-                                                    <div className="w-24">
-                                                        {!item.is_current ? (
-                                                            <YearPicker
-                                                                value={item.tahun_selesai}
-                                                                onChange={(val) => updateRiwayatMengajar(idx, 'tahun_selesai', val)}
-                                                                align="right"
-                                                                placeholder="Selesai"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full py-2 px-1 text-center bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold select-none whitespace-nowrap">
-                                                                Sekarang
-                                                            </div>
-                                                        )}
+                                                    <div className="w-26">
+                                                        <YearPicker
+                                                            value={item.tahun_selesai}
+                                                            onChange={(val) => {
+                                                                updateRiwayatMengajar(idx, 'tahun_selesai', val);
+                                                                updateRiwayatMengajar(idx, 'is_current', String(val).toLowerCase() === 'sekarang');
+                                                            }}
+                                                            align="right"
+                                                            allowCurrent
+                                                            placeholder="Selesai"
+                                                        />
                                                     </div>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => updateRiwayatMengajar(idx, 'is_current', !item.is_current)}
-                                                        className={`px-2.5 py-2 rounded-xl text-xs font-bold border transition cursor-pointer select-none whitespace-nowrap ${
-                                                            item.is_current
-                                                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                                                                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                                                        }`}
-                                                        title={
-                                                            item.is_current
-                                                                ? 'Sedang aktif mengajar (Sekarang)'
-                                                                : 'Klik jika masih aktif mengajar di sini saat ini'
-                                                        }
-                                                    >
-                                                        Sekarang
-                                                    </button>
                                                 </div>
 
                                                 {riwayatMengajarRows.length > 1 && (

@@ -7,6 +7,7 @@ interface YearPickerProps {
     placeholder?: string;
     disabled?: boolean;
     align?: 'left' | 'right';
+    allowCurrent?: boolean;
 }
 
 export default function YearPicker({
@@ -15,10 +16,14 @@ export default function YearPicker({
     placeholder = 'Tahun',
     disabled = false,
     align = 'left',
+    allowCurrent = false,
 }: YearPickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const currentYear = new Date().getFullYear();
+
+    const isSekarang = String(value || '').toLowerCase() === 'sekarang';
+    const displayValue = isSekarang ? 'Sekarang' : (value || '');
 
     const parsedYear = useMemo(() => {
         const num = parseInt(String(value), 10);
@@ -43,13 +48,18 @@ export default function YearPicker({
         setIsOpen(!isOpen);
     };
 
-    const selectYear = (yr: number | '') => {
+    const selectYear = (yr: number | '' | 'sekarang') => {
         onChange?.(yr ? String(yr) : '');
         setIsOpen(false);
     };
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+        const raw = e.target.value;
+        if (allowCurrent && raw.toLowerCase().startsWith('sek')) {
+            onChange?.('sekarang');
+            return;
+        }
+        const val = raw.replace(/\D/g, '').slice(0, 4);
         onChange?.(val);
     };
 
@@ -68,13 +78,17 @@ export default function YearPicker({
             <div className="relative flex items-center">
                 <input
                     type="text"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={value}
+                    inputMode={allowCurrent && isSekarang ? 'text' : 'numeric'}
+                    maxLength={allowCurrent ? 8 : 4}
+                    value={displayValue}
                     onChange={onInputChange}
                     placeholder={placeholder}
                     disabled={disabled}
-                    className="w-full pl-2.5 pr-6 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition disabled:bg-slate-100 disabled:cursor-not-allowed"
+                    className={`w-full pl-2.5 pr-6 py-2 rounded-xl border text-xs font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition disabled:bg-slate-100 disabled:cursor-not-allowed ${
+                        isSekarang
+                            ? 'border-emerald-300 bg-emerald-50/70 text-emerald-700 font-bold'
+                            : 'border-slate-300 bg-white text-slate-800 font-mono'
+                    }`}
                 />
                 <button
                     type="button"
@@ -96,6 +110,27 @@ export default function YearPicker({
                         align === 'right' ? 'right-0' : 'left-0'
                     }`}
                 >
+                    {/* Tombol Sekarang di dalam Date/Year Picker jika allowCurrent aktif */}
+                    {allowCurrent && (
+                        <div className="pb-1.5 mb-1.5 border-b border-slate-100">
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    selectYear('sekarang');
+                                }}
+                                className={`w-full py-1.5 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                                    isSekarang
+                                        ? 'bg-emerald-600 text-white shadow-xs'
+                                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                }`}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                <span>Sekarang</span>
+                            </button>
+                        </div>
+                    )}
+
                     <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 mb-1.5">
                         <button
                             type="button"
