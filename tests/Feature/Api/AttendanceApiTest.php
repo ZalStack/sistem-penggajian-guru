@@ -176,6 +176,64 @@ class AttendanceApiTest extends TestCase
         $this->postJson('/api/v1/attendances/check-in', $payload)->assertStatus(422);
     }
 
+    public function test_check_in_to_second_session_requires_check_out_of_first_session(): void
+    {
+        $firstSession = $this->createSession([
+            'guru_id' => $this->guru->id,
+            'jam_mulai' => '07:00',
+            'jam_selesi' => '09:00',
+            'jumlah_sesi' => 1,
+        ]);
+
+        $secondSession = $this->createSession([
+            'guru_id' => $this->guru->id,
+            'jam_mulai' => '08:30',
+            'jam_selesi' => '10:00',
+            'jumlah_sesi' => 1,
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        // Check-in ke sesi pertama (pada jam 09:00).
+        $this->postJson('/api/v1/attendances/check-in', [
+            'session_id' => $firstSession->id,
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'accuracy' => 10,
+        ])->assertOk();
+
+        // Check-in ke sesi kedua harus ditolak sampai sesi pertama di-check-out.
+        $this->postJson('/api/v1/attendances/check-in', [
+            'session_id' => $secondSession->id,
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'accuracy' => 10,
+        ])->assertStatus(422)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseCount('attendances', 1);
+
+        // Check-out dari sesi pertama baru mengizinkan check-in ke sesi kedua.
+        Attendance::query()->update([
+            'checkin_time' => now()->subMinutes(45),
+            'durasi' => 0,
+        ]);
+
+        $this->postJson('/api/v1/attendances/check-out', [
+            'session_id' => $firstSession->id,
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'accuracy' => 10,
+        ])->assertOk();
+
+        $this->postJson('/api/v1/attendances/check-in', [
+            'session_id' => $secondSession->id,
+            'latitude' => -6.2088,
+            'longitude' => 106.8456,
+            'accuracy' => 10,
+        ])->assertOk();
+    }
+
     public function test_check_out_requires_a_prior_check_in(): void
     {
         $session = $this->createSession();

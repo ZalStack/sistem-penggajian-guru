@@ -336,6 +336,7 @@ class AttendanceController extends ApiController
             AttendanceService::MIN_DURATION_NOT_MET => 'The minimum teaching duration is 15 minutes. Please check out at least 15 minutes after check-in.',
             AttendanceService::OUTSIDE_RADIUS => 'You are outside the allowed location radius. Distance: '.$context['distance'].'m, allowed radius: '.$context['radius'].'m.'
                 .($context['accuracy'] > 50 ? ' (GPS accuracy: ±'.number_format($context['accuracy'], 0).'m — an open area is recommended for better accuracy).' : ''),
+            AttendanceService::PREVIOUS_SESSION_NOT_CHECKED_OUT => 'Check-in to this session is blocked because the previous session has not been checked out yet. Please check out of the previous session before checking in to this one.',
             default => 'Attendance recorded successfully.',
         };
     }

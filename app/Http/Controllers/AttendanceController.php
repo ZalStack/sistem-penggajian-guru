@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\Guru;
+use App\Models\Penggajian;
 use App\Models\Perizinan;
 use App\Models\TeachingSession;
 use App\Services\AttendanceService;
@@ -39,6 +40,7 @@ class AttendanceController extends Controller
                 .$this->izinLabel($result->context['izin'] ?? null)
                 .' yang disetujui admin. Kehadiran pada sesi ini akan tercatat sebagai izin di rekap presensi.',
             AttendanceService::OUTSIDE_RADIUS => $this->radiusErrorMessage('Check-in', $result->context),
+            AttendanceService::PREVIOUS_SESSION_NOT_CHECKED_OUT => 'Check-in sesi ini belum dapat dilakukan karena sesi mengajar sebelumnya belum melakukan check-out. Silakan lakukan check-out pada sesi sebelumnya terlebih dahulu sebelum check-in ke sesi berikutnya.',
             default => 'Check-in berhasil! Jarak: '.number_format($result->context['distance'], 0).'m dari lokasi'.$this->accuracyLabel($result->context['accuracy']).'.',
         };
 
@@ -76,25 +78,25 @@ class AttendanceController extends Controller
     {
         $user = $request->user();
         $guru = $user->guru;
-        $now  = now();
+        $now = now();
         $periode = $now->format('Y-m');
 
         if (! $guru) {
             return Inertia::render('Guru/Attendance/Index', [
-                'attendances'       => [],
-                'totalHadir'        => 0,
-                'totalJam'          => 0,
-                'guru'              => (object) ['nama' => $user->name],
-                'filters'           => $request->only(['bulan']),
-                'upcomingSessions'  => [],
-                'todayAttendances'  => (object) [],
-                'izinHariIni'       => null,
-                'stats'             => [
+                'attendances' => [],
+                'totalHadir' => 0,
+                'totalJam' => 0,
+                'guru' => (object) ['nama' => $user->name],
+                'filters' => $request->only(['bulan']),
+                'upcomingSessions' => [],
+                'todayAttendances' => (object) [],
+                'izinHariIni' => null,
+                'stats' => [
                     'total_sesi_bulan' => 0,
-                    'total_hadir'      => 0,
-                    'gaji_bulan'       => 0,
-                    'potensi_gaji'     => 0,
-                    'status_bayar'     => 'belum_dibayar',
+                    'total_hadir' => 0,
+                    'gaji_bulan' => 0,
+                    'potensi_gaji' => 0,
+                    'status_bayar' => 'belum_dibayar',
                 ],
             ]);
         }
@@ -108,7 +110,7 @@ class AttendanceController extends Controller
             ->get();
 
         $totalHadir = $attendances->where('status', 'valid')->count();
-        $totalJam   = $attendances->where('status', 'valid')->sum('durasi');
+        $totalJam = $attendances->where('status', 'valid')->sum('durasi');
 
         // ── Jadwal mendatang (sama seperti di GuruDashboard) ──────────────────
         $upcomingSessions = TeachingSession::with(['location', 'transport', 'program'])
@@ -120,21 +122,21 @@ class AttendanceController extends Controller
             ->limit(6)
             ->get()
             ->map(fn ($s) => [
-                'id'          => $s->id,
-                'tanggal'     => $s->tanggal->format('Y-m-d'),
-                'is_today'    => $s->tanggal->isSameDay($now),
-                'jam_mulai'   => $s->jam_mulai->format('H:i'),
+                'id' => $s->id,
+                'tanggal' => $s->tanggal->format('Y-m-d'),
+                'is_today' => $s->tanggal->isSameDay($now),
+                'jam_mulai' => $s->jam_mulai->format('H:i'),
                 'jam_selesai' => $s->jam_selesai->format('H:i'),
-                'mapel'       => $s->mapel,
+                'mapel' => $s->mapel,
                 'jumlah_sesi' => $s->jumlah_sesi,
-                'program'     => $s->program?->nama,
-                'location'    => [
+                'program' => $s->program?->nama,
+                'location' => [
                     'nama_lokasi' => $s->location->nama_lokasi,
-                    'latitude'    => $s->location->latitude,
-                    'longitude'   => $s->location->longitude,
-                    'radius'      => $s->location->radius,
+                    'latitude' => $s->location->latitude,
+                    'longitude' => $s->location->longitude,
+                    'radius' => $s->location->radius,
                 ],
-                'transport'   => $s->transport ? ['jenis' => $s->transport->jenis] : null,
+                'transport' => $s->transport ? ['jenis' => $s->transport->jenis] : null,
             ]);
 
         // ── Presensi hari ini (untuk status check-in/out pada SessionCard) ────
@@ -165,28 +167,28 @@ class AttendanceController extends Controller
             ->sum('jumlah_sesi');
 
         $honorPerSesi = (float) ($guru->grade?->honor_per_sesi ?? 0);
-        $potensiGaji  = ($totalHadirBulan * $honorPerSesi) + (float) $guru->tunjangan_khusus;
-        $penggajian   = \App\Models\Penggajian::where('guru_id', $guru->id)->where('periode', $periode)->first();
+        $potensiGaji = ($totalHadirBulan * $honorPerSesi) + (float) $guru->tunjangan_khusus;
+        $penggajian = Penggajian::where('guru_id', $guru->id)->where('periode', $periode)->first();
 
         return Inertia::render('Guru/Attendance/Index', [
-            'attendances'      => $attendances,
-            'totalHadir'       => $totalHadir,
-            'totalJam'         => $totalJam,
-            'guru'             => $guru,
-            'filters'          => $request->only(['bulan']),
+            'attendances' => $attendances,
+            'totalHadir' => $totalHadir,
+            'totalJam' => $totalJam,
+            'guru' => $guru,
+            'filters' => $request->only(['bulan']),
             'upcomingSessions' => $upcomingSessions,
             'todayAttendances' => $todayAttendances,
-            'izinHariIni'      => $izinHariIni ? [
-                'jenis'   => $izinHariIni->labelJenis(),
+            'izinHariIni' => $izinHariIni ? [
+                'jenis' => $izinHariIni->labelJenis(),
                 'rentang' => $izinHariIni->rentangTanggal(),
-                'alasan'  => $izinHariIni->alasan,
+                'alasan' => $izinHariIni->alasan,
             ] : null,
             'stats' => [
                 'total_sesi_bulan' => $totalSesiBulan,
-                'total_hadir'      => $totalHadirBulan,
-                'gaji_bulan'       => (float) ($penggajian?->total ?? 0),
-                'potensi_gaji'     => $potensiGaji,
-                'status_bayar'     => $penggajian?->status_bayar ?? 'belum_dibayar',
+                'total_hadir' => $totalHadirBulan,
+                'gaji_bulan' => (float) ($penggajian?->total ?? 0),
+                'potensi_gaji' => $potensiGaji,
+                'status_bayar' => $penggajian?->status_bayar ?? 'belum_dibayar',
             ],
         ]);
     }

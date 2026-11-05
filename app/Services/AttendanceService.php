@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Attendance;
+use App\Models\Guru;
 use App\Models\Penggajian;
 use App\Models\Perizinan;
 use App\Models\TeachingSession;
@@ -36,6 +37,8 @@ class AttendanceService
     public const MIN_DURATION_NOT_MET = 'min_duration_not_met';
 
     public const OUTSIDE_RADIUS = 'outside_radius';
+
+    public const PREVIOUS_SESSION_NOT_CHECKED_OUT = 'previous_session_not_checked_out';
 
     public const APPROVED_LEAVE = 'approved_leave';
 
@@ -101,6 +104,18 @@ class AttendanceService
 
             if ($existing && $existing->checkin_time) {
                 return AttendanceResult::failure(self::ALREADY_CHECKED_IN);
+            }
+
+            // Guru yang sudah check-in pada sesi mengajar sebelumnya pada hari yang
+            // sama wajib melakukan check-out pada sesi tersebut sebelum check-in
+            // ke sesi berikutnya (mis. sesi ke-2 harus menunggu check-out sesi ke-1).
+            [$hasOpenPreviousSession, $previousSession] = $this->findOpenPreviousSession($guru, $session);
+            if ($hasOpenPreviousSession && $previousSession) {
+                return AttendanceResult::failure(self::PREVIOUS_SESSION_NOT_CHECKED_OUT, [
+                    'session_id' => $session->id,
+                    'previous_session_id' => $previousSession->id,
+                    'previous_jam_mulai' => $previousSession->jam_mulai->format('H:i'),
+                ]);
             }
 
             $gpsAccuracy = (float) $data['accuracy'];
@@ -225,5 +240,41 @@ class AttendanceService
                 'duration' => $durasi,
             ]);
         });
+    }
+
+    /**
+     * Cari sesi mengajar sebelumnya (oleh urutan jam mulai) pada hari yang sama
+     * yang sudah check-in tetapi belum check-out.
+     *
+     * @return array{0: bool, 1: TeachingSession|null}
+     */
+    private function findOpenPreviousSession(Guru $guru, TeachingSession $session): array
+    {
+        $previousSessions = TeachingSession::query()
+            ->where('guru_id', $guru->id)
+            ->whereDate('tanggal', $session->tanggal)
+            ->where('id', '!=', $session->id)
+            ->orderBy('jam_mulai')
+            ->get();
+
+        foreach ($previousSessions as $previousSession) {
+            if ($previousSession->jam_mulai >= $session->jam_mulai) {
+                continue;
+            }
+
+            $openAttendance = Attendance::query()
+                ->where('guru_id', $guru->id)
+                ->where('session_id', $previousSession->id)
+                ->whereDate('tanggal', $session->tanggal)
+                ->whereNotNull('checkin_time')
+                ->whereNull('checkout_time')
+                ->first();
+
+            if ($openAttendance) {
+                return [true, $previousSession];
+            }
+        }
+
+        return [false, null];
     }
 }
