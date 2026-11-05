@@ -180,21 +180,24 @@ class AttendanceApiTest extends TestCase
     {
         $firstSession = $this->createSession([
             'guru_id' => $this->guru->id,
-            'jam_mulai' => '07:00',
-            'jam_selesi' => '09:00',
+            'jam_mulai' => '08:00',
+            'jam_selesai' => '09:00',
             'jumlah_sesi' => 1,
         ]);
 
         $secondSession = $this->createSession([
             'guru_id' => $this->guru->id,
             'jam_mulai' => '08:30',
-            'jam_selesi' => '10:00',
+            'jam_selesai' => '10:00',
             'jumlah_sesi' => 1,
         ]);
 
         Sanctum::actingAs($this->user);
 
-        // Check-in ke sesi pertama (pada jam 09:00).
+        // Set waktu ke 08:30 (dalam window check-in sesi pertama 07:30–09:00)
+        Carbon::setTestNow(Carbon::parse('2026-11-05 08:30:00'));
+
+        // Check-in ke sesi pertama berhasil.
         $this->postJson('/api/v1/attendances/check-in', [
             'session_id' => $firstSession->id,
             'latitude' => -6.2088,
@@ -213,12 +216,10 @@ class AttendanceApiTest extends TestCase
 
         $this->assertDatabaseCount('attendances', 1);
 
-        // Check-out dari sesi pertama baru mengizinkan check-in ke sesi kedua.
-        Attendance::query()->update([
-            'checkin_time' => now()->subMinutes(45),
-            'durasi' => 0,
-        ]);
+        // Pindahkan waktu ke 09:30 (setelah jam_selesai sesi pertama 09:00).
+        Carbon::setTestNow(Carbon::parse('2026-11-05 09:30:00'));
 
+        // Check-out dari sesi pertama (jam_selesai 09:00 < now 09:30) baru mengizinkan check-in ke sesi kedua.
         $this->postJson('/api/v1/attendances/check-out', [
             'session_id' => $firstSession->id,
             'latitude' => -6.2088,
@@ -232,6 +233,9 @@ class AttendanceApiTest extends TestCase
             'longitude' => 106.8456,
             'accuracy' => 10,
         ])->assertOk();
+
+        // Kembalikan waktu test agar tidak mengganggu test lain.
+        Carbon::setTestNow(Carbon::now()->setTime(9, 0));
     }
 
     public function test_check_out_requires_a_prior_check_in(): void

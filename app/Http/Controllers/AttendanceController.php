@@ -64,7 +64,7 @@ class AttendanceController extends Controller
             AttendanceService::NO_TEACHER_LINK => 'Akun ini tidak terhubung dengan data guru.',
             AttendanceService::NOT_CHECKED_IN => 'Anda belum melakukan check-in untuk sesi ini.',
             AttendanceService::ALREADY_CHECKED_OUT => 'Anda sudah melakukan check-out untuk sesi ini.',
-            AttendanceService::MIN_DURATION_NOT_MET => 'Durasi mengajar minimal 15 menit. Silakan check-out setelah minimal 15 menit check-in.',
+            AttendanceService::MIN_DURATION_NOT_MET => 'Check-out hanya dapat dilakukan setelah jam mengajar selesai ('.$result->context['session_end'].'). Silakan tunggu sampai waktu mengajar berakhir.',
             AttendanceService::OUTSIDE_RADIUS => $this->radiusErrorMessage('Check-out', $result->context),
             default => 'Check-out berhasil! Jarak: '.number_format($result->context['distance'], 0).'m'.$this->accuracyLabel($result->context['accuracy']).'. Durasi mengajar: '.$result->context['duration'].' menit. Gaji sudah dihitung otomatis.',
         };

@@ -190,18 +190,22 @@ class AttendanceService
                 return AttendanceResult::failure(self::ALREADY_CHECKED_OUT);
             }
 
-            $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
-
-            if ($durasi < 15) {
-                return AttendanceResult::failure(self::MIN_DURATION_NOT_MET, [
-                    'duration' => $durasi,
-                    'minimum' => 15,
-                ]);
-            }
-
             $gpsAccuracy = (float) $data['accuracy'];
 
             $session = TeachingSession::with('location')->findOrFail($data['session_id']);
+            $sessionEnd = $session->jam_selesi;
+
+            // Check-out hanya diizinkan setelah waktu mengajar (jam_selesi) terlewat.
+            // Tidak ada lagi penahanan (delay) berbasis durasi minimum tetap sejak check-in.
+            if ($sessionEnd >= now()) {
+                return AttendanceResult::failure(self::MIN_DURATION_NOT_MET, [
+                    'duration' => Attendance::calculateDuration($attendance->checkin_time, now()),
+                    'minimum' => 15,
+                    'session_end' => $sessionEnd->format('H:i'),
+                ]);
+            }
+
+            $durasi = Attendance::calculateDuration($attendance->checkin_time, now());
 
             $distance = Attendance::calculateDistance(
                 (float) $data['latitude'], (float) $data['longitude'],
