@@ -123,47 +123,71 @@ export default function Edit({
 
     const [riwayatMengajarRows, setRiwayatMengajarRows] = useState<RiwayatMengajarRow[]>(initialRiwayatMengajar);
 
-    // Hitung lama mengajar non-overlapping
-    const computedLamaMengajar = useMemo(() => {
-        const intervals: { start: number; end: number }[] = [];
-        for (const item of riwayatMengajarRows) {
-            const start = parseInt(item.tahun_mulai, 10);
-            if (!isNaN(start) && start > 1950 && start <= currentYear + 1) {
-                let end = start;
-                if (item.is_current) {
-                    end = currentYear;
-                } else if (item.tahun_selesai) {
-                    const parsedEnd = parseInt(item.tahun_selesai, 10);
-                    if (!isNaN(parsedEnd) && parsedEnd >= start) {
-                        end = parsedEnd;
-                    }
-                }
-                intervals.push({ start, end });
-            }
+// Hitung lama mengajar dari Tanggal Bergabung di KPM hingga saat ini
+// Format: "20 hari" jika < 1 bulan, "1 bulan" jika sebulan, "1 tahun 2 bulan", "2 tahun", dst.
+function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: string; years: number } {
+    if (!tanggalStr) {
+        return { text: 'Belum diisi', years: 0 };
+    }
+
+    const parts = String(tanggalStr).split('T')[0].split('-');
+    if (parts.length < 3) {
+        return { text: 'Belum diisi', years: 0 };
+    }
+
+    const startYear = parseInt(parts[0], 10);
+    const startMonth = parseInt(parts[1], 10) - 1;
+    const startDay = parseInt(parts[2], 10);
+
+    const startDate = new Date(startYear, startMonth, startDay);
+    if (isNaN(startDate.getTime())) {
+        return { text: 'Belum diisi', years: 0 };
+    }
+
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    const curDay = now.getDate();
+
+    const today = new Date(curYear, curMonth, curDay);
+    if (startDate > today) {
+        return { text: '0 hari', years: 0 };
+    }
+
+    let years = curYear - startYear;
+    let months = curMonth - startMonth;
+    let days = curDay - startDay;
+
+    if (days < 0) {
+        months--;
+        const prevMonthDays = new Date(curYear, curMonth, 0).getDate();
+        days += prevMonthDays;
+    }
+
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+
+    let text = '';
+    if (years > 0) {
+        if (months > 0) {
+            text = `${years} tahun ${months} bulan`;
+        } else {
+            text = `${years} tahun`;
         }
-
-        if (intervals.length === 0) return 0;
-
-        intervals.sort((a, b) => a.start - b.start);
-
-        const merged = [intervals[0]];
-        for (let i = 1; i < intervals.length; i++) {
-            const prev = merged[merged.length - 1];
-            const curr = intervals[i];
-            if (curr.start <= prev.end) {
-                prev.end = Math.max(prev.end, curr.end);
-            } else {
-                merged.push(curr);
-            }
+    } else if (months > 0) {
+        if (days > 0) {
+            text = `${months} bulan ${days} hari`;
+        } else {
+            text = `${months} bulan`;
         }
+    } else {
+        text = `${Math.max(0, days)} hari`;
+    }
 
-        let total = 0;
-        for (const range of merged) {
-            const diff = range.end - range.start;
-            total += diff === 0 ? 1 : diff;
-        }
-        return total;
-    }, [riwayatMengajarRows, currentYear]);
+    return { text, years: Math.max(0, years) };
+}
 
     const { data, setData, post, processing, errors, recentlySuccessful, reset } = useForm({
         name: auth.user.name || '',
@@ -183,6 +207,10 @@ export default function Edit({
         nomor_rekening: guru?.nomor_rekening || '',
         foto: null as File | null,
     });
+
+    const lamaMengajarInfo = useMemo(() => {
+        return calculateLamaMengajar(data.tanggal_bergabung);
+    }, [data.tanggal_bergabung]);
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [fotoLoadError, setFotoLoadError] = useState(false);
@@ -303,7 +331,7 @@ export default function Edit({
             formData.append('nomor_telepon', data.nomor_telepon);
             formData.append('bank', data.bank);
             formData.append('nomor_rekening', data.nomor_rekening);
-            formData.append('lama_mengajar', String(computedLamaMengajar));
+            formData.append('lama_mengajar', String(lamaMengajarInfo.years));
 
             cleanPendidikan.forEach((item) => {
                 formData.append('riwayat_pendidikan[]', item);
@@ -618,16 +646,16 @@ export default function Edit({
 
                                 <div>
                                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
-                                        Lama Mengajar (Tahun)
+                                        Lama Mengajar
                                     </label>
                                     <input
                                         disabled
                                         type="text"
-                                        value={computedLamaMengajar ? `${computedLamaMengajar} Tahun` : '0 Tahun'}
+                                        value={lamaMengajarInfo.text}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-800 font-bold text-sm cursor-not-allowed select-none"
                                     />
                                     <p className="text-[10px] text-gray-400 mt-1">
-                                        Dihitung otomatis dari akumulasi rentang tahun pada Riwayat Mengajar.
+                                        Dikonversi otomatis dari tanggal bergabung di KPM hingga saat ini.
                                     </p>
                                 </div>
                             </div>
@@ -735,7 +763,7 @@ export default function Edit({
                                                 />
 
                                                 <div className="flex items-center gap-1 shrink-0">
-                                                    <div className="w-20">
+                                                    <div className="w-24">
                                                         <YearPicker
                                                             value={item.tahun_mulai}
                                                             onChange={(val) => updateRiwayatMengajar(idx, 'tahun_mulai', val)}
@@ -743,7 +771,7 @@ export default function Edit({
                                                         />
                                                     </div>
                                                     <span className="text-xs text-slate-400 font-bold select-none">—</span>
-                                                    <div className="w-20">
+                                                    <div className="w-24">
                                                         {!item.is_current ? (
                                                             <YearPicker
                                                                 value={item.tahun_selesai}
@@ -753,7 +781,7 @@ export default function Edit({
                                                             />
                                                         ) : (
                                                             <div className="w-full py-2 px-1 text-center bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold select-none whitespace-nowrap">
-                                                                Skrg
+                                                                Sekarang
                                                             </div>
                                                         )}
                                                     </div>
@@ -769,10 +797,10 @@ export default function Edit({
                                                         title={
                                                             item.is_current
                                                                 ? 'Sedang aktif mengajar (Sekarang)'
-                                                                : 'Klik jika masih aktif mengajar di sini'
+                                                                : 'Klik jika masih aktif mengajar di sini saat ini'
                                                         }
                                                     >
-                                                        {item.is_current ? 'Aktif' : 'Skrg'}
+                                                        Sekarang
                                                     </button>
                                                 </div>
 
