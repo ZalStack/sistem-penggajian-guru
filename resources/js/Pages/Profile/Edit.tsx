@@ -284,22 +284,34 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
 
     // Riwayat Mengajar handlers
     const addRiwayatMengajar = () => {
-        setRiwayatMengajarRows([
-            ...riwayatMengajarRows,
+        setRiwayatMengajarRows((prev) => [
+            ...prev,
             { instansi: '', tahun_mulai: '', tahun_selesai: '', is_current: false },
         ]);
     };
 
-    const updateRiwayatMengajar = (index: number, field: keyof RiwayatMengajarRow, val: any) => {
-        const updated = [...riwayatMengajarRows];
-        updated[index] = { ...updated[index], [field]: val };
-        setRiwayatMengajarRows(updated);
+    const updateRiwayatMengajar = (
+        index: number,
+        updates: Partial<RiwayatMengajarRow> | keyof RiwayatMengajarRow,
+        val?: any
+    ) => {
+        setRiwayatMengajarRows((prev) => {
+            const next = [...prev];
+            if (!next[index]) return prev;
+            if (typeof updates === 'string') {
+                next[index] = { ...next[index], [updates]: val };
+            } else {
+                next[index] = { ...next[index], ...updates };
+            }
+            return next;
+        });
     };
 
     const removeRiwayatMengajar = (index: number) => {
-        if (riwayatMengajarRows.length > 1) {
-            setRiwayatMengajarRows(riwayatMengajarRows.filter((_, i) => i !== index));
-        }
+        setRiwayatMengajarRows((prev) => {
+            if (prev.length <= 1) return prev;
+            return prev.filter((_, i) => i !== index);
+        });
     };
 
     const submit = (e: FormEvent) => {
@@ -763,21 +775,24 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                                     className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-medium transition"
                                                 />
 
-                                                <div className="flex items-center gap-1 shrink-0">
-                                                    <div className="w-22">
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <div className="w-[90px] shrink-0">
                                                         <YearPicker
                                                             value={item.tahun_mulai}
                                                             onChange={(val) => updateRiwayatMengajar(idx, 'tahun_mulai', val)}
                                                             placeholder="Mulai"
                                                         />
                                                     </div>
-                                                    <span className="text-xs text-slate-400 font-bold select-none">—</span>
-                                                    <div className="w-26">
+                                                    <span className="text-xs text-slate-400 font-bold select-none shrink-0">—</span>
+                                                    <div className="w-[115px] shrink-0">
                                                         <YearPicker
                                                             value={item.tahun_selesai}
                                                             onChange={(val) => {
-                                                                updateRiwayatMengajar(idx, 'tahun_selesai', val);
-                                                                updateRiwayatMengajar(idx, 'is_current', String(val).toLowerCase() === 'sekarang');
+                                                                const isCur = String(val).toLowerCase() === 'sekarang';
+                                                                updateRiwayatMengajar(idx, {
+                                                                    tahun_selesai: isCur ? 'sekarang' : val,
+                                                                    is_current: isCur,
+                                                                });
                                                             }}
                                                             align="right"
                                                             allowCurrent

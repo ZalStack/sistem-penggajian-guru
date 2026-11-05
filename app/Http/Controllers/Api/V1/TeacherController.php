@@ -145,36 +145,52 @@ class TeacherController extends ApiController
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'grade_id' => 'required|exists:grades,id',
-            'mapel' => 'required|in:IPA,MTK',
+            'mapel' => 'required|string',
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
             'alamat' => 'nullable|string|max:1000',
-            'riwayat_pendidikan' => 'nullable|string|max:2000',
+            'riwayat_pendidikan' => 'nullable',
+            'riwayat_mengajar' => 'nullable',
+            'lama_mengajar' => 'nullable|integer',
             'tanggal_bergabung' => 'nullable|date',
             'pelatihan_suprarasional' => 'nullable|boolean',
-            'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
+            'nomor_telepon' => 'nullable|string|max:50',
             'tunjangan_khusus' => 'nullable|numeric|min:0|max:9999999999',
             'bank' => 'nullable|string|max:50',
             'nomor_rekening' => 'nullable|string|max:50',
-            'keterangan_mengajar' => 'nullable|string|max:1000',
+            'keterangan_mengajar' => 'nullable|string|max:2000',
             'email' => 'required|email|unique:users,email,'.$teacher->user_id,
         ]);
+
+        $mapel = in_array(strtoupper(trim($validated['mapel'])), ['MTK', 'MATEMATIKA']) ? 'MTK' : 'IPA';
+
+        $rawPendidikan = $request->input('riwayat_pendidikan');
+        if (is_array($rawPendidikan)) {
+            $rawPendidikan = implode("\n", array_filter(array_map('trim', $rawPendidikan)));
+        }
+
+        $rawMengajar = $request->input('riwayat_mengajar') ?? $request->input('keterangan_mengajar');
+        if (is_array($rawMengajar)) {
+            $rawMengajar = implode("\n", array_filter(array_map('trim', $rawMengajar)));
+        }
 
         $teacher->update([
             'nama' => $validated['nama'],
             'grade_id' => $validated['grade_id'],
-            'mapel' => $validated['mapel'],
+            'mapel' => $mapel,
             'jenjang' => $validated['jenjang'] ?? null,
             'domisili' => $validated['domisili'] ?? null,
             'alamat' => $validated['alamat'] ?? null,
-            'riwayat_pendidikan' => $validated['riwayat_pendidikan'] ?? null,
+            'riwayat_pendidikan' => $rawPendidikan ?: null,
+            'riwayat_mengajar' => $rawMengajar ?: null,
+            'lama_mengajar' => $validated['lama_mengajar'] ?? $teacher->lama_mengajar,
             'tanggal_bergabung' => $validated['tanggal_bergabung'] ?? null,
             'pelatihan_suprarasional' => $validated['pelatihan_suprarasional'] ?? null,
             'nomor_telepon' => $validated['nomor_telepon'] ?? null,
             'tunjangan_khusus' => $validated['tunjangan_khusus'] ?? 0,
             'bank' => $validated['bank'] ?? null,
             'nomor_rekening' => $validated['nomor_rekening'] ?? null,
-            'keterangan_mengajar' => $validated['keterangan_mengajar'] ?? null,
+            'keterangan_mengajar' => $rawMengajar ?: ($validated['keterangan_mengajar'] ?? null),
         ]);
 
         if ($teacher->user) {

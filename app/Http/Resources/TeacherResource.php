@@ -20,6 +20,8 @@ class TeacherResource extends JsonResource
             'tanggal_bergabung' => $this->tanggal_bergabung?->toDateString(),
             'pelatihan_suprarasional' => $this->pelatihan_suprarasional,
             'keterangan_mengajar' => $this->keterangan_mengajar,
+            'riwayat_mengajar' => $this->riwayat_mengajar,
+            'lama_mengajar' => $this->lama_mengajar,
             'grade' => new GradeResource($this->whenLoaded('grade')),
             // Sensitive fields are only exposed to admin accounts.
             $this->mergeWhen($isAdmin, [
