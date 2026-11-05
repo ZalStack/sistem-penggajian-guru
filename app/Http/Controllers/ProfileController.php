@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -68,12 +69,30 @@ class ProfileController extends Controller
                 'foto.max' => 'Ukuran foto maksimal 5 MB.',
                 'nomor_telepon.regex' => 'Format nomor telepon hanya boleh berisi angka, spasi, +, -, (, dan ).',
             ]);
+
+            if (isset($guruData['riwayat_pendidikan']) && is_array($guruData['riwayat_pendidikan'])) {
+                $guruData['riwayat_pendidikan'] = implode("\n", array_values(array_filter(array_map('trim', $guruData['riwayat_pendidikan']))));
+            }
+            if (isset($guruData['riwayat_mengajar']) && is_array($guruData['riwayat_mengajar'])) {
+                $cleanMeng = array_values(array_filter(array_map('trim', $guruData['riwayat_mengajar'])));
+                $guruData['riwayat_mengajar'] = implode("\n", $cleanMeng);
+                if (empty($guruData['keterangan_mengajar'])) {
+                    $guruData['keterangan_mengajar'] = implode("\n", $cleanMeng);
+                }
+            }
         }
 
         $user->fill($request->validated());
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
+        }
+
+        if ($request->filled('password')) {
+            $request->validate([
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+            ]);
+            $user->password = Hash::make($request->input('password'));
         }
 
         $user->save();
@@ -172,12 +191,12 @@ class ProfileController extends Controller
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
             'alamat' => 'nullable|string|max:1000',
-            'riwayat_pendidikan' => 'nullable|string|max:2000',
+            'riwayat_pendidikan' => 'nullable',
             'pendidikan_terakhir' => 'nullable|string|max:100',
             'tanggal_bergabung' => 'nullable|date',
             'pelatihan_suprarasional' => 'nullable|boolean',
             'lama_mengajar' => 'nullable|integer|min:0|max:60',
-            'riwayat_mengajar' => 'nullable|string|max:2000',
+            'riwayat_mengajar' => 'nullable',
             'nomor_telepon' => 'nullable|string|max:20|regex:/^[0-9+\-\s\(\)]+$/',
             'bank' => 'nullable|string|max:50',
             'nomor_rekening' => 'nullable|string|max:50',
