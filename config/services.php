@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'adik' => [
+        'base_url' => env('ADIK_BASE_URL', 'https://kelas-khusus.kpmacademic.io'),
+        'api_key' => env('ADIK_API_KEY', 'kpm-satellite-secret-key-2026'),
+    ],
+
 ];

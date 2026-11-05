@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Grade;
 use App\Models\Program;
+use App\Services\AdikSyncService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -113,6 +114,9 @@ class ProfileController extends Controller
 
             $guru->update($guruData);
             $guru->programs()->sync(collect($request->input('program_ids', []))->filter()->map(fn ($id) => (int) $id)->all());
+
+            // Sinkronisasi otomatis ke SI ADIK-KK
+            AdikSyncService::pushTeacherToAdik($guru);
         }
 
         // Admin tidak memiliki data guru, jadi tidak perlu update tambahan

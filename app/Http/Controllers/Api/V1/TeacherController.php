@@ -7,6 +7,7 @@ use App\Http\Resources\TeacherResource;
 use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\User;
+use App\Services\AdikSyncService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -198,6 +199,11 @@ class TeacherController extends ApiController
                 'name' => $validated['nama'],
                 'email' => $validated['email'],
             ]);
+        }
+
+        // Sinkronisasi otomatis ke SI ADIK-KK jika request bukan berasal dari SI ADIK-KK
+        if (! $request->header('X-Source-Adik')) {
+            AdikSyncService::pushTeacherToAdik($teacher);
         }
 
         return $this->successResponse(

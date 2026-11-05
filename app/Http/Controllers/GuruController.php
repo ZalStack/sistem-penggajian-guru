@@ -10,6 +10,7 @@ use App\Models\Penggajian;
 use App\Models\Program;
 use App\Models\TeachingSession;
 use App\Models\User;
+use App\Services\AdikSyncService;
 use App\Support\Tanggal;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -82,6 +83,9 @@ class GuruController extends Controller
 
             $user->update(['guru_id' => $guru->id]);
         });
+
+        // Sinkronisasi otomatis ke SI ADIK-KK
+        AdikSyncService::pushTeacherToAdik($guru);
 
         $msg = $isGenerated
             ? 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$passwordToUse
@@ -161,6 +165,9 @@ class GuruController extends Controller
                 'email' => $validated['email'],
             ]);
         }
+
+        // Sinkronisasi otomatis ke SI ADIK-KK
+        AdikSyncService::pushTeacherToAdik($guru);
 
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil diperbarui.');
     }
