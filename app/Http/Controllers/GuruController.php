@@ -32,13 +32,13 @@ class GuruController extends Controller
 
         $query = Guru::with(['grade', 'user', 'programs'])
             ->when($validated['search'] ?? null, function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                $safe = addcslashes($s, '%_\\');
 
                 return $q->where(function ($w) use ($safe) {
-                    $w->where('nama', 'like', "%{$safe}%", '\\')
-                        ->orWhere('domisili', 'like', "%{$safe}%", '\\')
-                        ->orWhere('alamat', 'like', "%{$safe}%", '\\')
-                        ->orWhere('nomor_telepon', 'like', "%{$safe}%", '\\');
+                    $w->where('nama', 'like', "%{$safe}%")
+                        ->orWhere('domisili', 'like', "%{$safe}%")
+                        ->orWhere('alamat', 'like', "%{$safe}%")
+                        ->orWhere('nomor_telepon', 'like', "%{$safe}%");
                 });
             })
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->where('grade_id', $g))
@@ -201,9 +201,9 @@ class GuruController extends Controller
     {
         $gurus = Guru::with(['grade', 'user', 'programs'])
             ->when($request->search, function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                $safe = addcslashes($s, '%_\\');
 
-                return $q->where('nama', 'like', "%{$safe}%", '\\');
+                return $q->where('nama', 'like', "%{$safe}%");
             })
             ->when($request->filter_grade, fn ($q, $g) => $q->where('grade_id', $g))
             ->when($request->filter_mapel, fn ($q, $m) => $q->where('mapel', $m))

@@ -194,8 +194,10 @@ class AttendanceApiTest extends TestCase
 
         Sanctum::actingAs($this->user);
 
+        $date = substr((string) $firstSession->tanggal, 0, 10);
+
         // Set waktu ke 08:30 (dalam window check-in sesi pertama 07:30–09:00)
-        Carbon::setTestNow(Carbon::parse('2026-11-05 08:30:00'));
+        Carbon::setTestNow(Carbon::parse("{$date} 08:30:00"));
 
         // Check-in ke sesi pertama berhasil.
         $this->postJson('/api/v1/attendances/check-in', [
@@ -217,7 +219,7 @@ class AttendanceApiTest extends TestCase
         $this->assertDatabaseCount('attendances', 1);
 
         // Pindahkan waktu ke 09:30 (setelah jam_selesai sesi pertama 09:00).
-        Carbon::setTestNow(Carbon::parse('2026-11-05 09:30:00'));
+        Carbon::setTestNow(Carbon::parse("{$date} 09:30:00"));
 
         // Check-out dari sesi pertama (jam_selesai 09:00 < now 09:30) baru mengizinkan check-in ke sesi kedua.
         $this->postJson('/api/v1/attendances/check-out', [

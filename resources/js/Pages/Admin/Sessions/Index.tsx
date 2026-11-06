@@ -9,7 +9,7 @@ import Select from '@/Components/ui/select';
 import Pagination from '@/Components/ui/pagination';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Location, TeachingSession, Guru, Transport, Program, PaginatedData } from '@/types';
 
 interface SessionIndexProps {
@@ -27,14 +27,16 @@ interface SessionIndexProps {
     };
 }
 
-const statusVariant: Record<string, 'info' | 'success' | 'danger'> = {
+const statusVariant: Record<string, 'info' | 'success' | 'danger' | 'warning' | 'default'> = {
     dijadwalkan: 'info',
+    berlangsung: 'warning',
     selesai: 'success',
     dibatalkan: 'danger',
 };
 
 const statusLabel: Record<string, string> = {
     dijadwalkan: 'Dijadwalkan',
+    berlangsung: 'Berlangsung',
     selesai: 'Selesai',
     dibatalkan: 'Dibatalkan',
 };
@@ -145,6 +147,28 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
     };
 
     const formatTime = (timeStr: string) => timeStr.substring(0, 5);
+
+    const groupedSessions = useMemo(() => {
+        const map = new Map<string, { date: string; dateLabel: string; dayName: string; isToday: boolean; items: TeachingSession[] }>();
+        const todayStr = new Date().toISOString().substring(0, 10);
+        sessions.data.forEach((s) => {
+            const rawDate = s.tanggal ? s.tanggal.substring(0, 10) : '';
+            if (!map.has(rawDate)) {
+                const d = new Date(rawDate + 'T00:00:00');
+                const dayName = isNaN(d.getTime()) ? '' : d.toLocaleDateString('id-ID', { weekday: 'long' });
+                const dateLabel = isNaN(d.getTime()) ? rawDate : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                map.set(rawDate, {
+                    date: rawDate,
+                    dateLabel,
+                    dayName,
+                    isToday: rawDate === todayStr,
+                    items: [],
+                });
+            }
+            map.get(rawDate)!.items.push(s);
+        });
+        return Array.from(map.values());
+    }, [sessions.data]);
 
     return (
         <AuthenticatedLayout>
@@ -335,11 +359,12 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                             placeholder="Semua Program"
                         />
                         <Select
-                            label="Status"
+                            label="Status Presensi"
                             value={filters.filter_status || ''}
                             onChange={(e) => applyFilters({ filter_status: e.target.value || undefined })}
                             options={[
                                 { value: 'dijadwalkan', label: 'Dijadwalkan' },
+                                { value: 'berlangsung', label: 'Berlangsung' },
                                 { value: 'selesai', label: 'Selesai' },
                                 { value: 'dibatalkan', label: 'Dibatalkan' },
                             ]}
@@ -360,7 +385,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
 
                     {sessions.data.length > 0 ? (
                         <>
-                            {/* Desktop & Tablet Table */}
+                            {/* Desktop & Tablet Table - Dikelompokkan per tanggal */}
                             <div className="hidden md:block">
                                 <Table>
                                     <TableHeader>
@@ -368,7 +393,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                             <TableHead className="w-16">No</TableHead>
                                             <TableHead>Guru</TableHead>
                                             <TableHead>Program</TableHead>
-                                            <TableHead>Status</TableHead>
+                                            <TableHead>Status Presensi</TableHead>
                                             <TableHead>Tanggal</TableHead>
                                             <TableHead>Jam</TableHead>
                                             <TableHead>Sesi</TableHead>
@@ -377,140 +402,188 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {sessions.data.map((session, index) => (
-                                            <TableRow key={session.id}>
-                                                <TableCell className="font-medium text-slate-400 text-sm">
-                                                    {(sessions.current_page - 1) * sessions.per_page + index + 1}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                                            {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <span className="font-semibold text-slate-900 text-sm block truncate">
-                                                                {session.guru?.nama ?? '-'}
+                                        {groupedSessions.map((group) => (
+                                            <React.Fragment key={group.date}>
+                                                <TableRow className="bg-slate-50/90 hover:bg-slate-100/80 border-t-2 border-slate-200">
+                                                    <TableCell colSpan={9} className="py-2.5 px-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2.5">
+                                                                <span className={`w-2.5 h-2.5 rounded-full ${group.isToday ? 'bg-indigo-600 animate-pulse' : 'bg-slate-400'}`} />
+                                                                <span className="text-slate-900 text-sm font-extrabold tracking-tight">
+                                                                    {group.dayName}, {group.dateLabel}
+                                                                </span>
+                                                                {group.isToday && (
+                                                                    <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">
+                                                                        Hari Ini
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs font-semibold text-slate-500">
+                                                                {group.items.length} sesi mengajar
                                                             </span>
-                                                            <span className="text-[11px] text-slate-400">
-                                                                Grade {session.guru?.grade?.kode_grade ?? '-'} · {session.mapel}
-                                                            </span>
                                                         </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="text-slate-600 text-sm">{session.program?.nama ?? '-'}</span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant={statusVariant[session.status] ?? 'default'} size="sm">
-                                                        {statusLabel[session.status] ?? session.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Icon icon="tabler:calendar-event" className="text-[14px] text-slate-400 flex-shrink-0" />
-                                                        <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Icon icon="tabler:clock" className="text-[14px] text-slate-400 flex-shrink-0" />
-                                                        <span className="text-slate-600 text-sm">
-                                                            {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
-                                                        </span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="default">{session.jumlah_sesi}</Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
-                                                        <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleEdit(session)}
-                                                            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                                            title="Edit Sesi"
-                                                        >
-                                                            <Icon icon="tabler:edit" className="text-[18px]" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openDeleteModal(session)}
-                                                            className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                                            title="Hapus Sesi"
-                                                        >
-                                                            <Icon icon="tabler:trash" className="text-[18px]" />
-                                                        </button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
+                                                    </TableCell>
+                                                </TableRow>
+                                                {group.items.map((session) => {
+                                                    const displayStatus = session.effective_status ?? session.status;
+                                                    const rowNumber = (sessions.current_page - 1) * sessions.per_page + sessions.data.indexOf(session) + 1;
+                                                    return (
+                                                        <TableRow key={session.id} className="hover:bg-slate-50/60 transition-colors">
+                                                            <TableCell className="font-medium text-slate-400 text-sm">
+                                                                {rowNumber}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-9 h-9 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                                        {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <span className="font-semibold text-slate-900 text-sm block truncate">
+                                                                            {session.guru?.nama ?? '-'}
+                                                                        </span>
+                                                                        <span className="text-[11px] text-slate-400">
+                                                                            Grade {session.guru?.grade?.kode_grade ?? '-'} · {session.mapel}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <span className="text-slate-600 text-sm font-medium">{session.program?.nama ?? '-'}</span>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={statusVariant[displayStatus] ?? 'default'} size="sm">
+                                                                    {statusLabel[displayStatus] ?? displayStatus}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Icon icon="tabler:calendar-event" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Icon icon="tabler:clock" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <span className="text-slate-600 text-sm font-medium">
+                                                                        {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
+                                                                    </span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                <div className="flex items-center justify-end gap-1">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleEdit(session)}
+                                                                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                                        title="Edit Sesi"
+                                                                    >
+                                                                        <Icon icon="tabler:edit" className="text-[18px]" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => openDeleteModal(session)}
+                                                                        className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                                                        title="Hapus Sesi"
+                                                                    >
+                                                                        <Icon icon="tabler:trash" className="text-[18px]" />
+                                                                    </button>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </React.Fragment>
                                         ))}
                                     </TableBody>
                                 </Table>
                             </div>
 
-                            {/* Mobile Cards View */}
-                            <div className="md:hidden space-y-3">
-                                {sessions.data.map((session) => (
-                                    <div
-                                        key={session.id}
-                                        className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
-                                    >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                                    {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
+                            {/* Mobile Cards View - Dikelompokkan per tanggal */}
+                            <div className="md:hidden space-y-6">
+                                {groupedSessions.map((group) => (
+                                    <div key={group.date} className="space-y-3">
+                                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-100 rounded-xl border border-slate-200/80">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`w-2 h-2 rounded-full ${group.isToday ? 'bg-indigo-600 animate-pulse' : 'bg-slate-400'}`} />
+                                                <span className="font-extrabold text-xs text-slate-900">{group.dayName}, {group.dateLabel}</span>
+                                                {group.isToday && (
+                                                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-indigo-100 text-indigo-700 rounded-full">
+                                                        Hari Ini
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="text-[11px] font-semibold text-slate-500">{group.items.length} sesi</span>
+                                        </div>
+
+                                        {group.items.map((session) => {
+                                            const displayStatus = session.effective_status ?? session.status;
+                                            return (
+                                                <div
+                                                    key={session.id}
+                                                    className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                                                {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900 text-sm">{session.guru?.nama ?? '-'}</p>
+                                                                <p className="text-xs text-slate-500">{session.location?.nama_lokasi ?? '-'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <Badge variant={statusVariant[displayStatus] ?? 'default'} size="sm">
+                                                            {statusLabel[displayStatus] ?? displayStatus}
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                                        <div>
+                                                            <span className="text-slate-500">Tanggal</span>
+                                                            <p className="font-medium text-slate-700">{formatDate(session.tanggal)}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-500">Jam</span>
+                                                            <p className="font-medium text-slate-700">
+                                                                {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <Badge variant="info">{session.program?.nama ?? session.mapel}</Badge>
+                                                        <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
+                                                        <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEdit(session)}
+                                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1.5"
+                                                        >
+                                                            <Icon icon="tabler:edit" className="text-[14px]" /> Edit
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openDeleteModal(session)}
+                                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1.5"
+                                                        >
+                                                            <Icon icon="tabler:trash" className="text-[14px]" /> Hapus
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-slate-900 text-sm">{session.guru?.nama ?? '-'}</p>
-                                                    <p className="text-xs text-slate-500">{session.location?.nama_lokasi ?? '-'}</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant={statusVariant[session.status] ?? 'default'} size="sm">
-                                                {statusLabel[session.status] ?? session.status}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-3 text-xs">
-                                            <div>
-                                                <span className="text-slate-500">Tanggal</span>
-                                                <p className="font-medium text-slate-700">{formatDate(session.tanggal)}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-slate-500">Jam</span>
-                                                <p className="font-medium text-slate-700">
-                                                    {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <Badge variant="info">{session.program?.nama ?? session.mapel}</Badge>
-                                            <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
-                                            <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
-                                        </div>
-
-                                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleEdit(session)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1.5"
-                                            >
-                                                <Icon icon="tabler:edit" className="text-[14px]" /> Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => openDeleteModal(session)}
-                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1.5"
-                                            >
-                                                <Icon icon="tabler:trash" className="text-[14px]" /> Hapus
-                                            </button>
-                                        </div>
+                                            );
+                                        })}
                                     </div>
                                 ))}
                             </div>

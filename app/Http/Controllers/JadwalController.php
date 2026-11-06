@@ -36,7 +36,7 @@ class JadwalController extends Controller
 
         $guru = $user->guru;
 
-        $query = TeachingSession::with(['guru.grade', 'location', 'transport', 'program'])
+        $query = TeachingSession::with(['guru.grade', 'location', 'transport', 'program', 'attendances'])
             ->whereBetween('tanggal', [$mulai->toDateString(), $selesai->toDateString()]);
 
         if (! $isAdmin) {

@@ -38,7 +38,7 @@ interface TodaySession {
     jam_selesai: string;
     jumlah_sesi: number;
     mapel: 'IPA' | 'MTK';
-    status: 'dijadwalkan' | 'selesai' | 'dibatalkan';
+    status: 'dijadwalkan' | 'selesai' | 'dibatalkan' | 'berlangsung';
     program: string | null;
     lokasi: string | null;
     guru: { nama: string; kode_grade: string };
@@ -52,7 +52,7 @@ interface RecentSession {
     jam_selesai: string;
     jumlah_sesi: number;
     mapel: 'IPA' | 'MTK';
-    status: 'dijadwalkan' | 'selesai' | 'dibatalkan';
+    status: 'dijadwalkan' | 'selesai' | 'dibatalkan' | 'berlangsung';
     lokasi: string;
     program: string | null;
     guru: { nama: string; kode_grade: string };
@@ -582,8 +582,9 @@ const presensiBadge: Record<string, { variant: 'success' | 'warning' | 'danger' 
     belum_checkin: { variant: 'default', label: 'Belum Check-in' },
 };
 
-const statusSesiBadge: Record<string, { variant: 'info' | 'success' | 'danger'; label: string }> = {
+const statusSesiBadge: Record<string, { variant: 'info' | 'success' | 'danger' | 'warning'; label: string }> = {
     dijadwalkan: { variant: 'info', label: 'Dijadwalkan' },
+    berlangsung: { variant: 'warning', label: 'Berlangsung' },
     selesai: { variant: 'success', label: 'Selesai' },
     dibatalkan: { variant: 'danger', label: 'Dibatalkan' },
 };

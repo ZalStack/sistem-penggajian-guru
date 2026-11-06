@@ -24,15 +24,15 @@ class TeachingMaterialController extends ApiController
     public function index(Request $request): JsonResponse
     {
         $query = BahanAjar::with('uploader')
-            ->when($request->filled('search'), function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+            ->when($request->input('search'), function ($q, $s) {
+                $safe = addcslashes($s, '%_\\');
 
                 $q->where(function ($w) use ($safe) {
-                    $w->where('judul', 'like', "%{$safe}%", '\\')
-                        ->orWhere('deskripsi', 'like', "%{$safe}%", '\\');
+                    $w->where('judul', 'like', "%{$safe}%")
+                        ->orWhere('deskripsi', 'like', "%{$safe}%");
                 });
             })
-            ->when($request->filled('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
+            ->when($request->input('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
 
         $materials = $query->latest()
             ->paginate($request->integer('per_page', 12))

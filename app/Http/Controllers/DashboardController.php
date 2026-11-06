@@ -61,7 +61,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'todaySessions' => $this->todaySessions($today),
-            'recentSessions' => TeachingSession::with(['guru.grade', 'guru.programs', 'location', 'program'])
+            'recentSessions' => TeachingSession::with(['guru.grade', 'guru.programs', 'location', 'program', 'attendances'])
                 ->aktif()
                 ->orderByDesc('tanggal')
                 ->orderByDesc('jam_mulai')

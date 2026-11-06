@@ -314,6 +314,72 @@ class SiguruFeatureTest extends TestCase
             ->assertSessionHasErrors(['jam_mulai']);
     }
 
+    public function test_session_effective_status_derivation(): void
+    {
+        // 1. Sesi lampau tanpa presensi tetap "dijadwalkan"
+        $pastSession = $this->createSession(today()->subDays(5)->toDateString());
+        $pastSession->load('attendances');
+        $this->assertSame(TeachingSession::STATUS_DIJADWALKAN, $pastSession->effective_status);
+
+        // 2. Sesi dengan checkin saja -> "berlangsung"
+        $activeSession = $this->createSession(today()->toDateString());
+        Attendance::create([
+            'guru_id' => $this->guru->id,
+            'session_id' => $activeSession->id,
+            'tanggal' => today()->toDateString(),
+            'checkin_time' => now()->subMinutes(30),
+            'status' => 'belum_checkout',
+            'durasi' => 0,
+        ]);
+        $activeSession->load('attendances');
+        $this->assertSame(TeachingSession::STATUS_BERLANGSUNG, $activeSession->effective_status);
+
+        // 3. Sesi dengan checkout -> "selesai"
+        $completedSession = $this->createSession(today()->subDay()->toDateString());
+        Attendance::create([
+            'guru_id' => $this->guru->id,
+            'session_id' => $completedSession->id,
+            'tanggal' => today()->subDay()->toDateString(),
+            'checkin_time' => now()->subDay()->setTime(8, 0),
+            'checkout_time' => now()->subDay()->setTime(10, 0),
+            'status' => 'valid',
+            'durasi' => 120,
+        ]);
+        $completedSession->load('attendances');
+        $this->assertSame(TeachingSession::STATUS_SELESAI, $completedSession->effective_status);
+
+        // 4. Sesi dengan status manual "dibatalkan" -> tetap "dibatalkan"
+        $canceledSession = $this->createSession(today()->toDateString());
+        $canceledSession->update(['status' => TeachingSession::STATUS_DIBATALKAN]);
+        $canceledSession->load('attendances');
+        $this->assertSame(TeachingSession::STATUS_DIBATALKAN, $canceledSession->effective_status);
+    }
+
+    public function test_session_index_filter_status_berlangsung(): void
+    {
+        $session1 = $this->createSession(today()->toDateString());
+        $session2 = $this->createSession(today()->subDay()->toDateString());
+
+        Attendance::create([
+            'guru_id' => $this->guru->id,
+            'session_id' => $session1->id,
+            'tanggal' => today()->toDateString(),
+            'checkin_time' => now()->subMinutes(20),
+            'status' => 'belum_checkout',
+            'durasi' => 0,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get('/session?filter_status=berlangsung')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Sessions/Index')
+                ->has('sessions.data', 1)
+                ->where('sessions.data.0.id', $session1->id)
+                ->where('sessions.data.0.effective_status', TeachingSession::STATUS_BERLANGSUNG)
+            );
+    }
+
     public function test_penggajian_is_calculated_from_valid_attendance(): void
     {
         $session = $this->createSession(today()->subMonth()->toDateString());
@@ -519,6 +585,23 @@ class SiguruFeatureTest extends TestCase
         $this->assertTrue(str_contains($response->headers->get('content-type', ''), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'));
     }
 
+    public function test_laporan_index_with_various_filters_succeeds(): void
+    {
+        $this->actingAs($this->user)
+            ->get('/laporan')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Laporan/Index'));
+
+        $this->actingAs($this->user)
+            ->get('/laporan?periode=2026-09&filter_grade='.$this->grade->id.'&filter_mapel=IPA&filter_program='.$this->program->id.'&search=Budi')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Laporan/Index'));
+
+        $this->actingAs($this->user)
+            ->get('/laporan?search='.urlencode('%_test'))
+            ->assertOk();
+    }
+
     public function test_location_crud(): void
     {
         $response = $this->actingAs($this->user)->post('/location', [
@@ -694,6 +777,33 @@ class SiguruFeatureTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('attendances.data', 1)
                 ->where('attendances.data.0.status', 'belum_checkin')
+            );
+    }
+
+    public function test_rekap_presensi_admin_memuat_relasi_guru_dan_sesi_pada_baris_presensi_asli(): void
+    {
+        $session = $this->createSession(today()->toDateString());
+
+        Attendance::create([
+            'guru_id' => $this->guru->id,
+            'session_id' => $session->id,
+            'tanggal' => today()->toDateString(),
+            'checkin_time' => now()->subHour(),
+            'checkin_lat' => -6.2088,
+            'checkin_lng' => 106.8456,
+            'checkin_accuracy' => 10,
+            'status' => 'belum_checkout',
+            'durasi' => 0,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get('/attendance')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Attendance/Index')
+                ->has('attendances.data', 1)
+                ->where('attendances.data.0.guru.nama', $this->guru->nama)
+                ->where('attendances.data.0.session.location.nama_lokasi', $session->location->nama_lokasi)
             );
     }
 

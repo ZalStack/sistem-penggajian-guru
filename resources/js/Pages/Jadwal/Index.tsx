@@ -1,9 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
 import { Card } from '@/Components/ui/card';
-import Badge from '@/Components/ui/badge';
 import Button from '@/Components/ui/button';
 import Select from '@/Components/ui/select';
 import EmptyState from '@/Components/ui/empty-state';
@@ -45,27 +44,13 @@ interface JadwalIndexProps {
     filters: {
         filter_guru?: string;
         filter_program?: string;
-        filter_status?: string;
     };
     role: 'admin' | 'guru';
 }
 
-const statusVariant: Record<SessionStatus, 'info' | 'success' | 'danger'> = {
-    dijadwalkan: 'info',
-    selesai: 'success',
-    dibatalkan: 'danger',
-};
-
-const statusLabel: Record<SessionStatus, string> = {
-    dijadwalkan: 'Dijadwalkan',
-    selesai: 'Selesai',
-    dibatalkan: 'Dibatalkan',
-};
-
 export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus, programs, filters, role }: JadwalIndexProps) {
     const [filterGuru, setFilterGuru] = useState(filters.filter_guru ?? '');
     const [filterProgram, setFilterProgram] = useState(filters.filter_program ?? '');
-    const [filterStatus, setFilterStatus] = useState(filters.filter_status ?? '');
 
     const navigateWeek = (direction: -1 | 0 | 1) => {
         const current = new Date(minggu.mulai + 'T00:00:00');
@@ -76,18 +61,17 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
 
         router.get(
             route('jadwal.index'),
-            { minggu: target, filter_guru: filterGuru, filter_program: filterProgram, filter_status: filterStatus },
+            { minggu: target, filter_guru: filterGuru, filter_program: filterProgram },
             { preserveState: true, preserveScroll: true }
         );
     };
 
-    const applyFilters = (next: { guru?: string; program?: string; status?: string }) => {
+    const applyFilters = (next: { guru?: string; program?: string }) => {
         const g = next.guru ?? filterGuru;
         const p = next.program ?? filterProgram;
-        const s = next.status ?? filterStatus;
         router.get(
             route('jadwal.index'),
-            { minggu: minggu.mulai, filter_guru: g, filter_program: p, filter_status: s },
+            { minggu: minggu.mulai, filter_guru: g, filter_program: p },
             { preserveState: true, preserveScroll: true, replace: true }
         );
     };
@@ -103,8 +87,8 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                             <h1 className="page-title">Jadwal Mengajar</h1>
                             <p className="page-subtitle mt-1">
                                 {role === 'admin'
-                                    ? 'Jadwal mengajar seluruh guru minggu ini.'
-                                    : 'Jadwal mengajar Anda minggu ini.'}
+                                    ? 'Kalender jadwal mengajar seluruh guru minggu ini.'
+                                    : 'Kalender jadwal mengajar Anda minggu ini.'}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -121,6 +105,30 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                             </Button>
                         </div>
                     </div>
+
+                    {/* Pintasan / Catatan ke Menu Sesi Mengajar */}
+                    {role === 'admin' && (
+                        <div className="mb-6 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                    <Icon icon="tabler:calendar-time" className="text-[20px]" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-900">Kalender Penjadwalan Murni</p>
+                                    <p className="text-xs text-slate-500">
+                                        Untuk mengelola status presensi aktual (Dijadwalkan / Berlangsung / Selesai) atau ubah data sesi →
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('session.index')}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 rounded-xl transition-all shadow-sm shrink-0 self-start sm:self-auto"
+                            >
+                                <Icon icon="tabler:list-check" className="text-[16px]" />
+                                Buka Menu Sesi Mengajar →
+                            </Link>
+                        </div>
+                    )}
 
                     {/* Ringkasan minggu */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
@@ -145,7 +153,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                     {/* Filter (admin) */}
                     {role === 'admin' && (
                         <Card className="p-4 sm:p-5 mb-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Select
                                     id="filter-guru"
                                     label="Guru"
@@ -167,21 +175,6 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                     }}
                                     placeholder="Semua program"
                                     options={programs.map((p) => ({ value: p.id, label: p.nama }))}
-                                />
-                                <Select
-                                    id="filter-status"
-                                    label="Status"
-                                    value={filterStatus}
-                                    onChange={(e) => {
-                                        setFilterStatus(e.target.value);
-                                        applyFilters({ status: e.target.value });
-                                    }}
-                                    placeholder="Semua status"
-                                    options={[
-                                        { value: 'dijadwalkan', label: 'Dijadwalkan' },
-                                        { value: 'selesai', label: 'Selesai' },
-                                        { value: 'dibatalkan', label: 'Dibatalkan' },
-                                    ]}
                                 />
                             </div>
                         </Card>
@@ -228,15 +221,15 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                                 }`}
                                             >
                                                 <div className="flex items-center justify-between gap-1">
-                                                    <span className="text-[11px] font-[700] text-slate-700">
+                                                    <span className="text-[11px] font-[700] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/80">
                                                         {s.jam_mulai}–{s.jam_selesai}
                                                     </span>
-                                                    <Badge variant={statusVariant[s.status]} size="sm">
-                                                        {statusLabel[s.status]}
-                                                    </Badge>
+                                                    <span className="text-[10.5px] font-[600] text-slate-500">
+                                                        {s.jumlah_sesi} sesi
+                                                    </span>
                                                 </div>
                                                 <p className="text-[12px] font-[700] text-slate-900 leading-snug">
-                                                    {s.program ?? s.mapel} · {s.jumlah_sesi} sesi
+                                                    {s.program ?? s.mapel}
                                                 </p>
                                                 <p className="text-[11px] text-slate-500 leading-snug">{s.lokasi}</p>
                                                 {role === 'admin' && (
@@ -280,17 +273,17 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                         <p className="text-[12.5px] text-slate-400 font-[500] text-center py-6">Tidak ada sesi</p>
                                     ) : (
                                         day.sessions.map((s) => (
-                                            <div key={s.id} className={`p-4 space-y-1.5 ${s.status === 'dibatalkan' ? 'opacity-60' : ''}`}>
+                                            <div key={s.id} className="p-4 space-y-1.5">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[12.5px] font-[700] text-slate-700">
+                                                    <span className="text-[12px] font-[700] text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100/80">
                                                         {s.jam_mulai}–{s.jam_selesai}
                                                     </span>
-                                                    <Badge variant={statusVariant[s.status]} size="sm">
-                                                        {statusLabel[s.status]}
-                                                    </Badge>
+                                                    <span className="text-[11.5px] font-[600] text-slate-500">
+                                                        {s.jumlah_sesi} sesi
+                                                    </span>
                                                 </div>
                                                 <p className="text-[13.5px] font-[700] text-slate-900">
-                                                    {s.program ?? s.mapel} · {s.jumlah_sesi} sesi
+                                                    {s.program ?? s.mapel}
                                                 </p>
                                                 <p className="text-[12.5px] text-slate-500">{s.lokasi}</p>
                                                 {role === 'admin' && (
@@ -313,7 +306,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                 icon="tabler:calendar-x"
                                 title="Tidak ada jadwal minggu ini"
                                 description={
-                                    filters.filter_guru || filters.filter_program || filters.filter_status
+                                    filters.filter_guru || filters.filter_program
                                         ? 'Tidak ada sesi yang cocok dengan filter yang dipilih.'
                                         : 'Belum ada sesi mengajar yang dijadwalkan pada minggu ini.'
                                 }

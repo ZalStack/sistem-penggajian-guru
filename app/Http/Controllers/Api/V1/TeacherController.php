@@ -30,13 +30,13 @@ class TeacherController extends ApiController
 
         $query = Guru::with(['grade', 'user'])
             ->when($validated['search'] ?? null, function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                $safe = addcslashes($s, '%_\\');
 
                 return $q->where(function ($w) use ($safe) {
-                    $w->where('nama', 'like', "%{$safe}%", '\\')
-                        ->orWhere('domisili', 'like', "%{$safe}%", '\\')
-                        ->orWhere('alamat', 'like', "%{$safe}%", '\\')
-                        ->orWhere('nomor_telepon', 'like', "%{$safe}%", '\\');
+                    $w->where('nama', 'like', "%{$safe}%")
+                        ->orWhere('domisili', 'like', "%{$safe}%")
+                        ->orWhere('alamat', 'like', "%{$safe}%")
+                        ->orWhere('nomor_telepon', 'like', "%{$safe}%");
                 });
             })
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->where('grade_id', $g))
@@ -259,9 +259,9 @@ class TeacherController extends ApiController
 
         $gurus = Guru::with(['grade', 'user'])
             ->when($validated['search'] ?? null, function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                $safe = addcslashes($s, '%_\\');
 
-                return $q->where('nama', 'like', "%{$safe}%", '\\');
+                return $q->where('nama', 'like', "%{$safe}%");
             })
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->where('grade_id', $g))
             ->orderBy('nama')

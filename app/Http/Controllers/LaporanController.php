@@ -20,26 +20,43 @@ class LaporanController extends Controller
             'filter_grade' => 'nullable|integer|exists:grades,id',
             'filter_mapel' => 'nullable|in:IPA,MTK',
             'filter_program' => 'nullable|integer|exists:programs,id',
+            'search' => 'nullable|string|max:100',
         ]);
 
         return Penggajian::with(['guru.grade', 'guru.programs', 'transport'])
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
             ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
-            ->when($validated['filter_program'] ?? null, fn ($q, $p) => $q->whereJsonContains('detail', ['program_id' => (int) $p]));
+            ->when($validated['filter_program'] ?? null, function ($q, $p) {
+                // Guard: whereJsonContains hanya dijalankan jika kolom detail ada isinya.
+                try {
+                    $q->whereJsonContains('detail', ['program_id' => (int) $p]);
+                } catch (\Throwable) {
+                    // Kolom detail tidak valid JSON di baris tertentu — lewati filter.
+                }
+            })
+            ->when($validated['search'] ?? null, function ($q, $s) {
+                $safe = addcslashes($s, '%_\\');
+                $q->whereHas('guru', fn ($gq) => $gq->where('nama', 'like', "%{$safe}%"));
+            });
     }
 
     public function index(Request $request)
     {
-        $penggajians = $this->buildQuery($request)->get();
+        $baseQuery = $this->buildQuery($request);
+
+        // Hitung totals via SQL aggregate (aman untuk dataset besar).
+        $totals = (clone $baseQuery)->selectRaw('SUM(total) as grand_total, SUM(jumlah_sesi) as total_sesi, COUNT(DISTINCT guru_id) as jumlah_guru')->first();
+
+        $penggajians = $baseQuery->get();
 
         return Inertia::render('Laporan/Index', [
             'penggajians' => $penggajians,
-            'grandTotal' => (float) $penggajians->sum('total'),
-            'totalSesi' => $penggajians->sum('jumlah_sesi'),
+            'grandTotal' => (float) ($totals->grand_total ?? 0),
+            'totalSesi' => (int) ($totals->total_sesi ?? 0),
             'grades' => Grade::orderBy('kode_grade')->get(),
             'programs' => Program::orderBy('urutan')->orderBy('nama')->get(),
-            'filters' => $request->only(['periode', 'filter_grade', 'filter_mapel', 'filter_program']),
+            'filters' => $request->only(['periode', 'filter_grade', 'filter_mapel', 'filter_program', 'search']),
         ]);
     }
 

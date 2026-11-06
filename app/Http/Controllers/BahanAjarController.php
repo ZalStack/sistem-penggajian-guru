@@ -22,14 +22,14 @@ class BahanAjarController extends Controller
     public function index(Request $request)
     {
         $query = BahanAjar::with('uploader')
-            ->when($request->filled('search'), function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+            ->when($request->input('search'), function ($q, $s) {
+                $safe = addcslashes($s, '%_\\');
                 $q->where(function ($w) use ($safe) {
-                    $w->where('judul', 'like', "%{$safe}%", '\\')
-                        ->orWhere('deskripsi', 'like', "%{$safe}%", '\\');
+                    $w->where('judul', 'like', "%{$safe}%")
+                        ->orWhere('deskripsi', 'like', "%{$safe}%");
                 });
             })
-            ->when($request->filled('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
+            ->when($request->input('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
 
         return Inertia::render('BahanAjar/Index', [
             'bahanAjar' => $query->latest()->paginate(10)->withQueryString(),
@@ -149,14 +149,14 @@ class BahanAjarController extends Controller
     public function guruIndex(Request $request)
     {
         $query = BahanAjar::query()
-            ->when($request->filled('search'), function ($q, $s) {
-                $safe = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+            ->when($request->input('search'), function ($q, $s) {
+                $safe = addcslashes($s, '%_\\');
                 $q->where(function ($w) use ($safe) {
-                    $w->where('judul', 'like', "%{$safe}%", '\\')
-                        ->orWhere('deskripsi', 'like', "%{$safe}%", '\\');
+                    $w->where('judul', 'like', "%{$safe}%")
+                        ->orWhere('deskripsi', 'like', "%{$safe}%");
                 });
             })
-            ->when($request->filled('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
+            ->when($request->input('filter_mapel'), fn ($q, $m) => $q->where('mapel', $m));
 
         return Inertia::render('BahanAjar/GuruIndex', [
             'bahanAjar' => $query->latest()->paginate(12)->withQueryString(),

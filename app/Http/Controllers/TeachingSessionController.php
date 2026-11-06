@@ -20,15 +20,27 @@ class TeachingSessionController extends Controller
             'periode' => 'nullable|date_format:Y-m',
             'filter_guru' => 'nullable|integer|exists:gurus,id',
             'filter_program' => 'nullable|integer|exists:programs,id',
-            'filter_status' => 'nullable|in:dijadwalkan,selesai,dibatalkan',
+            'filter_status' => 'nullable|in:dijadwalkan,selesai,dibatalkan,berlangsung',
             'search' => 'nullable|string|max:100',
         ]);
 
-        $query = TeachingSession::with(['guru.grade', 'guru.programs', 'location', 'transport', 'program'])
+        $filterStatus = $validated['filter_status'] ?? null;
+
+        $query = TeachingSession::with(['guru.grade', 'guru.programs', 'location', 'transport', 'program', 'attendances'])
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->whereMonth('tanggal', substr($p, 5, 2))->whereYear('tanggal', substr($p, 0, 4)))
             ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
             ->when($validated['filter_program'] ?? null, fn ($q, $p) => $q->where('program_id', $p))
-            ->when($validated['filter_status'] ?? null, fn ($q, $s) => $q->where('status', $s))
+            ->when($filterStatus === 'berlangsung', function ($q) {
+                // "Berlangsung": ada checkin tapi belum ada checkout pada sesi ini.
+                $q->whereExists(function ($sub) {
+                    $sub->selectRaw('1')
+                        ->from('attendances')
+                        ->whereColumn('attendances.session_id', 'teaching_sessions.id')
+                        ->whereNotNull('attendances.checkin_time')
+                        ->whereNull('attendances.checkout_time');
+                });
+            })
+            ->when($filterStatus && $filterStatus !== 'berlangsung', fn ($q, $s) => $q->where('status', $s))
             ->when($validated['search'] ?? null, function ($q, $search) {
                 $escaped = addcslashes($search, '%_\\');
 

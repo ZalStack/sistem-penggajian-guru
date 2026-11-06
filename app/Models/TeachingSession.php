@@ -17,6 +17,8 @@ class TeachingSession extends Model
 
     public const STATUS_DIBATALKAN = 'dibatalkan';
 
+    public const STATUS_BERLANGSUNG = 'berlangsung';
+
     public const STATUSES = [
         self::STATUS_DIJADWALKAN,
         self::STATUS_SELESAI,
@@ -26,6 +28,10 @@ class TeachingSession extends Model
     protected $fillable = [
         'guru_id', 'location_id', 'transport_id', 'program_id', 'mapel',
         'tanggal', 'jam_mulai', 'jam_selesai', 'jumlah_sesi', 'status', 'catatan',
+    ];
+
+    protected $appends = [
+        'effective_status',
     ];
 
     protected function casts(): array
@@ -39,16 +45,39 @@ class TeachingSession extends Model
     }
 
     /**
-     * Status efektif untuk tampilan: sesi terjadwal yang waktunya sudah lewat
-     * dianggap selesai meskipun belum diperbarui manual.
+     * Status efektif untuk tampilan — derived dari data presensi aktual sesi ini:
+     * - dibatalkan (manual)   → Dibatalkan
+     * - ada checkout_time      → Selesai
+     * - ada checkin_time saja  → Berlangsung
+     * - tidak ada keduanya    → Dijadwalkan
+     *
+     * Berlaku per sesi untuk SEMUA baris (bukan hanya sesi aktif).
      */
     public function getEffectiveStatusAttribute(): string
     {
-        if ($this->status !== self::STATUS_DIJADWALKAN) {
-            return $this->status;
+        // Status manual "dibatalkan" selalu dihormati.
+        if ($this->status === self::STATUS_DIBATALKAN) {
+            return self::STATUS_DIBATALKAN;
         }
 
-        return $this->tanggal?->isBefore(today()) ? self::STATUS_SELESAI : self::STATUS_DIJADWALKAN;
+        // Periksa koleksi attendances (eager-loaded agar tidak N+1).
+        if ($this->relationLoaded('attendances')) {
+            $attendances = $this->attendances;
+
+            // Ada guru yang sudah checkout → selesai.
+            if ($attendances->contains(fn ($a) => $a->checkout_time !== null)) {
+                return self::STATUS_SELESAI;
+            }
+
+            // Ada guru yang sudah checkin tapi belum checkout → berlangsung.
+            if ($attendances->contains(fn ($a) => $a->checkin_time !== null)) {
+                return self::STATUS_BERLANGSUNG;
+            }
+        }
+
+        // Tidak ada data presensi → dijadwalkan (sesi lampau tanpa check-in tetap dijadwalkan
+        // sesuai keputusan bisnis: "past session without check-in stays Dijadwalkan").
+        return self::STATUS_DIJADWALKAN;
     }
 
     public function scopeAktif($query)

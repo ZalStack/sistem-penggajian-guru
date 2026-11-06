@@ -118,6 +118,7 @@ export interface Location {
 }
 
 export type SessionStatus = 'dijadwalkan' | 'selesai' | 'dibatalkan';
+export type EffectiveSessionStatus = 'dijadwalkan' | 'berlangsung' | 'selesai' | 'dibatalkan';
 
 export interface TeachingSession {
     id: number;
@@ -127,6 +128,7 @@ export interface TeachingSession {
     program_id: number | null;
     mapel: 'IPA' | 'MTK';
     status: SessionStatus;
+    effective_status?: EffectiveSessionStatus;
     catatan: string | null;
     tanggal: string;
     jam_mulai: string;
@@ -136,6 +138,7 @@ export interface TeachingSession {
     location?: Location;
     transport?: Transport;
     program?: Program | null;
+    attendances?: Attendance[];
     created_at: string;
     updated_at: string;
 }

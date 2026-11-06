@@ -414,6 +414,12 @@ class AttendanceController extends Controller
             ->first();
 
         if ($presensi) {
+            // Sematkan relasi guru & session dari sesi yang sudah eager-load
+            // supaya frontend selalu punya guru.nama & session.location.nama_lokasi
+            // tanpa query tambahan.
+            $presensi->setRelation('guru', $session->guru);
+            $presensi->setRelation('session', $session);
+
             return $presensi;
         }
 
