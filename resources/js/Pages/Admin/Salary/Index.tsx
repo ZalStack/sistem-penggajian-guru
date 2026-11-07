@@ -73,7 +73,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
             {/* Page Header */}
             <div className="page-header animate-fade-in mb-8">
                 <div className="flex items-center gap-2 mb-1">
-                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-900/40">
                         <Icon icon="tabler:wallet" className="text-[18px]" />
                     </div>
                     <h1 className="page-title">Penggajian Guru</h1>
@@ -193,7 +193,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 ) : (
                     <>
                         {/* Desktop Table */}
-                        <div className="hidden lg:block -mx-8">
+                        <div className="hidden lg:block overflow-x-auto -mx-5 sm:-mx-7 lg:-mx-8">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -224,7 +224,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                         className="flex items-center gap-3 text-left group"
                                                         title="Lihat rincian perhitungan"
                                                     >
-                                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-lg shadow-indigo-900/40">
                                                             {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
                                                         </div>
                                                         <div className="min-w-0">
@@ -373,7 +373,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-11 h-11 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xs">
+                                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-indigo-900/40">
                                                 {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
                                             </div>
                                             <div>
@@ -401,8 +401,8 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Transport</p>
                                             <p className="text-sm font-bold text-slate-900 mt-1 break-words">{formatCurrency(p.total_transport)}</p>
                                         </div>
-                                        <div className="bg-indigo-600 rounded-xl p-3 text-white">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/70">Total</p>
+                                        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-sm">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/80">Total</p>
                                             <p className="text-sm font-bold mt-1 break-words">{formatCurrency(p.total)}</p>
                                         </div>
                                     </div>

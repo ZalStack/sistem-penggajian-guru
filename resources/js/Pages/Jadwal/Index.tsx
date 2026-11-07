@@ -80,9 +80,8 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
         <AuthenticatedLayout>
             <Head title="Jadwal Mengajar" />
 
-            <div className="py-6 sm:py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="w-full space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                         <div>
                             <h1 className="page-title">Jadwal Mengajar</h1>
                             <p className="page-subtitle mt-1">
@@ -314,7 +313,6 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                         </Card>
                     )}
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }

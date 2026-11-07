@@ -602,47 +602,48 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
-            <div className="py-6 sm:py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="mb-6">
+            <div className="w-full space-y-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
                         <h1 className="page-title">Dashboard</h1>
                         <p className="page-subtitle mt-1">
-                            Ringkasan data operasional Satu Guru KPM per {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
+                            Ringkasan data operasional SATU GURU KPM (Sistem Informasi Administrasi Terpadu Guru KPM) per {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}.
                         </p>
                     </div>
+                </div>
 
-                    {/* Statistik data aktual */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <StatCard
-                            title="Total Guru"
-                            value={stats.total_guru}
-                            icon="tabler:users"
-                            color="accent"
-                            description={`${stats.total_guru_aktif} terhubung akun · ${stats.total_kelas_khusus} kelas khusus`}
-                        />
-                        <StatCard
-                            title="Sesi Bulan Ini"
-                            value={stats.total_sesi_bulan}
-                            icon="tabler:calendar-event"
-                            color="success"
-                            description={`${stats.total_sesi_hari_ini} sesi hari ini`}
-                        />
-                        <StatCard
-                            title="Guru Hadir Hari Ini"
-                            value={stats.guru_hadir_hari_ini}
-                            icon="tabler:user-check"
-                            color="warning"
-                            description="Presensi valid & terverifikasi"
-                        />
-                        <StatCard
-                            title="Pengeluaran Bulan Ini"
-                            value={formatCurrency(stats.total_pengeluaran)}
-                            icon="tabler:wallet"
-                            color="slate"
-                            description={`${stats.total_guru_bergaji} guru terhitung gajinya`}
-                            className="break-words"
-                        />
-                    </div>
+                {/* Statistik data aktual */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+                    <StatCard
+                        title="Total Guru"
+                        value={stats.total_guru}
+                        icon="tabler:users"
+                        color="accent"
+                        description={`${stats.total_guru_aktif} terhubung akun · ${stats.total_kelas_khusus} kelas khusus`}
+                    />
+                    <StatCard
+                        title="Sesi Bulan Ini"
+                        value={stats.total_sesi_bulan}
+                        icon="tabler:calendar-event"
+                        color="success"
+                        description={`${stats.total_sesi_hari_ini} sesi hari ini`}
+                    />
+                    <StatCard
+                        title="Guru Hadir Hari Ini"
+                        value={stats.guru_hadir_hari_ini}
+                        icon="tabler:user-check"
+                        color="warning"
+                        description="Presensi valid & terverifikasi"
+                    />
+                    <StatCard
+                        title="Pengeluaran Bulan Ini"
+                        value={formatCurrency(stats.total_pengeluaran)}
+                        icon="tabler:wallet"
+                        color="slate"
+                        description={`${stats.total_guru_bergaji} guru terhitung gajinya`}
+                        className="break-words"
+                    />
+                </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                         <Card className="lg:col-span-1">
@@ -803,7 +804,6 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                         </Card>
                     )}
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }
@@ -847,64 +847,65 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
-            {/* Hero - Profil singkat */}
-            <div className="bg-hero-gradient rounded-2xl p-6 mb-6 text-white shadow-brand-lg relative overflow-hidden">
-                <div className="pointer-events-none absolute -top-14 -right-10 w-48 h-48 rounded-full bg-white/10 blur-3xl" />
-                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-12 h-12 rounded-xl bg-white/15 ring-1 ring-white/25 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                            {initials}
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-xs font-medium text-indigo-200 tracking-wide uppercase">{greeting} • Satu Guru KPM</p>
-                            <h1 className="text-xl font-semibold text-white tracking-tight truncate mt-0.5">{guru?.nama}</h1>
-                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
-                                    <Icon icon="tabler:award" className="w-3.5 h-3.5" /> Grade {guru?.grade?.kode_grade ?? '-'}
-                                </span>
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
-                                    {guru?.mapel ?? '-'}{guru?.jenjang ? ` • ${guru.jenjang}` : ''}
-                                </span>
-                                {Array.isArray(guru?.programs) && guru.programs.length > 0 && (
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
-                                        {guru.programs.map((p: any) => p.nama).join(' · ')}
+            <div className="w-full space-y-6">
+                {/* Hero - Profil singkat */}
+                <div className="bg-hero-gradient rounded-2xl p-6 sm:p-7 text-white shadow-brand-lg relative overflow-hidden">
+                    <div className="pointer-events-none absolute -top-14 -right-10 w-48 h-48 rounded-full bg-white/10 blur-3xl" />
+                    <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-12 h-12 rounded-xl bg-white/15 ring-1 ring-white/25 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                                {initials}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xs font-semibold text-indigo-200 tracking-wider uppercase">{greeting} • SATU GURU KPM</p>
+                                <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight truncate mt-0.5">{guru?.nama}</h1>
+                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                        <Icon icon="tabler:award" className="w-3.5 h-3.5" /> Grade {guru?.grade?.kode_grade ?? '-'}
                                     </span>
-                                )}
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                        {guru?.mapel ?? '-'}{guru?.jenjang ? ` • ${guru.jenjang}` : ''}
+                                    </span>
+                                    {Array.isArray(guru?.programs) && guru.programs.length > 0 && (
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15 ring-1 ring-white/25 text-white text-xs font-medium backdrop-blur-sm">
+                                            {guru.programs.map((p: any) => p.nama).join(' · ')}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-3 text-right shrink-0 border-l border-white/20 pl-6">
+                            <div>
+                                <p className="text-xs font-medium text-indigo-200 uppercase tracking-wide">Hari ini</p>
+                                <p className="text-sm font-semibold text-white">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-lg bg-white/15 ring-1 ring-white/25 flex items-center justify-center text-white">
+                                <Icon icon="tabler:calendar" className="w-4 h-4" />
                             </div>
                         </div>
                     </div>
-                    <div className="hidden sm:flex items-center gap-3 text-right shrink-0 border-l border-white/20 pl-6">
-                        <div>
-                            <p className="text-xs font-medium text-indigo-200 uppercase tracking-wide">Hari ini</p>
-                            <p className="text-sm font-medium text-white">{new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                        </div>
-                        <div className="w-9 h-9 rounded-lg bg-white/15 ring-1 ring-white/25 flex items-center justify-center text-white">
-                            <Icon icon="tabler:calendar" className="w-4 h-4" />
+                </div>
+
+                {izinHariIni && (
+                    <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 sm:p-5 flex items-start gap-3">
+                        <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
+                            <Icon icon="tabler:shield-check" className="text-base" />
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-900">
+                                {izinHariIni.jenis} disetujui &mdash; check-in tidak diperlukan
+                            </p>
+                            <p className="text-sm text-slate-600 mt-0.5 break-words">
+                                Periode {izinHariIni.rentang}. Sesi mengajar pada rentang ini tercatat sebagai Izin di rekap presensi.
+                            </p>
                         </div>
                     </div>
-                </div>
-            </div>
+                )}
 
-            {izinHariIni && (
-                <div className="mb-6 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4 sm:p-5 flex items-start gap-3">
-                    <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
-                        <Icon icon="tabler:shield-check" className="text-base" />
-                    </span>
-                    <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-900">
-                            {izinHariIni.jenis} disetujui &mdash; check-in tidak diperlukan
-                        </p>
-                        <p className="text-sm text-slate-600 mt-0.5 break-words">
-                            Periode {izinHariIni.rentang}. Sesi mengajar pada rentang ini tercatat sebagai Izin di rekap presensi.
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Banner: presensi dipindah ke SI ADIK-KK (geofence GPS) */}
-            <div className="mb-6 rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-cyan-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                {/* Banner: presensi dipindah ke SI ADIK-KK */}
+                <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0">
-                        <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(14,165,233,0.7)]">
+                        <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
                             <Icon icon="tabler:map-pin-check" className="text-base" />
                         </span>
                         <div className="min-w-0">
@@ -913,81 +914,189 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                             </p>
                             <p className="text-sm text-slate-600 mt-0.5 break-words leading-relaxed">
                                 Check-in & check-out berbasis geofence GPS dilakukan melalui menu <strong>Absensi Guru</strong> di SI ADIK-KK sesuai ploting sesi admin.
-                                Data kehadiran akan otomatis tersinkron ke halaman ini dan memengaruhi penghitungan gaji.
+                                Data kehadiran otomatis tersinkron ke SATU GURU KPM dan memengaruhi honorarium.
                             </p>
                         </div>
                     </div>
                     <a
                         href="/guru/siguru"
-                        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm transition-colors"
+                        className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold shadow-[0_6px_16px_-6px_rgba(79,70,229,0.6)] transition-all hover:-translate-y-[1px]"
                     >
                         <Icon icon="tabler:external-link" className="text-xs" /> Buka Absensi SI ADIK-KK
                     </a>
                 </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <StatCard title="Sesi Bulan Ini" value={stats.total_sesi_bulan ?? 0} icon="tabler:books" color="accent" description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal hari ini`} />
-                {/* Presensi check-in/out pindah ke SI ADIK-KK; menu ini jadi riwayat read-only */}
-                {/* Potensi Gaji tampil di kartu Gaji Bulan Ini */}
-                <div className="relative overflow-hidden rounded-2xl bg-white border border-indigo-100/50 p-6 shadow-[0_4px_12px_-4px_rgba(99,102,241,0.15)] hover:shadow-[0_8px_20px_-8px_rgba(99,102,241,0.2)] transition-all duration-200">
-                    <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-indigo-500 mb-3">Gaji Bulan Ini</p>
-                    <p className="text-[20px] sm:text-[22px] font-[800] tracking-[-0.03em] text-slate-900 break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                    <div className="mt-3">
-                        <p className="text-[10px] font-bold tracking-[0.06em] uppercase text-indigo-400">Potensi Gaji Bulan Ini</p>
-                        <p className="text-[16px] font-[800] tracking-[-0.02em] text-slate-900 mt-1 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 text-[11px] font-medium text-slate-500">
-                        <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
-                        <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                {/* Stat cards row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+                    <StatCard
+                        title="Sesi Bulan Ini"
+                        value={stats.total_sesi_bulan ?? 0}
+                        icon="tabler:books"
+                        color="accent"
+                        description={`${upcomingSessions?.filter((s: any) => s.is_today).length ?? 0} jadwal mengajar hari ini`}
+                    />
+                    <StatCard
+                        title="Kehadiran Selesai"
+                        value={`${stats.total_hadir ?? 0} Sesi`}
+                        icon="tabler:circle-check"
+                        color="success"
+                        description={`Total waktu: ${stats.total_jam ?? 0} jam mengajar`}
+                    />
+                    <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-5 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:shadow-[0_12px_26px_-8px_rgba(79,70,229,0.18)] hover:-translate-y-0.5 transition-all duration-300">
+                        <div className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full blur-2xl bg-indigo-400/20" />
+                        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500 opacity-90" />
+                        <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Gaji Bulan Ini</p>
+                        <p className="text-xl font-extrabold tracking-tight text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
+                        <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500">
+                            <span>Potensi Gaji:</span>
+                            <span className="font-bold text-slate-900">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
+                        </div>
+                        <div className="mt-2.5 flex items-center gap-2 text-[11px] font-medium text-slate-500">
+                            <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
+                            <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <SunnahSummaryCard hariIni={sunnahHariIni} bulanIni={sunnahBulanIni} />
+                <SunnahSummaryCard hariIni={sunnahHariIni} bulanIni={sunnahBulanIni} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* 2-column full-width responsive grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Kolom Kiri: Jadwal Mengajar Terdekat (2 cols) */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <Card
+                            title="Jadwal Mengajar Terdekat"
+                            description="Jadwal sesi mengajar aktif Anda mendatang — presensi dilakukan via SI ADIK-KK"
+                            headerAction={
+                                <Link href={route('jadwal.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Lihat jadwal mingguan <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                </Link>
+                            }
+                        >
+                            {upcomingSessions && upcomingSessions.length > 0 ? (
+                                <div className="space-y-3">
+                                    {upcomingSessions.map((session: any) => (
+                                        <div
+                                            key={session.id}
+                                            className={`p-4 rounded-2xl border transition-all duration-200 ${
+                                                session.is_today
+                                                    ? 'bg-gradient-to-br from-indigo-50/70 via-white to-violet-50/50 border-indigo-200 shadow-sm'
+                                                    : 'bg-white border-slate-200 hover:border-indigo-200'
+                                            }`}
+                                        >
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div className="flex items-start gap-3 min-w-0">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                                                        session.is_today
+                                                            ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/25'
+                                                            : 'bg-slate-100 text-slate-600'
+                                                    }`}>
+                                                        <Icon icon={session.is_today ? 'tabler:calendar-time' : 'tabler:calendar'} className="text-[18px]" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-bold text-slate-900 truncate">
+                                                                {session.location?.nama_lokasi ?? 'Lokasi belum diatur'}
+                                                            </p>
+                                                            {session.is_today && (
+                                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 border border-indigo-200">
+                                                                    Hari Ini
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 mt-1 truncate">
+                                                            {session.jam_mulai?.substring(0, 5)}–{session.jam_selesai?.substring(0, 5)} · {session.program ?? session.mapel} · {session.jumlah_sesi} sesi
+                                                        </p>
+                                                        {session.transport && (
+                                                            <p className="text-[11px] text-slate-400 mt-0.5">
+                                                                Transport: {session.transport.jenis}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <Badge variant={session.is_today ? 'accent' : 'neutral'} size="sm">
+                                                        {upcomingDateLabel(session.tanggal)}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-10">
+                                    <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-3 text-indigo-400">
+                                        <Icon icon="tabler:calendar-off" className="text-[28px]" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-900">Tidak ada jadwal mengajar mendatang</p>
+                                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                                        Jadwal mengajar Anda yang telah diplot oleh admin akan muncul otomatis di sini.
+                                    </p>
+                                    <Link
+                                        href={route('jadwal.index')}
+                                        className="btn-secondary text-xs mt-4 inline-flex"
+                                    >
+                                        <Icon icon="tabler:calendar-week" className="text-sm" /> Buka Jadwal Mingguan
+                                    </Link>
+                                </div>
+                            )}
+                        </Card>
+                    </div>
 
-                <div className="lg:col-span-2 space-y-6">
-                    <Card title="Ringkasan Pembayaran" description="Status honor bulan berjalan">
-                        <div className="space-y-4">
-                            <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 p-5">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
-                                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                                        {stats.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
+                    {/* Kolom Kanan: Ringkasan Pembayaran & Info Profil (1 col) */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <Card title="Ringkasan Pembayaran" description="Status honor bulan berjalan">
+                            <div className="space-y-4">
+                                <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 p-5">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
+                                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                            {stats.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
+                                        </span>
+                                    </div>
+                                    <p className="text-[22px] sm:text-[26px] font-[800] tracking-[-0.03em] text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
+                                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-[500] text-slate-500">
+                                        <Icon icon="tabler:trending-up" className="text-emerald-500" /> Potensi: <span className="font-[700] text-slate-900 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
+                                    </div>
+                                    <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
+                                        <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
+                                    </div>
+                                    <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi hadir</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
+                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
+                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
+                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
+                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
+                                    </div>
+                                </div>
+
+                                <Link
+                                    href={route('my-salary')}
+                                    className="w-full flex items-center justify-between p-3.5 bg-white border border-indigo-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50/40 transition-colors text-xs font-bold text-slate-800"
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Icon icon="tabler:file-invoice" className="text-base text-indigo-600" />
+                                        Lihat Rincian Slip Gaji
                                     </span>
-                                </div>
-                                <p className="text-[22px] sm:text-[26px] font-[800] tracking-[-0.03em] text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                                <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-[500] text-slate-500">
-                                    <Icon icon="tabler:trending-up" className="text-emerald-500" /> Potensi: <span className="font-[700] text-slate-900 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
-                                </div>
-                                <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
-                                    <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
-                                </div>
-                                <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi</p>
+                                    <Icon icon="tabler:chevron-right" className="text-slate-400" />
+                                </Link>
                             </div>
+                        </Card>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                    <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
-                                    <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
+                        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-5">
+                            <div className="flex items-start gap-3">
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shrink-0 shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
+                                    <Icon icon="tabler:help-circle" className="w-5 h-5" />
                                 </div>
-                                <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                    <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
-                                    <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-900">Butuh bantuan?</h3>
+                                    <p className="text-xs text-slate-600 mt-1 leading-5">Hubungi admin KPM jika ada kendala absensi GPS, jadwal, atau perizinan.</p>
                                 </div>
-                            </div>
-                        </div>
-                    </Card>
-
-                    <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl p-5">
-                        <div className="flex items-start gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shrink-0 shadow-[0_6px_14px_-6px_rgba(99,102,241,0.8)]">
-                                <Icon icon="tabler:help-circle" className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-semibold text-slate-900">Butuh bantuan?</h3>
-                                <p className="text-sm text-slate-600 mt-1 leading-5">Hubungi admin jika ada kendala absensi GPS, jadwal, atau slip gaji.</p>
                             </div>
                         </div>
                     </div>

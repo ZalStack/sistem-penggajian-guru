@@ -20,7 +20,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
 
     return (
         <GuestLayout>
-            <Head title="Masuk — Satu Guru KPM" />
+            <Head title="Masuk — SATU GURU KPM" />
 
             <div className="mb-6">
                 <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 leading-tight">

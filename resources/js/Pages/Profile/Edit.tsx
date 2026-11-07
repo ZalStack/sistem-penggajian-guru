@@ -373,7 +373,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
         <AuthenticatedLayout>
             <Head title="Profil & Biodata Guru" />
 
-            <div className="w-full space-y-6 max-w-7xl mx-auto pb-12 animate-fade-in">
+            <div className="w-full space-y-6 pb-12 animate-fade-in">
                 {/* Flash Alert */}
                 {recentlySuccessful && (
                     <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-sm text-emerald-800 font-semibold flex items-center gap-2.5 shadow-xs">
@@ -385,11 +385,11 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                 )}
 
                 {/* Header Foto Profil & Ringkasan Akun Guru */}
-                <div className="bg-white rounded-3xl border border-gray-200/90 p-6 sm:p-8 shadow-xs">
+                <div className="card-modern p-6 sm:p-8">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                         <div className="relative group shrink-0">
-                            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-sm flex items-center justify-center">
-                                <span className="text-4xl font-extrabold text-blue-600 select-none">{initials}</span>
+                            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-violet-50 border-2 border-indigo-200 shadow-sm flex items-center justify-center">
+                                <span className="text-4xl font-extrabold text-indigo-600 select-none">{initials}</span>
                                 {activeFoto && (
                                     <img
                                         src={activeFoto}
@@ -402,7 +402,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                             <button
                                 onClick={triggerFoto}
                                 type="button"
-                                className="absolute -bottom-2 -right-2 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-lg hover:bg-blue-700 active:scale-95 transition cursor-pointer"
+                                className="absolute -bottom-2 -right-2 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md hover:from-indigo-700 hover:to-violet-700 active:scale-95 transition cursor-pointer"
                                 title="Ubah Foto Profil"
                             >
                                 <Icon icon="tabler:camera" className="text-[14px]" />
@@ -419,24 +419,24 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
 
                         <div className="flex-1 text-center md:text-left min-w-0">
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+                                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
                                     {guru?.nama || auth.user.name}
                                 </h2>
-                                <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
+                                <span className="px-2.5 py-0.5 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold border border-indigo-200">
                                     {isGuru
                                         ? `Guru ${data.mapel === 'MTK' ? 'Matematika' : 'IPA'}`
                                         : 'Administrator'}
                                 </span>
                                 {isGuru && guru?.grade && (
-                                    <span className="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">
+                                    <span className="px-2.5 py-0.5 bg-violet-100 text-violet-800 rounded-full text-xs font-bold border border-violet-200">
                                         Grade {guru.grade.kode_grade}
                                     </span>
                                 )}
                             </div>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-slate-500 mt-1">
                                 {auth.user.email}
                                 {auth.user.username && (
-                                    <span className="text-gray-400"> • @{auth.user.username}</span>
+                                    <span className="text-slate-400"> • @{auth.user.username}</span>
                                 )}
                             </p>
 
@@ -919,7 +919,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                     <input
                                         disabled
                                         type="text"
-                                        value={formatCurrency(guru?.tunjangan_khusus || 0)}
+                                        value={formatCurrency(Number(guru?.tunjangan_khusus) || 0)}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-600 font-mono font-bold text-sm cursor-not-allowed select-none"
                                     />
                                     <p className="text-[10px] text-gray-400 mt-1">Hanya admin SiGuru yang dapat mengubah nominal ini.</p>

@@ -1,12 +1,12 @@
 import { Icon } from '@iconify/react';
 import { ReactNode } from 'react';
 
-const APP_NAME = 'Satu Guru KPM';
-const APP_TAGLINE = 'Sistem Administrasi Guru KPM';
+const APP_NAME = 'SATU GURU KPM';
+const APP_TAGLINE = 'Sistem Informasi Administrasi Terpadu Guru KPM';
 
 export default function GuestLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="min-h-screen flex bg-[#f5f6fa]">
+        <div className="min-h-screen flex bg-slate-50">
             {/* Left — dark brand panel */}
             <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col"
                 style={{ background: 'linear-gradient(160deg, #0f1117 0%, #131720 60%, #1a1f2e 100%)' }}>
@@ -29,8 +29,8 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                             <Icon icon="tabler:school" className="text-white text-[20px]" />
                         </div>
                         <div>
-                            <p className="text-white font-bold tracking-tight text-[15px] leading-tight">{APP_NAME}</p>
-                            <p className="text-slate-400 text-[11px] font-medium leading-tight mt-0.5">KPM</p>
+                            <p className="text-white font-extrabold tracking-wider text-[15px] leading-tight uppercase">{APP_NAME}</p>
+                            <p className="text-indigo-200/80 text-[10.5px] font-medium leading-tight mt-0.5">KPM</p>
                         </div>
                     </div>
 
@@ -40,9 +40,9 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                             <Icon icon="tabler:shield-check" className="text-[14px]" />
                             Akses Karyawan Resmi
                         </div>
-                        <h1 className="text-[38px] font-extrabold tracking-tight leading-[1.05] text-white">
-                            Sistem Administrasi{' '}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
+                        <h1 className="text-[34px] xl:text-[38px] font-extrabold tracking-tight leading-[1.1] text-white">
+                            Sistem Informasi Administrasi Terpadu{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-indigo-300">
                                 Guru KPM
                             </span>
                         </h1>

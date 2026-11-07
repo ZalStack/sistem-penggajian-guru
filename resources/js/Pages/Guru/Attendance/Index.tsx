@@ -146,9 +146,9 @@ export default function AttendanceIndex({
             </div>
 
             {/* Banner: presensi di SI ADIK-KK */}
-            <div className="mb-8 rounded-2xl border border-sky-200 bg-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+            <div className="mb-8 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
                 <div className="flex items-start gap-3 min-w-0">
-                    <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(14,165,233,0.7)]">
+                    <span className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-[0_6px_14px_-6px_rgba(99,102,241,0.7)]">
                         <Icon icon="tabler:map-pin" className="text-[18px]" />
                     </span>
                     <div className="min-w-0">
@@ -162,7 +162,7 @@ export default function AttendanceIndex({
                 </div>
                 <a
                     href="/guru/siguru"
-                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-sm transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold shadow-[0_6px_16px_-6px_rgba(79,70,229,0.6)] transition-all hover:-translate-y-[1px]"
                 >
                     <Icon icon="tabler:external-link" className="text-[14px]" /> Buka Absensi SI ADIK-KK
                 </a>
@@ -371,7 +371,7 @@ export default function AttendanceIndex({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                                         {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                                     </span>
                                                 </TableCell>
@@ -445,7 +445,7 @@ export default function AttendanceIndex({
                                         <Badge variant={statusConfig[att.status]?.variant || 'default'}>
                                             {statusConfig[att.status]?.label || att.status}
                                         </Badge>
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                             {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                         </span>
                                     </div>

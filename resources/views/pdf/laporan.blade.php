@@ -28,8 +28,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>Satu Guru KPM</h1>
-        <p>Sistem Administrasi Guru KPM &mdash; Rekap Penggajian</p>
+        <h1>SATU GURU KPM</h1>
+        <p>Sistem Informasi Administrasi Terpadu Guru KPM &mdash; Rekap Penggajian</p>
     </div>
     <div class="meta">
         <span>Periode: {{ $periode }}</span>
@@ -85,7 +85,7 @@
         </tbody>
     </table>
     <div class="footer">
-        <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; Satu Guru KPM &middot; Sistem Administrasi Guru KPM</p>
+        <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; SATU GURU KPM &middot; Sistem Informasi Administrasi Terpadu Guru KPM</p>
     </div>
 </body>
 </html>

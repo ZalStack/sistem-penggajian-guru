@@ -32,8 +32,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>Satu Guru KPM</h1>
-        <h2>Sistem Administrasi Guru KPM</h2>
+        <h1>SATU GURU KPM</h1>
+        <h2>Sistem Informasi Administrasi Terpadu Guru KPM</h2>
         <p>Data Login Akun Guru — Tahun Ajaran 2026/2027</p>
     </div>
 
@@ -85,7 +85,7 @@
     </table>
 
     <div class="footer">
-        <p>Dicetak pada {{ now()->format('d M Y H:i') }} — Satu Guru KPM · Sistem Administrasi Guru KPM • {{ $gurus->count() }} akun • Dokumen rahasia admin</p>
+        <p>Dicetak pada {{ now()->format('d M Y H:i') }} — SATU GURU KPM · Sistem Informasi Administrasi Terpadu Guru KPM • {{ $gurus->count() }} akun • Dokumen rahasia admin</p>
         <p style="margin-top:4px; color:#64748b;">Guru silakan login di {{ config('app.url') }}/login menggunakan email di atas dan password <strong>password</strong>, lalu segera ganti password di menu Profil.</p>
     </div>
 </body>

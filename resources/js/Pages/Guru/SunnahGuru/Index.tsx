@@ -376,7 +376,7 @@ export default function SunnahGuruIndex({
 
             {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
 
-            <div className="mx-auto w-full max-w-7xl space-y-4 sm:space-y-5">
+            <div className="w-full space-y-4 sm:space-y-5 animate-fade-in">
                 {/* Hero guru */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 p-5 text-white shadow-brand-lg sm:p-6">
                     <div className="pointer-events-none absolute -right-12 -top-16 h-52 w-52 rounded-full bg-white/10 blur-3xl" />
@@ -483,10 +483,10 @@ export default function SunnahGuruIndex({
                                 label="Poin Tertinggi"
                                 value={String(statistik.tertinggi)}
                                 icon="mdi:trophy"
-                                bodyClass="from-sky-50 to-cyan-50 border-sky-200"
-                                iconClass="bg-sky-100 text-sky-600"
-                                valueClass="text-sky-800"
-                                footerClass="bg-[#0284c7]"
+                                bodyClass="from-indigo-50 to-violet-50 border-indigo-200"
+                                iconClass="bg-indigo-100 text-indigo-600"
+                                valueClass="text-indigo-800"
+                                footerClass="bg-[#4f46e5]"
                             />
                         </div>
 

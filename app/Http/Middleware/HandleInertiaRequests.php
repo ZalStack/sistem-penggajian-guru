@@ -34,7 +34,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'app' => [
                 'name' => config('app.name'),
-                'tagline' => 'Sistem Administrasi Guru KPM',
+                'tagline' => 'Sistem Informasi Administrasi Terpadu Guru KPM',
             ],
             'auth' => [
                 'user' => $request->user(),

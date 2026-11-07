@@ -77,7 +77,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
         <AuthenticatedLayout>
             <Head title={`Detail 7SPS — ${record.guru.nama}`} />
 
-            <div className="mx-auto w-full max-w-6xl space-y-5">
+            <div className="w-full space-y-5 animate-fade-in">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                         <Link
@@ -134,7 +134,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                     <SummaryCard label="Sholat Wajib" value={`${record.jumlah_sholat_dikerjakan}/5`} icon="mdi:mosque" color="emerald" />
                     <SummaryCard label="Berjamaah" value={`${record.jumlah_sholat_berjamaah}/5`} icon="mdi:account-group" color="teal" />
                     <SummaryCard label="Poin Kelompok" value={String(record.poin_sholat_wajib)} icon="mdi:star-four-points" color="amber" />
-                    <SummaryCard label="Amalan Tercentang" value={`${record.checklist.filter((item) => item.checked).length}/12`} icon="mdi:check-decagram" color="sky" />
+                    <SummaryCard label="Amalan Tercentang" value={`${record.checklist.filter((item) => item.checked).length}/12`} icon="mdi:check-decagram" color="indigo" />
                 </div>
 
                 <div className="grid gap-5 lg:grid-cols-5">
@@ -151,7 +151,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                         <div className="flex min-w-0 items-center gap-2.5">
                                             <span
                                                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                                                    item.checked ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                                                    item.checked ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-900/40' : 'bg-slate-100 text-slate-400'
                                                 }`}
                                             >
                                                 <Icon icon={item.icon} className="text-lg" />
@@ -239,12 +239,12 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
     );
 }
 
-function SummaryCard({ label, value, icon, color }: { label: string; value: string; icon: string; color: 'emerald' | 'teal' | 'amber' | 'sky' }) {
+function SummaryCard({ label, value, icon, color }: { label: string; value: string; icon: string; color: 'emerald' | 'teal' | 'amber' | 'indigo' }) {
     const styles = {
         emerald: 'from-emerald-50 to-green-50 border-emerald-200 text-emerald-700 bg-emerald-100',
         teal: 'from-teal-50 to-cyan-50 border-teal-200 text-teal-700 bg-teal-100',
         amber: 'from-amber-50 to-orange-50 border-amber-200 text-amber-700 bg-amber-100',
-        sky: 'from-sky-50 to-blue-50 border-sky-200 text-sky-700 bg-sky-100',
+        indigo: 'from-indigo-50 to-violet-50 border-indigo-200 text-indigo-700 bg-indigo-100',
     }[color];
 
     return (

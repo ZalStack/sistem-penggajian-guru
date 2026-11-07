@@ -36,8 +36,8 @@
 <body>
     <div class="slip">
         <div class="header">
-            <h1>Satu Guru KPM</h1>
-            <p class="subtitle">Sistem Administrasi Guru KPM</p>
+            <h1>SATU GURU KPM</h1>
+            <p class="subtitle">Sistem Informasi Administrasi Terpadu Guru KPM</p>
             <p class="slip-title">Slip Gaji / Pay Slip</p>
         </div>
 
@@ -148,7 +148,7 @@
         </div>
 
         <div class="footer">
-            <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; Slip ini merupakan bukti resmi penggajian dari Satu Guru KPM</p>
+            <p>Dicetak pada {{ now()->format('d M Y H:i') }} &mdash; Slip ini merupakan bukti resmi penggajian dari SATU GURU KPM (Sistem Informasi Administrasi Terpadu Guru KPM)</p>
         </div>
     </div>
 </body>

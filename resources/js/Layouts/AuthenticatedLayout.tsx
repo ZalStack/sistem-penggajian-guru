@@ -159,8 +159,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const fotoUrl = props.auth.fotoUrl;
     const flash = props.flash;
     const unreadCount = props.unreadNotifications ?? 0;
-    const appName = props.app?.name || 'Satu Guru KPM';
-    const appTagline = props.app?.tagline || 'Sistem Informasi Terpadu Guru KPM';
+    const appName = props.app?.name || 'SATU GURU KPM';
+    const appTagline = props.app?.tagline || 'Sistem Informasi Administrasi Terpadu Guru KPM';
     const [mobileOpen, setMobileOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
@@ -174,14 +174,18 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const sidebarInner = (isCollapsed: boolean, forMobile = false) => (
         <>
             {/* Logo */}
-            <div className={`h-[64px] flex items-center border-b border-white/5 shrink-0 ${isCollapsed ? 'justify-center px-3' : 'px-4 gap-3'}`}>
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-900/40">
-                    <Icon icon="tabler:school" className="text-white text-[18px]" />
+            <div className={`h-[68px] flex items-center border-b border-white/10 shrink-0 ${isCollapsed ? 'justify-center px-3' : 'px-4 gap-3'}`}>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-950/40 ring-1 ring-white/20">
+                    <Icon icon="tabler:school" className="text-white text-[20px]" />
                 </div>
                 {!isCollapsed && (
                     <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-bold tracking-tight text-white truncate leading-tight">{appName}</p>
-                        <p className="text-[10px] font-medium text-slate-400 leading-none mt-0.5 truncate">{appTagline}</p>
+                        <p className="text-[14px] font-black tracking-wider text-white truncate leading-tight uppercase">
+                            SATU GURU KPM
+                        </p>
+                        <p className="text-[10px] font-semibold text-indigo-200/80 leading-none mt-1 truncate" title={appTagline}>
+                            {appTagline || 'Sistem Informasi Administrasi Terpadu Guru KPM'}
+                        </p>
                     </div>
                 )}
                 {forMobile && (
@@ -247,18 +251,16 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     );
 
     return (
-        <div className="min-h-screen bg-[#f5f6fa] text-slate-900 selection:bg-indigo-600 selection:text-white">
+        <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white">
             {/* Sidebar — desktop */}
-            <aside className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[260px]'}`}
-                style={{ background: 'linear-gradient(180deg, #0f1117 0%, #131720 100%)', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
+            <aside className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col transition-all duration-300 bg-sidebar-gradient border-r border-white/10 ${collapsed ? 'w-[72px]' : 'w-[260px]'}`}>
                 <div className="relative flex flex-col h-full">{sidebarInner(collapsed)}</div>
             </aside>
 
             {/* Mobile sidebar overlay */}
             <div className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${mobileOpen ? 'visible' : 'invisible'}`}>
                 <div onClick={() => setMobileOpen(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${mobileOpen ? 'opacity-100' : 'opacity-0'}`} />
-                <aside className={`absolute left-0 top-0 bottom-0 w-[280px] max-w-[85vw] flex flex-col transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
-                    style={{ background: 'linear-gradient(180deg, #0f1117 0%, #131720 100%)', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
+                <aside className={`absolute left-0 top-0 bottom-0 w-[280px] max-w-[85vw] flex flex-col transition-transform duration-300 bg-sidebar-gradient border-r border-white/10 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     {sidebarInner(false, true)}
                 </aside>
             </div>
@@ -266,8 +268,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             {/* Main content area */}
             <div className={`flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-[260px]'}`}>
                 {/* Header */}
-                <header className="sticky top-0 z-30 bg-white border-b border-slate-200/80 shadow-sm">
-                    <div className="flex items-center justify-between h-[60px] px-4 sm:px-6 gap-3">
+                <header className="sticky top-0 z-30 bg-white/80 border-b border-slate-200/60 backdrop-blur-md shadow-xs">
+                    <div className="flex items-center justify-between h-[64px] px-4 sm:px-6 lg:px-8 xl:px-10 gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <button
                                 onClick={() => setMobileOpen(true)}
@@ -277,7 +279,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                 <Icon icon="tabler:menu-2" className="text-[20px]" />
                             </button>
                             <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-[14px] font-bold text-slate-900 truncate">{activeItem?.label || 'Dashboard'}</span>
+                                <span className="text-[14.5px] font-bold text-slate-900 tracking-tight truncate">{activeItem?.label || 'Dashboard'}</span>
                                 {activeItem?.desc && (
                                     <span className="hidden md:inline text-[12px] text-slate-400 truncate">· {activeItem.desc}</span>
                                 )}
@@ -316,11 +318,11 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                     </button>
                                 </Dropdown.Trigger>
                                 <Dropdown.Content width="64">
-                                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                                    <div className="px-4 py-3 border-b border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50">
                                         <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Masuk sebagai</p>
                                         <p className="text-[13.5px] font-bold text-slate-900 mt-0.5 truncate">{user.name}</p>
                                         <p className="text-[11.5px] text-slate-500 truncate">{user.email}</p>
-                                        <span className={`inline-flex mt-2 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${isAdmin ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                                        <span className={`inline-flex mt-2 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${isAdmin ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
                                             {isAdmin ? 'Administrator' : 'Guru'}
                                         </span>
                                     </div>
@@ -351,7 +353,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 </header>
 
                 {/* Flash messages */}
-                <div className="px-4 sm:px-6 lg:px-8 pt-4 space-y-3 w-full">
+                <div className="px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 space-y-3 w-full">
                     {flash?.success && <FlashMessage type="success" message={flash.success} />}
                     {(flash?.error || (props.errors as any)?.error) && <FlashMessage type="error" message={flash?.error || (props.errors as any)?.error} />}
                     {flash?.warning && <FlashMessage type="warning" message={flash.warning} />}
@@ -359,13 +361,13 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 </div>
 
                 {/* Page content */}
-                <main className={`flex-1 px-4 sm:px-6 lg:px-8 py-6 w-full ${!isAdmin ? 'pb-28 lg:pb-8' : 'pb-8'}`}>
+                <main className={`flex-1 px-4 sm:px-6 lg:px-8 xl:px-10 py-6 w-full ${!isAdmin ? 'pb-28 lg:pb-8' : 'pb-8'}`}>
                     {children}
                 </main>
 
-                <footer className="hidden lg:block border-t border-slate-200/60 bg-white/60 px-6 lg:px-8 py-3">
+                <footer className="hidden lg:block border-t border-slate-200/60 bg-white/60 backdrop-blur-md px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5">
                     <div className="w-full flex items-center justify-between text-[11px] font-medium text-slate-400">
-                        <span>© {new Date().getFullYear()} {appName} — {appTagline}</span>
+                        <span>© {new Date().getFullYear()} SATU GURU KPM — {appTagline}</span>
                     </div>
                 </footer>
             </div>
@@ -378,14 +380,14 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                             const active = route().current(item.pattern);
                             return (
                                 <Link key={item.href} href={route(item.href)} className="flex flex-col items-center gap-1 flex-1 py-2 min-w-0">
-                                    <span className={`w-10 h-8 rounded-lg flex items-center justify-center transition-all ${
+                                    <span className={`w-10 h-8 rounded-xl flex items-center justify-center transition-all ${
                                         active
-                                            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
-                                            : 'text-slate-400'
+                                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-400/30'
+                                            : 'text-slate-400 hover:text-slate-600'
                                     }`}>
                                         <Icon icon={item.icon} className="text-[20px]" />
                                     </span>
-                                    <span className={`text-[10px] font-bold tracking-wide truncate ${active ? 'text-indigo-700' : 'text-slate-400'}`}>{item.label}</span>
+                                    <span className={`text-[10px] font-bold tracking-wide truncate ${active ? 'text-indigo-600' : 'text-slate-400'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}

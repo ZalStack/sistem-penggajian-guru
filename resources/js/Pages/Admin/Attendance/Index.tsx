@@ -97,7 +97,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
             <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-900/40">
                             <Icon icon="tabler:clipboard-check" className="text-[18px]" />
                         </div>
                         <h1 className="page-title">Rekap Absensi</h1>
@@ -106,13 +106,14 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                         Pantau dan kelola data kehadiran guru seluruh sesi mengajar
                     </p>
                 </div>
-                <Link
+                <Button
+                    as="a"
                     href={route('penggajian.index')}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:-translate-y-[1px] shrink-0"
+                    className="shrink-0"
                 >
                     <Icon icon="tabler:cash" className="text-[18px]" />
                     Hitung Gaji
-                </Link>
+                </Button>
             </div>
 
             {/* Stat Cards */}
@@ -282,7 +283,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-900/40">
                                                     <Icon icon="tabler:user" className="text-[18px]" />
                                                 </div>
                                                 <span className="font-semibold text-slate-900 text-sm">
@@ -349,7 +350,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                                 {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                             </span>
                                         </TableCell>
@@ -379,7 +380,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-900/40">
                                             <Icon icon="tabler:user" className="text-[18px]" />
                                         </div>
                                         <div>
@@ -395,7 +396,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                         <span className="text-xs font-semibold text-slate-400">
                                             #{index + 1}
                                         </span>
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                             {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                         </span>
                                         {getStatusBadge(att.status)}

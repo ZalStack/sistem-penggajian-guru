@@ -154,7 +154,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             </div>
 
                             <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                                <div className="w-9 h-9 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center flex-shrink-0">
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-900/40">
                                     <Icon icon="tabler:school" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
@@ -369,10 +369,10 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         )}
 
                         {guru.riwayat_mengajar && (
-                            <div className="mt-4 p-4 bg-sky-50/60 rounded-xl border border-sky-200">
+                            <div className="mt-4 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl border border-indigo-100">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Icon icon="tabler:briefcase" className="text-sky-600" />
-                                    <span className="text-xs font-bold text-sky-700 uppercase tracking-wider">Riwayat Mengajar</span>
+                                    <Icon icon="tabler:briefcase" className="text-indigo-600" />
+                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Riwayat Mengajar</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.riwayat_mengajar}</p>
                             </div>

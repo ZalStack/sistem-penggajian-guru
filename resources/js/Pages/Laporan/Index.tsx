@@ -388,7 +388,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
 
             {/* Print only footer */}
             <div className="hidden print:block mt-4 text-center text-xs text-slate-500 border-t border-slate-200 pt-3">
-                Dicetak pada {new Date().toLocaleDateString('id-ID')} — Satu Guru KPM · Sistem Administrasi Guru KPM
+                Dicetak pada {new Date().toLocaleDateString('id-ID')} — SATU GURU KPM · Sistem Informasi Administrasi Terpadu Guru KPM
             </div>
         </AuthenticatedLayout>
     );

@@ -4,6 +4,7 @@ export interface User {
     email: string;
     role: 'admin' | 'guru';
     guru_id: number | null;
+    username?: string | null;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
