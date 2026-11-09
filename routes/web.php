@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\BahanAjarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\GuruController;
@@ -50,22 +49,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
 
-    // Bahan Ajar — akses guru (lihat & unduh)
-    Route::get('my-bahan-ajar', [BahanAjarController::class, 'guruIndex'])->name('my-bahan-ajar.index');
-    Route::get('my-bahan-ajar/{bahanAjar}/download', [BahanAjarController::class, 'download'])->name('my-bahan-ajar.download');
-
     // Jadwal Mingguan — admin & guru (role-aware di controller)
     Route::get('jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
     Route::redirect('jadwal-bulanan', '/jadwal');
 
     Route::middleware('role:admin')->group(function () {
-        // Bahan Ajar — kelola admin (upload/edit/hapus/unduh)
-        Route::get('bahan-ajar', [BahanAjarController::class, 'index'])->name('bahan-ajar.index');
-        Route::post('bahan-ajar', [BahanAjarController::class, 'store'])->name('bahan-ajar.store');
-        Route::put('bahan-ajar/{bahanAjar}', [BahanAjarController::class, 'update'])->name('bahan-ajar.update');
-        Route::delete('bahan-ajar/{bahanAjar}', [BahanAjarController::class, 'destroy'])->name('bahan-ajar.destroy');
-        Route::get('bahan-ajar/{bahanAjar}/download', [BahanAjarController::class, 'download'])->name('bahan-ajar.download');
-
         Route::get('guru/export-credentials-pdf', [GuruController::class, 'exportCredentialsPdf'])->name('guru.exportCredentialsPdf');
         Route::resource('guru', GuruController::class)->except(['edit']);
         Route::get('guru/{guru}/edit', [GuruController::class, 'edit'])->name('guru.edit');

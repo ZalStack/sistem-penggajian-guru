@@ -87,7 +87,6 @@ class OpenApiSpec
             ['name' => 'Locations', 'description' => 'GPS check-in locations and their allowed radius.'],
             ['name' => 'Teachers', 'description' => 'Teacher (guru) records and their login accounts.'],
             ['name' => 'Teaching Sessions', 'description' => 'Teaching schedule per teacher.'],
-            ['name' => 'Teaching Materials', 'description' => 'Upload and download teaching material files.'],
             ['name' => 'Attendance', 'description' => 'GPS check-in / check-out and attendance recap.'],
             ['name' => 'Leave Requests', 'description' => 'Teacher leave requests (izin / sakit / cuti) and approvals.'],
             ['name' => 'Schedules', 'description' => 'Monthly schedule grouped by day.'],

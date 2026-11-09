@@ -28,7 +28,6 @@ class Schemas
             'Salary' => self::salary(),
             'LeaveRequest' => self::leaveRequest(),
             'Notification' => self::notification(),
-            'TeachingMaterial' => self::teachingMaterial(),
         ], self::composite());
     }
 
@@ -307,36 +306,6 @@ class Schemas
                 'kategori' => ['type' => 'string', 'enum' => ['sistem', 'absensi', 'perizinan', 'gaji', 'sesi'], 'example' => 'sistem'],
                 'dibaca' => ['type' => 'boolean', 'example' => false],
                 'dibaca_pada' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
-                'created_at' => ['type' => 'string', 'format' => 'date-time'],
-                'updated_at' => ['type' => 'string', 'format' => 'date-time'],
-            ],
-        ];
-    }
-
-    private static function teachingMaterial(): array
-    {
-        return [
-            'type' => 'object',
-            'required' => ['id', 'judul', 'mapel', 'file_name'],
-            'properties' => [
-                'id' => ['type' => 'integer', 'example' => 1],
-                'judul' => ['type' => 'string', 'example' => 'Algebra Basics'],
-                'deskripsi' => ['type' => 'string', 'nullable' => true],
-                'mapel' => ['type' => 'string', 'enum' => ['IPA', 'MTK', 'umum'], 'example' => 'MTK'],
-                'file_name' => ['type' => 'string', 'example' => 'algebra-basics.pdf'],
-                'file_mime' => ['type' => 'string', 'nullable' => true, 'example' => 'application/pdf'],
-                'file_size' => ['type' => 'integer', 'description' => 'File size in bytes.', 'example' => 1048576],
-                'file_size_human' => ['type' => 'string', 'example' => '1 MB'],
-                'download_url' => [
-                    'type' => 'string',
-                    'nullable' => true,
-                    'description' => 'Absolute download URL. Only present for authenticated requests.',
-                    'example' => 'http://localhost:8000/api/v1/teaching-materials/1/download',
-                ],
-                'uploader' => [
-                    'allOf' => [['$ref' => '#/components/schemas/User']],
-                    'nullable' => true,
-                ],
                 'created_at' => ['type' => 'string', 'format' => 'date-time'],
                 'updated_at' => ['type' => 'string', 'format' => 'date-time'],
             ],
@@ -706,28 +675,6 @@ class Schemas
                             ],
                         ],
                     ],
-                ],
-            ],
-            'MaterialUploadResponse' => [
-                'type' => 'object',
-                'required' => ['id', 'judul', 'notified_teachers'],
-                'properties' => [
-                    'id' => ['type' => 'integer', 'example' => 1],
-                    'judul' => ['type' => 'string', 'example' => 'Algebra Basics'],
-                    'deskripsi' => ['type' => 'string', 'nullable' => true],
-                    'mapel' => ['type' => 'string', 'enum' => ['IPA', 'MTK', 'umum']],
-                    'file_name' => ['type' => 'string'],
-                    'file_mime' => ['type' => 'string', 'nullable' => true],
-                    'file_size' => ['type' => 'integer'],
-                    'file_size_human' => ['type' => 'string'],
-                    'download_url' => ['type' => 'string', 'nullable' => true],
-                    'uploader' => [
-                        'allOf' => [['$ref' => '#/components/schemas/User']],
-                        'nullable' => true,
-                    ],
-                    'created_at' => ['type' => 'string', 'format' => 'date-time'],
-                    'updated_at' => ['type' => 'string', 'format' => 'date-time'],
-                    'notified_teachers' => ['type' => 'integer', 'description' => 'Number of teacher accounts notified about this upload.', 'example' => 12],
                 ],
             ],
         ];

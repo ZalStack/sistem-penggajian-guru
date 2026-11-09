@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\BahanAjar;
 use App\Models\Grade;
 use App\Models\Guru;
 use App\Models\User;
@@ -69,26 +68,6 @@ class SearchDataTest extends TestCase
         ]);
 
         $guru->update(['user_id' => $this->guruUser->id]);
-
-        BahanAjar::create([
-            'user_id' => $this->admin->id,
-            'judul' => 'Modul IPA Kelas 8',
-            'deskripsi' => 'Materi zat aditif dan adiktif',
-            'mapel' => 'IPA',
-            'file_path' => 'bahan-ajar/modul-ipa.pdf',
-            'file_name' => 'modul-ipa.pdf',
-            'file_size' => 1024,
-        ]);
-
-        BahanAjar::create([
-            'user_id' => $this->admin->id,
-            'judul' => 'Latihan MTK Persamaan Linear',
-            'deskripsi' => 'Bank soal persamaan linear satu variabel',
-            'mapel' => 'MTK',
-            'file_path' => 'bahan-ajar/mtk-linear.pdf',
-            'file_name' => 'mtk-linear.pdf',
-            'file_size' => 2048,
-        ]);
     }
 
     public function test_guru_index_search_returns_ok_and_filters_rows(): void
@@ -135,38 +114,6 @@ class SearchDataTest extends TestCase
             ->assertOk();
     }
 
-    public function test_bahan_ajar_index_search_returns_ok_and_filters_rows(): void
-    {
-        $this->actingAs($this->admin)
-            ->get('/bahan-ajar?search=ipa')
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('BahanAjar/Index')
-                ->has('bahanAjar.data', 1)
-            );
-
-        $this->actingAs($this->admin)
-            ->get('/bahan-ajar?search='.urlencode('100%'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->has('bahanAjar.data', 0));
-    }
-
-    public function test_my_bahan_ajar_search_returns_ok(): void
-    {
-        $this->actingAs($this->guruUser)
-            ->get('/my-bahan-ajar?search=ipa')
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('BahanAjar/GuruIndex')
-                ->has('bahanAjar.data', 1)
-            );
-
-        $this->actingAs($this->guruUser)
-            ->get('/my-bahan-ajar?search='.urlencode('a_yunda'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->has('bahanAjar.data', 0));
-    }
-
     public function test_api_teachers_search_returns_success_json(): void
     {
         $this->getJson('/api/v1/teachers?search=ayunda')
@@ -175,17 +122,6 @@ class SearchDataTest extends TestCase
             ->assertJsonPath('data.0.nama', 'Ayunda Rahmawati, S.Pd');
 
         $this->getJson('/api/v1/teachers?search='.urlencode('100%'))
-            ->assertOk()
-            ->assertJsonPath('success', true);
-    }
-
-    public function test_api_teaching_materials_search_returns_success_json(): void
-    {
-        $this->getJson('/api/v1/teaching-materials?search=ipa')
-            ->assertOk()
-            ->assertJsonPath('success', true);
-
-        $this->getJson('/api/v1/teaching-materials?search='.urlencode('a_yunda'))
             ->assertOk()
             ->assertJsonPath('success', true);
     }

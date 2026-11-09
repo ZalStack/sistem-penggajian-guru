@@ -73,7 +73,6 @@ const adminNavGroups = [
             { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'tabler:award', desc: 'Tarif per sesi' },
             { href: 'location.index', pattern: 'location.*', label: 'Lokasi Mengajar', icon: 'tabler:map-pin', desc: 'Titik & radius GPS' },
             { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'tabler:car', desc: 'Biaya transport' },
-            { href: 'bahan-ajar.index', pattern: 'bahan-ajar.*', label: 'Bahan Ajar', icon: 'tabler:books', desc: 'Materi ajar' },
         ],
     },
     {
@@ -89,7 +88,6 @@ const guruNavItems = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard', desc: 'Ringkasan hari ini' },
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Agenda mingguan' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'tabler:moon-stars', desc: 'Checklist & poin' },
-    { href: 'my-bahan-ajar.index', pattern: 'my-bahan-ajar.*', label: 'Bahan Ajar', icon: 'tabler:books', desc: 'Materi ajar' },
     { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'tabler:shield-check', desc: 'Ajukan izin' },
     { href: 'my-salary', pattern: 'my-salary.*', label: 'Slip Gaji', icon: 'tabler:cash', desc: 'Honor & slip' },
     { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell', desc: 'Pemberitahuan' },

@@ -14,7 +14,6 @@ use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\SalaryController;
 use App\Http\Controllers\Api\V1\ScheduleController;
 use App\Http\Controllers\Api\V1\TeacherController;
-use App\Http\Controllers\Api\V1\TeachingMaterialController;
 use App\Http\Controllers\Api\V1\TeachingSessionController;
 use App\Http\Controllers\Api\V1\TransportController;
 use Illuminate\Support\Facades\Route;
@@ -78,9 +77,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('teaching-sessions/options', [TeachingSessionController::class, 'options'])->name('teaching-sessions.options');
     Route::get('teaching-sessions/{session}', [TeachingSessionController::class, 'show'])->name('teaching-sessions.show');
 
-    Route::get('teaching-materials', [TeachingMaterialController::class, 'index'])->name('teaching-materials.index');
-    Route::get('teaching-materials/{material}', [TeachingMaterialController::class, 'show'])->name('teaching-materials.show');
-
     /*
     |----------------------------------------------------------------------
     | Authenticated endpoints (any role)
@@ -100,8 +96,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
         Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
         Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
-
-        Route::get('teaching-materials/{material}/download', [TeachingMaterialController::class, 'download'])->name('teaching-materials.download');
 
         /*
         |----------------------------------------------------------------------
@@ -189,11 +183,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('payroll', [PayrollController::class, 'store'])->name('payroll.store');
             Route::put('payroll/{payroll}', [PayrollController::class, 'update'])->name('payroll.update');
             Route::delete('payroll/{payroll}', [PayrollController::class, 'destroy'])->name('payroll.destroy');
-
-            // Teaching materials management
-            Route::post('teaching-materials', [TeachingMaterialController::class, 'store'])->name('teaching-materials.store');
-            Route::put('teaching-materials/{material}', [TeachingMaterialController::class, 'update'])->name('teaching-materials.update');
-            Route::delete('teaching-materials/{material}', [TeachingMaterialController::class, 'destroy'])->name('teaching-materials.destroy');
 
             // Reports
             Route::get('reports', [ReportController::class, 'index'])->name('reports.index');

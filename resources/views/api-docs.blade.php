@@ -363,7 +363,7 @@
                 <table>
                     <thead><tr><th>Operation</th><th>Authentication</th></tr></thead>
                     <tbody>
-                        <tr><td>GET (catalogue)</td><td>Public — grades, transports, locations, teachers, teaching sessions, teaching material metadata.</td></tr>
+                        <tr><td>GET (catalogue)</td><td>Public — grades, transports, locations, teachers, teaching sessions.</td></tr>
                         <tr><td>GET (identity / sensitive)</td><td>Bearer token — dashboard, schedules, profile, notifications, <code>mine</code> endpoints, attendance recap, salaries, payroll, reports, exports.</td></tr>
                         <tr><td>POST / PUT / PATCH / DELETE</td><td>Bearer token <em>always</em>, plus the <code>admin</code> or <code>guru</code> role as documented per endpoint.</td></tr>
                     </tbody>
