@@ -2,9 +2,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
 import Badge from '@/Components/ui/badge';
+import Button from '@/Components/ui/button';
+import Modal from '@/Components/ui/modal';
 import StatCard from '@/Components/ui/stat-card';
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
+import { useState } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { Attendance, Guru, Penggajian, TeachingSession } from '@/types';
 
@@ -43,10 +46,21 @@ const statusPresensiLabel: Record<string, string> = {
 };
 
 export default function GuruShow({ guru, periode, presensi, attendances, sessions, penggajian, periodeTersedia }: GuruShowProps) {
-    const handleResetPassword = () => {
-        if (confirm(`Reset password guru "${guru.nama}"? Password baru akan ditampilkan setelah reset.`)) {
-            router.post(route('guru.resetPassword', guru.id));
-        }
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+
+    const confirmResetPassword = () => {
+        setIsResetting(true);
+        router.post(route('guru.resetPassword', guru.id), {}, {
+            preserveScroll: true,
+            onFinish: () => {
+                setIsResetting(false);
+                setShowResetModal(false);
+            },
+            onSuccess: () => {
+                router.reload({ preserveScroll: true });
+            },
+        });
     };
 
     const handlePeriodeChange = (value: string) => {
@@ -66,6 +80,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                     <Link
                         href={route('guru.index')}
                         className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
+                        aria-label="Kembali ke data guru"
                     >
                         <Icon icon="tabler:arrow-left" className="text-lg" />
                     </Link>
@@ -74,20 +89,25 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         <p className="page-subtitle">Penugasan program, presensi, & honor</p>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
                     {guru.user && (
-                        <button
-                            onClick={handleResetPassword}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)]"
+                        <Button
+                            type="button"
+                            variant="warning"
+                            onClick={() => setShowResetModal(true)}
+                            className="flex-1 sm:flex-none"
+                            aria-label={`Reset password untuk ${guru.nama}`}
                         >
-                            <Icon icon="tabler:key" /> Reset Password
-                        </button>
+                            <Icon icon="tabler:key" className="text-base" /> Reset Password
+                        </Button>
                     )}
                     <Link
                         href={route('guru.edit', guru.id)}
-                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-xs font-semibold rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)] hover:shadow-[0_10px_22px_-6px_rgba(124,58,237,0.65)]"
+                        className="flex-1 sm:flex-none"
                     >
-                        <Icon icon="tabler:pencil" /> Edit Data
+                        <Button className="w-full sm:w-auto" aria-label={`Edit data ${guru.nama}`}>
+                            <Icon icon="tabler:pencil" className="text-base" /> Edit Data
+                        </Button>
                     </Link>
                 </div>
             </div>
@@ -121,7 +141,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:books" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Mata Pelajaran</p>
+                                    <p className="text-xs font-medium text-slate-400">Mata Pelajaran</p>
                                     <p className="text-sm font-semibold text-slate-900">{guru.mapel}</p>
                                 </div>
                             </div>
@@ -131,7 +151,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:layers-intersect" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Kelas yang Diajar</p>
+                                    <p className="text-xs font-medium text-slate-400">Kelas yang Diajar</p>
                                     <p className="text-sm font-semibold text-slate-900">{guru.jenjang ?? '-'}</p>
                                 </div>
                             </div>
@@ -141,7 +161,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:calendar-heart" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Mulai Mengajar di KPM</p>
+                                    <p className="text-xs font-medium text-slate-400">Mulai Mengajar di KPM</p>
                                     <p className="text-sm font-semibold text-slate-900">
                                         {guru.tanggal_bergabung
                                             ? new Date(guru.tanggal_bergabung).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -158,7 +178,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:school" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Pelatihan Suprarasional</p>
+                                    <p className="text-xs font-medium text-slate-400">Pelatihan Suprarasional</p>
                                     {guru.pelatihan_suprarasional == null ? (
                                         <p className="text-sm font-semibold text-slate-400">Belum diisi</p>
                                     ) : (
@@ -174,7 +194,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:cash" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-slate-400">Honor per Sesi</p>
+                                    <p className="text-xs font-medium text-slate-400">Honor per Sesi</p>
                                     <p className="text-sm font-extrabold text-slate-900">{formatCurrency(guru.grade?.honor_per_sesi ?? 0)}</p>
                                 </div>
                             </div>
@@ -184,10 +204,10 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <Icon icon="tabler:gift" className="text-base" />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-[11px] font-medium text-indigo-500">Tunjangan Khusus</p>
+                                    <p className="text-xs font-medium text-indigo-500">Tunjangan Khusus</p>
                                     <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1 flex-wrap">
                                         {Number(guru.tunjangan_khusus) > 0 ? formatCurrency(Number(guru.tunjangan_khusus)) : 'Rp 0'}
-                                        <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase">Admin Only</span>
+                                        <span className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase">Admin Only</span>
                                     </p>
                                 </div>
                             </div>
@@ -213,7 +233,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     {periodeTersedia
                                         .filter((p) => p !== periode)
                                         .map((p) => (
-                                            <option key={p} value={p}>{p}</option>
+                                             <option key={p} value={p}>{p}</option>
                                         ))}
                                 </select>
                             ) : undefined
@@ -221,19 +241,19 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                     >
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
                             <div className="p-3.5 rounded-xl bg-indigo-50 border border-indigo-100">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-500">Sesi Terjadwal</p>
+                                <p className="text-xs font-bold uppercase tracking-wider text-indigo-500">Sesi Terjadwal</p>
                                 <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.total_sesi}</p>
                             </div>
                             <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Hadir Valid</p>
+                                <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">Hadir Valid</p>
                                 <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.total_hadir}</p>
                             </div>
                             <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-100">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Belum Check-out</p>
+                                <p className="text-xs font-bold uppercase tracking-wider text-amber-600">Belum Check-out</p>
                                 <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.belum_checkout}</p>
                             </div>
                             <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-rose-600">Tidak Valid</p>
+                                <p className="text-xs font-bold uppercase tracking-wider text-rose-600">Tidak Valid</p>
                                 <p className="text-xl font-extrabold text-slate-900 mt-1">{presensi.tidak_valid}</p>
                             </div>
                         </div>
@@ -252,7 +272,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                             <div className="mt-5 overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="text-left text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                                        <tr className="text-left text-xs uppercase tracking-wider text-slate-400 border-b border-slate-100">
                                             <th className="py-2.5 pr-3 font-semibold">Tanggal</th>
                                             <th className="py-2.5 pr-3 font-semibold">Program</th>
                                             <th className="py-2.5 pr-3 font-semibold">Lokasi</th>
@@ -282,7 +302,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                 </table>
                             </div>
                         ) : (
-                            <p className="text-[13px] text-slate-500 text-center py-5 mt-4 bg-slate-50 rounded-xl">
+                            <p className="text-xs text-slate-500 text-center py-5 mt-4 bg-slate-50 rounded-xl">
                                 Tidak ada data presensi pada periode ini.
                             </p>
                         )}
@@ -290,9 +310,9 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         {penggajian && (
                             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white">
                                 <div>
-                                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-200">Honor Periode {penggajian.periode}</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-indigo-200">Honor Periode {penggajian.periode}</p>
                                     <p className="text-lg font-extrabold mt-0.5 break-words">{formatCurrency(penggajian.total)}</p>
-                                    <p className="text-[11.5px] text-indigo-200 mt-0.5">
+                                    <p className="text-xs text-indigo-200 mt-0.5">
                                         {penggajian.jumlah_hadir} kehadiran valid · {penggajian.jumlah_sesi} sesi terjadwal
                                     </p>
                                 </div>
@@ -304,7 +324,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                         href={route('penggajian.payslip', penggajian.id)}
                                         className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-white text-indigo-700 rounded-xl hover:bg-indigo-50 transition-colors"
                                     >
-                                        <Icon icon="tabler:download" className="text-[13px]" /> Slip PDF
+                                        <Icon icon="tabler:download" className="text-sm" /> Slip PDF
                                     </a>
                                 </div>
                             </div>
@@ -512,6 +532,27 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                     </Card>
                 </div>
             </div>
+
+            {/* Modal Konfirmasi Reset Password */}
+            <Modal show={showResetModal} onClose={() => setShowResetModal(false)} showCloseButton={true}>
+                <div className="p-6 text-center">
+                    <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-1 ring-amber-100">
+                        <Icon icon="tabler:key" className="text-2xl" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Reset Password Guru?</h3>
+                    <p className="text-sm text-slate-500 mb-6">
+                        Password untuk akun <strong className="text-slate-800">{guru.nama}</strong> akan direset secara acak. Password baru akan muncul pada notifikasi sistem setelah proses berhasil.
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        <Button variant="secondary" onClick={() => setShowResetModal(false)}>
+                            Batal
+                        </Button>
+                        <Button variant="warning" processing={isResetting} onClick={confirmResetPassword}>
+                            Ya, Reset Password
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

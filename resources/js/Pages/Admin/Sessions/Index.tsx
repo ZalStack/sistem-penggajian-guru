@@ -7,6 +7,7 @@ import Badge from '@/Components/ui/badge';
 import Modal from '@/Components/ui/modal';
 import Select from '@/Components/ui/select';
 import Pagination from '@/Components/ui/pagination';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import React, { useState, useMemo } from 'react';
@@ -81,9 +82,21 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editId) {
-            put(route('session.update', editId), { onSuccess: () => resetForm() });
+            put(route('session.update', editId), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    resetForm();
+                    router.reload();
+                },
+            });
         } else {
-            post(route('session.store'), { onSuccess: () => resetForm() });
+            post(route('session.store'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    resetForm();
+                    router.reload();
+                },
+            });
         }
     };
 
@@ -101,8 +114,12 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
         if (sessionToDelete) {
             setDeleting(true);
             router.delete(route('session.destroy', sessionToDelete.id), {
+                preserveScroll: true,
                 onFinish: () => setDeleting(false),
-                onSuccess: () => setSessionToDelete(null),
+                onSuccess: () => {
+                    setSessionToDelete(null);
+                    router.reload();
+                },
             });
         }
     };
@@ -111,12 +128,12 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
         router.get(
             route('session.index'),
             { ...filters, ...patch },
-            { preserveState: true, replace: true }
+            { preserveState: true, preserveScroll: true, replace: true }
         );
     };
 
     const resetFilters = () => {
-        router.get(route('session.index'), {}, { preserveState: true, replace: true });
+        router.get(route('session.index'), {}, { preserveState: true, preserveScroll: true, replace: true });
     };
 
     const hasActiveFilters = Boolean(filters.periode || filters.filter_guru || filters.filter_program || filters.filter_status || filters.search);
@@ -413,7 +430,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                                     {group.dayName}, {group.dateLabel}
                                                                 </span>
                                                                 {group.isToday && (
-                                                                    <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">
+                                                                    <span className="px-2 py-0.5 text-xs font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">
                                                                         Hari Ini
                                                                     </span>
                                                                 )}
@@ -441,7 +458,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                                         <span className="font-semibold text-slate-900 text-sm block truncate">
                                                                             {session.guru?.nama ?? '-'}
                                                                         </span>
-                                                                        <span className="text-[11px] text-slate-400">
+                                                                        <span className="text-xs text-slate-400">
                                                                             Grade {session.guru?.grade?.kode_grade ?? '-'} · {session.mapel}
                                                                         </span>
                                                                     </div>
@@ -457,13 +474,13 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:calendar-event" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <Icon icon="tabler:calendar-event" className="text-sm text-slate-400 flex-shrink-0" />
                                                                     <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:clock" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <Icon icon="tabler:clock" className="text-sm text-slate-400 flex-shrink-0" />
                                                                     <span className="text-slate-600 text-sm font-medium">
                                                                         {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
                                                                     </span>
@@ -474,7 +491,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                                    <Icon icon="tabler:map-pin" className="text-sm text-slate-400 flex-shrink-0" />
                                                                     <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
                                                                 </div>
                                                             </TableCell>
@@ -483,18 +500,20 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleEdit(session)}
-                                                                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                                                                         title="Edit Sesi"
+                                                                        aria-label={`Edit sesi ${session.guru?.nama}`}
                                                                     >
-                                                                        <Icon icon="tabler:edit" className="text-[18px]" />
+                                                                        <Icon icon="tabler:edit" className="text-lg" />
                                                                     </button>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => openDeleteModal(session)}
-                                                                        className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                                                         title="Hapus Sesi"
+                                                                        aria-label={`Hapus sesi ${session.guru?.nama}`}
                                                                     >
-                                                                        <Icon icon="tabler:trash" className="text-[18px]" />
+                                                                        <Icon icon="tabler:trash" className="text-lg" />
                                                                     </button>
                                                                 </div>
                                                             </TableCell>
@@ -516,12 +535,12 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                 <span className={`w-2 h-2 rounded-full ${group.isToday ? 'bg-indigo-600 animate-pulse' : 'bg-slate-400'}`} />
                                                 <span className="font-extrabold text-xs text-slate-900">{group.dayName}, {group.dateLabel}</span>
                                                 {group.isToday && (
-                                                    <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase bg-indigo-100 text-indigo-700 rounded-full">
+                                                    <span className="px-1.5 py-0.5 text-xs font-bold uppercase bg-indigo-100 text-indigo-700 rounded-full">
                                                         Hari Ini
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-[11px] font-semibold text-slate-500">{group.items.length} sesi</span>
+                                            <span className="text-xs font-semibold text-slate-500">{group.items.length} sesi</span>
                                         </div>
 
                                         {group.items.map((session) => {
@@ -591,38 +610,28 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                             <Pagination links={sessions.links} from={sessions.from} to={sessions.to} total={sessions.total} />
                         </>
                     ) : (
-                        <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-violet-50 text-violet-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-violet-100">
-                                <Icon icon="tabler:calendar-off" className="text-[32px]" />
-                            </div>
-                            <h3 className="text-base font-bold text-slate-900">
-                                {hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
-                            </h3>
-                            <p className="text-sm text-slate-500 mt-1 w-full mx-auto">
-                                {hasActiveFilters
+                        <div className="py-8">
+                            <EmptyState
+                                icon="tabler:calendar-off"
+                                title={hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
+                                description={hasActiveFilters
                                     ? 'Coba ubah atau reset filter yang dipilih.'
                                     : 'Mulai dengan menambahkan sesi mengajar baru untuk memulai penjadwalan.'}
-                            </p>
-                            <div className="mt-6">
-                                {hasActiveFilters ? (
-                                    <button
-                                        type="button"
-                                        onClick={resetFilters}
-                                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl transition-colors"
-                                    >
-                                        <Icon icon="tabler:refresh" className="text-[14px]" /> Reset Semua Filter
-                                    </button>
-                                ) : (
-                                    <Button
-                                        onClick={() => {
+                                action={
+                                    hasActiveFilters ? {
+                                        label: 'Reset Semua Filter',
+                                        onClick: resetFilters,
+                                        icon: 'tabler:refresh',
+                                    } : {
+                                        label: 'Tambah Sesi Sekarang',
+                                        onClick: () => {
                                             resetForm();
                                             setShowForm(true);
-                                        }}
-                                    >
-                                        <Icon icon="tabler:plus" className="text-[18px]" /> Tambah Sesi Sekarang
-                                    </Button>
-                                )}
-                            </div>
+                                        },
+                                        icon: 'tabler:plus',
+                                    }
+                                }
+                            />
                         </div>
                     )}
                 </Card>

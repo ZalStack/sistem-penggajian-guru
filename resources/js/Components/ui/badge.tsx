@@ -1,17 +1,18 @@
 import { cn } from '@/lib/utils';
 
 interface BadgeProps {
-    variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'outline' | 'purple' | 'violet';
+    variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'outline' | 'purple' | 'violet' | 'brand';
     size?: 'sm' | 'md';
     dot?: boolean;
     children: React.ReactNode;
     className?: string;
 }
 
-// Unified: neutral=brand gradient, info=indigo, success=emerald, warning=amber, danger=rose
+// Unified: neutral=subtle slate, brand=brand gradient, info=indigo, success=emerald, warning=amber, danger=rose
 const variants: Record<string, string> = {
     default: 'bg-slate-100 text-slate-700 border-slate-200',
-    neutral: 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]',
+    neutral: 'bg-slate-100 text-slate-700 border-slate-200/80',
+    brand: 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]',
     success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
     danger: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -21,7 +22,8 @@ const variants: Record<string, string> = {
 
 const dotColors: Record<string, string> = {
     default: 'bg-slate-500',
-    neutral: 'bg-white',
+    neutral: 'bg-slate-500',
+    brand: 'bg-white',
     success: 'bg-emerald-500',
     warning: 'bg-amber-500',
     danger: 'bg-rose-500',
@@ -30,8 +32,8 @@ const dotColors: Record<string, string> = {
 };
 
 const sizes = {
-    sm: 'px-2 py-1 text-[10px] leading-none',
-    md: 'px-2.5 py-1 text-[11px] leading-none',
+    sm: 'px-2 py-0.5 text-xs font-medium leading-none',
+    md: 'px-2.5 py-1 text-xs font-semibold leading-none',
 };
 
 export default function Badge({ variant = 'default', size = 'md', dot = false, children, className }: BadgeProps) {

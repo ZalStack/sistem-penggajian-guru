@@ -60,12 +60,12 @@ export default function ChecklistGrid({ config, state, disabled = false, onToggl
                             <div className="min-w-0">
                                 <p className="truncate text-xs font-bold leading-snug text-slate-800">{item.label}</p>
                                 {item.has_jamaah ? (
-                                    <div className="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-amber-600">
+                                    <div className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-amber-600">
                                         <span className="text-amber-500">👑</span>
                                         <span>berjamaah</span>
                                     </div>
                                 ) : (
-                                    <p className="mt-0.5 text-[10px] font-semibold text-emerald-700">{item.poin} poin</p>
+                                    <p className="mt-0.5 text-xs font-semibold text-emerald-700">{item.poin} poin</p>
                                 )}
                             </div>
                         </div>

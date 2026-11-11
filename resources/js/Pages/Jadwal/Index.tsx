@@ -132,15 +132,15 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                     {/* Ringkasan minggu */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
                         <Card className="p-4">
-                            <p className="text-[11.5px] font-[600] uppercase tracking-wider text-slate-400">Periode</p>
-                            <p className="text-[14px] font-[700] text-slate-900 mt-1.5 leading-snug">{minggu.label}</p>
+                            <p className="text-xs font-[600] uppercase tracking-wider text-slate-400">Periode</p>
+                            <p className="text-sm font-[700] text-slate-900 mt-1.5 leading-snug">{minggu.label}</p>
                         </Card>
                         <Card className="p-4">
-                            <p className="text-[11.5px] font-[600] uppercase tracking-wider text-slate-400">Total Sesi</p>
+                            <p className="text-xs font-[600] uppercase tracking-wider text-slate-400">Total Sesi</p>
                             <p className="text-[22px] font-[800] tracking-tight text-slate-900 mt-1">{rekapMinggu.total_sesi}</p>
                         </Card>
                         <Card className="p-4">
-                            <p className="text-[11.5px] font-[600] uppercase tracking-wider text-slate-400">
+                            <p className="text-xs font-[600] uppercase tracking-wider text-slate-400">
                                 {role === 'admin' ? 'Guru Terjadwal' : 'Hari Aktif'}
                             </p>
                             <p className="text-[22px] font-[800] tracking-tight text-slate-900 mt-1">
@@ -193,22 +193,22 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                 }`}
                             >
                                 <div className={`px-3 py-2.5 border-b ${day.is_today ? 'border-indigo-200' : 'border-slate-100'}`}>
-                                    <p className={`text-[11px] font-[700] uppercase tracking-wider ${day.is_today ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                    <p className={`text-xs font-[700] uppercase tracking-wider ${day.is_today ? 'text-indigo-600' : 'text-slate-400'}`}>
                                         {day.hari_singkat}
                                     </p>
                                     <p className={`text-[15px] font-[800] tracking-tight ${day.is_today ? 'text-indigo-700' : 'text-slate-900'}`}>
                                         {day.tanggal_label}
                                     </p>
                                     <div className="flex items-center gap-2 mt-1.5">
-                                        <span className="text-[10.5px] font-[600] text-slate-500">{day.total_sesi} sesi</span>
+                                        <span className="text-xs font-[600] text-slate-500">{day.total_sesi} sesi</span>
                                         {role === 'admin' && day.jumlah_guru !== null && (
-                                            <span className="text-[10.5px] font-[600] text-slate-500">· {day.jumlah_guru} guru</span>
+                                            <span className="text-xs font-[600] text-slate-500">· {day.jumlah_guru} guru</span>
                                         )}
                                     </div>
                                 </div>
                                 <div className="p-2 space-y-2 overflow-y-auto flex-1">
                                     {day.sessions.length === 0 ? (
-                                        <p className="text-[11.5px] text-slate-400 font-[500] text-center py-4">Tidak ada sesi</p>
+                                        <p className="text-xs text-slate-400 font-[500] text-center py-4">Tidak ada sesi</p>
                                     ) : (
                                         day.sessions.map((s) => (
                                             <div
@@ -220,19 +220,19 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                                 }`}
                                             >
                                                 <div className="flex items-center justify-between gap-1">
-                                                    <span className="text-[11px] font-[700] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/80">
+                                                    <span className="text-xs font-[700] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/80">
                                                         {s.jam_mulai}–{s.jam_selesai}
                                                     </span>
-                                                    <span className="text-[10.5px] font-[600] text-slate-500">
+                                                    <span className="text-xs font-[600] text-slate-500">
                                                         {s.jumlah_sesi} sesi
                                                     </span>
                                                 </div>
-                                                <p className="text-[12px] font-[700] text-slate-900 leading-snug">
+                                                <p className="text-xs font-[700] text-slate-900 leading-snug">
                                                     {s.program ?? s.mapel}
                                                 </p>
-                                                <p className="text-[11px] text-slate-500 leading-snug">{s.lokasi}</p>
+                                                <p className="text-xs text-slate-500 leading-snug">{s.lokasi}</p>
                                                 {role === 'admin' && (
-                                                    <p className="text-[11px] text-slate-600 font-[600] leading-snug">
+                                                    <p className="text-xs text-slate-600 font-[600] leading-snug">
                                                         {s.guru.nama}
                                                         {s.guru.kode_grade !== '-' && (
                                                             <span className="text-slate-400 font-[500]"> ({s.guru.kode_grade})</span>
@@ -253,7 +253,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                             <Card key={day.tanggal} className={`overflow-hidden ${day.is_today ? 'ring-2 ring-indigo-200' : ''}`}>
                                 <div className={`px-4 py-3 flex items-center justify-between border-b ${day.is_today ? 'bg-indigo-50/60 border-indigo-100' : 'border-slate-100'}`}>
                                     <div>
-                                        <p className={`text-[12px] font-[700] uppercase tracking-wider ${day.is_today ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                        <p className={`text-xs font-[700] uppercase tracking-wider ${day.is_today ? 'text-indigo-600' : 'text-slate-400'}`}>
                                             {day.hari}{day.is_today && ' · Hari ini'}
                                         </p>
                                         <p className={`text-[15px] font-[800] tracking-tight ${day.is_today ? 'text-indigo-700' : 'text-slate-900'}`}>
@@ -261,32 +261,32 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[13px] font-[700] text-slate-900">{day.total_sesi} sesi</p>
+                                        <p className="text-sm font-[700] text-slate-900">{day.total_sesi} sesi</p>
                                         {role === 'admin' && day.jumlah_guru !== null && (
-                                            <p className="text-[11px] font-[600] text-slate-500">{day.jumlah_guru} guru</p>
+                                            <p className="text-xs font-[600] text-slate-500">{day.jumlah_guru} guru</p>
                                         )}
                                     </div>
                                 </div>
                                 <div className="divide-y divide-slate-100">
                                     {day.sessions.length === 0 ? (
-                                        <p className="text-[12.5px] text-slate-400 font-[500] text-center py-6">Tidak ada sesi</p>
+                                        <p className="text-xs text-slate-400 font-[500] text-center py-6">Tidak ada sesi</p>
                                     ) : (
                                         day.sessions.map((s) => (
                                             <div key={s.id} className="p-4 space-y-1.5">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[12px] font-[700] text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100/80">
+                                                    <span className="text-xs font-[700] text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100/80">
                                                         {s.jam_mulai}–{s.jam_selesai}
                                                     </span>
-                                                    <span className="text-[11.5px] font-[600] text-slate-500">
+                                                    <span className="text-xs font-[600] text-slate-500">
                                                         {s.jumlah_sesi} sesi
                                                     </span>
                                                 </div>
-                                                <p className="text-[13.5px] font-[700] text-slate-900">
+                                                <p className="text-sm font-[700] text-slate-900">
                                                     {s.program ?? s.mapel}
                                                 </p>
-                                                <p className="text-[12.5px] text-slate-500">{s.lokasi}</p>
+                                                <p className="text-xs text-slate-500">{s.lokasi}</p>
                                                 {role === 'admin' && (
-                                                    <p className="text-[12.5px] font-[600] text-slate-600">
+                                                    <p className="text-xs font-[600] text-slate-600">
                                                         {s.guru.nama}
                                                         {s.guru.kode_grade !== '-' && ` (${s.guru.kode_grade})`}
                                                     </p>

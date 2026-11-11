@@ -68,6 +68,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
             { status, catatan: catatan || null },
             {
                 preserveScroll: true,
+                onSuccess: () => router.reload(),
                 onFinish: () => setProcessing(false),
             },
         );
@@ -89,7 +90,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                         </Link>
                         <div>
                             <h1 className="page-title">Detail Checklist 7SPS</h1>
-                            <p className="mt-0.5 text-[12.5px] font-medium text-slate-500">{record.tanggal}</p>
+                            <p className="mt-0.5 text-xs font-medium text-slate-500">{record.tanggal}</p>
                         </div>
                     </div>
                     <Badge variant={statusVariant[record.status_approval] ?? 'default'} size="md" dot>
@@ -108,11 +109,11 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                             <div className="min-w-0">
                                 <h2 className="truncate text-lg font-extrabold tracking-tight">{record.guru.nama}</h2>
                                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                    <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold ring-1 ring-white/25">
+                                    <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25">
                                         Grade {record.guru.kode_grade}
                                     </span>
                                     {record.guru.programs.map((program) => (
-                                        <span key={program} className="rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold ring-1 ring-white/25">
+                                        <span key={program} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25">
                                             {program}
                                         </span>
                                     ))}
@@ -123,7 +124,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                         <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3.5 ring-1 ring-white/20 backdrop-blur-sm">
                             <Icon icon="mdi:star-circle" className="text-2xl text-amber-300" />
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-100/80">Total Poin</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.1em] text-emerald-100/80">Total Poin</p>
                                 <p className="text-2xl font-black leading-none">{record.total_poin} <span className="text-sm font-bold text-emerald-100/80">/ 100</span></p>
                             </div>
                         </div>
@@ -157,10 +158,10 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                                 <Icon icon={item.icon} className="text-lg" />
                                             </span>
                                             <div className="min-w-0">
-                                                <p className={`truncate text-[12px] font-bold ${item.checked ? 'text-emerald-900' : 'text-slate-600'}`}>
+                                                <p className={`truncate text-xs font-bold ${item.checked ? 'text-emerald-900' : 'text-slate-600'}`}>
                                                     {item.label}
                                                 </p>
-                                                <p className="text-[10px] font-semibold text-slate-500">
+                                                <p className="text-xs font-semibold text-slate-500">
                                                     {item.poin} poin
                                                     {item.has_jamaah && (
                                                         <span className={item.berjamaah ? 'text-amber-600' : 'text-slate-400'}>
@@ -194,7 +195,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                 />
 
                                 <div>
-                                    <label htmlFor="catatan" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                                    <label htmlFor="catatan" className="mb-1.5 block text-xs font-semibold text-slate-700">
                                         Catatan Admin <span className="font-medium text-slate-400">(opsional)</span>
                                     </label>
                                     <textarea
@@ -213,7 +214,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                 </Button>
 
                                 {(record.approved_by || record.approved_at) && (
-                                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-medium leading-relaxed text-slate-500">
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium leading-relaxed text-slate-500">
                                         {record.approved_by && <p>Disetujui oleh: <span className="font-bold text-slate-700">{record.approved_by}</span></p>}
                                         {record.approved_at && <p>Waktu: <span className="font-bold text-slate-700">{record.approved_at}</span></p>}
                                     </div>
@@ -226,7 +227,7 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-indigo-600 shadow-sm">
                                     <Icon icon="mdi:information-outline" className="text-base" />
                                 </span>
-                                <p className="text-[11px] font-medium leading-relaxed text-slate-600">
+                                <p className="text-xs font-medium leading-relaxed text-slate-600">
                                     Data yang <span className="font-bold text-slate-800">disetujui</span> akan terkunci dan tidak dapat diubah guru.
                                     Pilih <span className="font-bold text-slate-800">Menunggu</span> untuk membuka kembali.
                                 </p>
@@ -253,7 +254,7 @@ function SummaryCard({ label, value, icon, color }: { label: string; value: stri
                 <Icon icon={icon} className="text-base" />
             </div>
             <p className="text-xl font-extrabold tracking-tight text-slate-900">{value}</p>
-            <p className="mt-0.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+            <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
         </div>
     );
 }

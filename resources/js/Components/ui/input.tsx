@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode, useId } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -10,11 +10,14 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ className, label, error, icon, trailing, hint, id, ...props }, ref) => {
+    ({ className, label, error, icon, trailing, hint, id: explicitId, ...props }, ref) => {
+        const generatedId = useId();
+        const inputId = explicitId || props.name || generatedId;
+
         return (
             <div className="space-y-1.5">
                 {label && (
-                    <label htmlFor={id} className="block text-[12.5px] font-[600] tracking-[-0.01em] text-slate-700">
+                    <label htmlFor={inputId} className="block text-xs font-semibold tracking-[-0.01em] text-slate-700">
                         {label} {props.required && <span className="text-rose-500 font-bold">*</span>}
                     </label>
                 )}
@@ -26,7 +29,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
                     <input
                         ref={ref}
-                        id={id}
+                        id={inputId}
                         className={cn(
                             'input-modern',
                             icon && 'pl-10',
@@ -42,8 +45,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         </div>
                     )}
                 </div>
-                {hint && !error && <p className="text-[11px] leading-4 text-slate-500 font-[450]">{hint}</p>}
-                {error && <p className="text-[11px] leading-4 text-rose-600 font-[600] flex items-center gap-1">{error}</p>}
+                {hint && !error && <p className="text-xs leading-4 text-slate-500 font-[450]">{hint}</p>}
+                {error && <p className="text-xs leading-4 text-rose-600 font-[600] flex items-center gap-1">{error}</p>}
             </div>
         );
     }

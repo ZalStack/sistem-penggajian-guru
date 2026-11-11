@@ -44,7 +44,7 @@ export default function Toast({ type, message, onClose }: ToastProps) {
                 <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', style.bg)}>
                     <Icon icon={style.icon} className="text-base" />
                 </span>
-                <p className="min-w-0 flex-1 text-[12.5px] font-semibold leading-snug">{message}</p>
+                <p className="min-w-0 flex-1 text-sm font-semibold leading-snug">{message}</p>
                 {onClose && (
                     <button
                         type="button"

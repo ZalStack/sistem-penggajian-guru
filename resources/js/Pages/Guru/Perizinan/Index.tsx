@@ -4,6 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import Input from '@/Components/ui/input';
 import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
@@ -68,9 +69,11 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('my-perizinan.store'), {
+            preserveScroll: true,
             onSuccess: () => {
                 reset();
                 setShowForm(false);
+                router.reload();
             },
         });
     };
@@ -297,13 +300,13 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                     )}
                                                     {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                         <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="tabler:calendar-clock" className="text-[12px]" />
+                                                            <Icon icon="tabler:calendar-clock" className="text-xs" />
                                                             {p.jumlah_sesi_terdampak} sesi terdampak
                                                         </p>
                                                     )}
                                                     {p.session && (
-                                                        <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="tabler:books" className="text-[12px]" />
+                                                        <p className="text-xs text-indigo-500 mt-0.5 flex items-center gap-1">
+                                                            <Icon icon="tabler:books" className="text-xs" />
                                                             Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
                                                         </p>
                                                     )}
@@ -332,13 +335,11 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                 </TableBody>
                             </Table>
                         ) : (
-                            <div className="text-center py-16 sm:py-20 px-2">
-                                <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
-                                    <Icon icon="tabler:shield-check" className="text-[28px]" />
-                                </div>
-                                <h3 className="text-base font-bold text-slate-900">Belum ada pengajuan perizinan</h3>
-                                <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">Klik tombol "Ajukan Perizinan" untuk membuat pengajuan baru</p>
-                            </div>
+                            <EmptyState
+                                icon="tabler:shield-check"
+                                title="Belum ada pengajuan perizinan"
+                                description="Klik tombol 'Ajukan Perizinan' untuk membuat pengajuan baru."
+                            />
                         )}
                     </div>
 
@@ -361,14 +362,14 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                                 <p className="text-xs text-slate-500 break-words">{formatDate(p.tanggal_mulai)}{p.tanggal_mulai !== p.tanggal_selesai ? ` s/d ${formatDate(p.tanggal_selesai)}` : ''}</p>
                                                 {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                        <Icon icon="tabler:calendar-clock" className="text-[13px]" />
+                                                        <Icon icon="tabler:calendar-clock" className="text-xs" />
                                                         {p.jumlah_sesi_terdampak} sesi terdampak
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">#{index + 1}</span>
+                                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">#{index + 1}</span>
                                             <Badge variant={statusConfig[p.status]?.variant ?? 'default'}>
                                                 {statusConfig[p.status]?.label ?? p.status}
                                             </Badge>
@@ -390,12 +391,11 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-12 px-2">
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-3 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.6)]">
-                                    <Icon icon="tabler:shield-check" className="text-[24px]" />
-                                </div>
-                                <p className="text-sm text-slate-500">Belum ada pengajuan perizinan</p>
-                            </div>
+                            <EmptyState
+                                icon="tabler:shield-check"
+                                title="Belum ada pengajuan perizinan"
+                                description="Klik tombol 'Ajukan Perizinan' untuk membuat pengajuan baru."
+                            />
                         )}
                     </div>
                 </Card>

@@ -5,6 +5,7 @@ import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import Pagination from '@/Components/ui/pagination';
 import Modal from '@/Components/ui/modal';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
@@ -52,7 +53,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
         router.get(
             route('perizinan.index'),
             { ...filters, [key]: value || undefined },
-            { preserveState: true, replace: true }
+            { preserveState: true, preserveScroll: true, replace: true }
         );
     };
 
@@ -70,9 +71,11 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
             catatan_admin: data.catatan_admin,
         }, {
             preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
                 setActionModal(null);
                 reset();
+                router.reload();
             },
         });
     };
@@ -181,7 +184,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                     <div className="flex items-end">
                         <Button
                             variant="secondary"
-                            onClick={() => router.get(route('perizinan.index'), {}, { preserveState: true, replace: true })}
+                            onClick={() => router.get(route('perizinan.index'), {}, { preserveState: true, preserveScroll: true, replace: true })}
                         >
                             <Icon icon="tabler:rotate-clockwise" className="text-base" />
                             Reset Filter
@@ -247,14 +250,14 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                         <p className="text-slate-500 text-xs">s/d {formatDate(p.tanggal_selesai)}</p>
                                                     )}
                                                     {p.session && (
-                                                        <p className="text-[11px] text-indigo-500 mt-0.5 flex items-center gap-1">
-                                                            <Icon icon="tabler:books" className="text-[10px]" />
+                                                        <p className="text-xs text-indigo-500 mt-0.5 flex items-center gap-1">
+                                                            <Icon icon="tabler:books" className="text-xs" />
                                                             Sesi {p.session.jam_mulai?.substring(0, 5)}–{p.session.jam_selesai?.substring(0, 5)}
                                                         </p>
                                                     )}
                                                     {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
-                                                        <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1" title="Sesi mengajar yang jatuh pada rentang tanggal perizinan">
-                                                            <Icon icon="tabler:calendar-clock" className="text-[10px]" />
+                                                        <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1" title="Sesi mengajar yang jatuh pada rentang tanggal perizinan">
+                                                            <Icon icon="tabler:calendar-clock" className="text-xs" />
                                                             {p.jumlah_sesi_terdampak} sesi terdampak
                                                         </p>
                                                     )}
@@ -282,16 +285,20 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 {p.status === 'pending' ? (
                                                     <div className="flex items-center justify-end gap-1">
                                                         <button
+                                                            type="button"
                                                             onClick={() => openActionModal('disetujui', p)}
-                                                            className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
+                                                            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
                                                             title="Setujui"
+                                                            aria-label={`Setujui perizinan ${p.guru?.nama}`}
                                                         >
                                                             <Icon icon="tabler:check" className="text-base" />
                                                         </button>
                                                         <button
+                                                            type="button"
                                                             onClick={() => openActionModal('ditolak', p)}
-                                                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
+                                                            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
                                                             title="Tolak"
+                                                            aria-label={`Tolak perizinan ${p.guru?.nama}`}
                                                         >
                                                             <Icon icon="tabler:x" className="text-base" />
                                                         </button>
@@ -305,13 +312,11 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                 </TableBody>
                             </Table>
                         ) : (
-                            <div className="text-center py-16">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
-                                    <Icon icon="tabler:shield-check" className="text-3xl" />
-                                </div>
-                                <h3 className="text-base font-bold text-slate-900">Tidak ada data perizinan</h3>
-                                <p className="text-sm text-slate-500 mt-1">Belum ada pengajuan perizinan dari guru</p>
-                            </div>
+                            <EmptyState
+                                icon="tabler:shield-check"
+                                title="Tidak ada data perizinan"
+                                description="Belum ada pengajuan perizinan dari guru."
+                            />
                         )}
                     </div>
 
@@ -333,7 +338,7 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 </p>
                                                 {(p.jumlah_sesi_terdampak ?? 0) > 0 && (
                                                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                        <Icon icon="tabler:calendar-clock" className="text-[11px]" />
+                                                        <Icon icon="tabler:calendar-clock" className="text-xs" />
                                                         {p.jumlah_sesi_terdampak} sesi mengajar terdampak
                                                     </p>
                                                 )}
@@ -385,16 +390,22 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-16">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4 text-indigo-500 shadow-soft">
-                                    <Icon icon="tabler:shield-check" className="text-3xl" />
-                                </div>
-                                <p className="text-sm text-slate-500">Tidak ada data perizinan</p>
-                            </div>
+                            <EmptyState
+                                icon="tabler:shield-check"
+                                title="Tidak ada data perizinan"
+                                description="Belum ada pengajuan perizinan dari guru."
+                            />
                         )}
                     </div>
 
-                    {perizinan.links && <Pagination links={perizinan.links} />}
+                    {perizinan.links && (
+                        <Pagination
+                            links={perizinan.links}
+                            from={perizinan.from}
+                            to={perizinan.to}
+                            total={perizinan.total}
+                        />
+                    )}
                 </Card>
             </div>
 

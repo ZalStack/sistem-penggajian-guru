@@ -75,15 +75,15 @@ export default function JourneyProgressBar({
                     <div className="flex min-w-0 items-center gap-2">
                         <span className="text-base leading-none sm:text-lg">🐪</span>
                         <div className="min-w-0">
-                            <p className="truncate text-[11px] font-black tracking-tight text-slate-700 sm:text-xs">
+                            <p className="truncate text-xs font-black tracking-tight text-slate-700">
                                 Perjalanan Menuju Ka&apos;bah
                             </p>
-                            <p className="truncate text-[9px] font-semibold text-slate-500 sm:text-[10px]">
+                            <p className="truncate text-xs font-semibold text-slate-500">
                                 Dari Titik 0 hingga Baitullah
                             </p>
                         </div>
                     </div>
-                    <span className="shrink-0 rounded-full border border-amber-300/70 bg-white/80 px-2.5 py-0.5 text-[10px] font-black tabular-nums text-amber-700 shadow-sm backdrop-blur-sm sm:text-[11px]">
+                    <span className="shrink-0 rounded-full border border-amber-300/70 bg-white/80 px-2.5 py-0.5 text-xs font-black tabular-nums text-amber-700 shadow-sm backdrop-blur-sm">
                         {clampedProgress}%
                     </span>
                 </div>
@@ -141,9 +141,9 @@ export default function JourneyProgressBar({
                                         }`}
                                     >
                                         {reached ? (
-                                            <span className="text-[9px] font-black text-white sm:text-[10px]">✓</span>
+                                            <span className="text-xs font-black text-white">✓</span>
                                         ) : (
-                                            <span className="text-[8px] font-black text-amber-600 sm:text-[9px]">{milestone.point}</span>
+                                            <span className="text-[10px] font-black text-amber-600">{milestone.point}</span>
                                         )}
                                     </div>
                                     <span className={`-mt-1 h-1.5 w-1.5 rotate-45 ${reached ? 'bg-amber-400' : 'bg-amber-300'}`} />
@@ -157,7 +157,7 @@ export default function JourneyProgressBar({
                             style={{ left: `${clampedProgress}%`, bottom: 'calc(100% - 2px)', transform: `translateX(${shift})` }}
                         >
                             <div className="mb-0.5 flex flex-col items-center">
-                                <div className="animate-jbar-float whitespace-nowrap rounded-full border border-amber-400 bg-white/95 px-2 py-0.5 text-[9px] font-black text-amber-700 shadow-md shadow-amber-200/60 sm:text-[10px]">
+                                <div className="animate-jbar-float whitespace-nowrap rounded-full border border-amber-400 bg-white/95 px-2 py-0.5 text-xs font-black text-amber-700 shadow-md shadow-amber-200/60">
                                     {clampedProgress >= 100 ? "Tiba di Ka'bah! 🕋" : `🐪 ${totalPoin} Poin`}
                                 </div>
                                 <span className="-mt-0.5 h-1.5 w-1.5 rotate-45 bg-amber-400" />
@@ -189,7 +189,7 @@ export default function JourneyProgressBar({
                             {clampedProgress >= 100 && (
                                 <span className="absolute -right-1 -top-1 flex h-4 w-4">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-90" />
-                                    <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full border border-white bg-amber-400 text-[8px] font-black text-slate-950">
+                                    <span className="relative inline-flex h-4 w-4 items-center justify-center rounded-full border border-white bg-amber-400 text-xs font-black text-slate-950">
                                         ★
                                     </span>
                                 </span>
@@ -199,27 +199,27 @@ export default function JourneyProgressBar({
 
                     {/* Label di bawah jalur */}
                     <div className="relative z-10 mt-8 flex items-center justify-between gap-2 sm:mt-10">
-                        <span className="inline-flex shrink-0 items-center rounded-full bg-white/75 px-2 py-0.5 text-[9.5px] font-black leading-tight text-emerald-700 shadow-sm ring-1 ring-white/70 backdrop-blur-sm sm:px-2.5 sm:text-[11px]">
+                        <span className="inline-flex shrink-0 items-center rounded-full bg-white/75 px-2 py-0.5 text-xs font-black leading-tight text-emerald-700 shadow-sm ring-1 ring-white/70 backdrop-blur-sm">
                             🌴 Titik Mulai
                         </span>
                         <div className="hidden flex-wrap items-center justify-center gap-x-2.5 gap-y-1 sm:flex">
                             {intermediateMilestones.map((milestone) => (
                                 <span
                                     key={`label-${milestone.point}`}
-                                    className={`text-[9px] font-bold leading-tight ${isReached(milestone) ? 'text-amber-600' : 'text-slate-400'}`}
+                                    className={`text-xs font-bold leading-tight ${isReached(milestone) ? 'text-amber-600' : 'text-slate-400'}`}
                                 >
                                     {milestone.icon} {milestone.point}
                                 </span>
                             ))}
                         </div>
-                        <span className="inline-flex shrink-0 items-center rounded-full bg-white/75 px-2 py-0.5 text-[9.5px] font-black leading-tight text-amber-700 shadow-sm ring-1 ring-white/70 backdrop-blur-sm sm:px-2.5 sm:text-[11px]">
+                        <span className="inline-flex shrink-0 items-center rounded-full bg-white/75 px-2 py-0.5 text-xs font-black leading-tight text-amber-700 shadow-sm ring-1 ring-white/70 backdrop-blur-sm">
                             🕋 Ka&apos;bah
                         </span>
                     </div>
                 </div>
 
                 {/* Narasi perjalanan */}
-                <div className="relative z-10 flex items-start gap-1.5 border-t border-amber-200/60 bg-amber-50/80 px-4 py-2.5 text-[10.5px] backdrop-blur-sm sm:items-center sm:px-6 sm:text-[11px]">
+                <div className="relative z-10 flex items-start gap-1.5 border-t border-amber-200/60 bg-amber-50/80 px-4 py-2.5 text-xs backdrop-blur-sm sm:items-center sm:px-6">
                     <Icon icon="mdi:creation" className="mt-px shrink-0 text-amber-500 sm:mt-0" />
                     <span className="min-w-0 flex-1 font-medium leading-snug text-amber-700">{narration}</span>
                 </div>

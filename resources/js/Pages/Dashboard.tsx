@@ -296,7 +296,7 @@ function getAccuratePosition(): Promise<GeolocationPosition> {
     });
 }
 
-function handleCheckin(sessionId: number, setLoading: (v: boolean) => void) {
+function handleCheckin(sessionId: number, setLoading: (v: boolean) => void, onError?: (msg: string) => void) {
     setLoading(true);
     getAccuratePosition()
         .then((position) => {
@@ -305,15 +305,26 @@ function handleCheckin(sessionId: number, setLoading: (v: boolean) => void) {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy,
-            }, { preserveState: true, onFinish: () => setLoading(false) });
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setLoading(false),
+                onSuccess: () => {
+                    router.reload();
+                },
+                onError: (errors) => {
+                    const firstErr = Object.values(errors)[0] as string;
+                    onError?.(firstErr || 'Gagal melakukan check-in. Silakan coba lagi.');
+                },
+            });
         })
         .catch(() => {
             setLoading(false);
-            alert('Gagal mendapatkan lokasi. Pastikan GPS/lokasi aktif di perangkat Anda, lalu coba lagi.');
+            onError?.('Gagal mendapatkan lokasi. Pastikan GPS/lokasi aktif di perangkat Anda, lalu coba lagi.');
         });
 }
 
-function handleCheckout(sessionId: number, setLoading: (v: boolean) => void) {
+function handleCheckout(sessionId: number, setLoading: (v: boolean) => void, onError?: (msg: string) => void) {
     setLoading(true);
     getAccuratePosition()
         .then((position) => {
@@ -322,11 +333,22 @@ function handleCheckout(sessionId: number, setLoading: (v: boolean) => void) {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy,
-            }, { preserveState: true, onFinish: () => setLoading(false) });
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setLoading(false),
+                onSuccess: () => {
+                    router.reload();
+                },
+                onError: (errors) => {
+                    const firstErr = Object.values(errors)[0] as string;
+                    onError?.(firstErr || 'Gagal melakukan check-out. Silakan coba lagi.');
+                },
+            });
         })
         .catch(() => {
             setLoading(false);
-            alert('Gagal mendapatkan lokasi. Pastikan GPS/lokasi aktif di perangkat Anda, lalu coba lagi.');
+            onError?.('Gagal mendapatkan lokasi. Pastikan GPS/lokasi aktif di perangkat Anda, lalu coba lagi.');
         });
 }
 
@@ -334,8 +356,8 @@ function LocationIndicator({ distance, radius, accuracy }: { distance: number | 
     if (distance === null) {
         return (
             <div className="flex items-center gap-1.5 text-slate-500">
-                <Icon icon="tabler:map-pin-off" className="text-[14px]" />
-                <span className="text-[11px]">Mendeteksi lokasi...</span>
+                <Icon icon="tabler:map-pin-off" className="text-sm" />
+                <span className="text-xs">Mendeteksi lokasi...</span>
             </div>
         );
     }
@@ -364,7 +386,7 @@ function LocationIndicator({ distance, radius, accuracy }: { distance: number | 
         <div className="space-y-0.5">
             <div className={`flex items-center gap-1.5 ${effectiveWithinRadius ? 'text-emerald-600' : 'text-rose-500'}`}>
                 <Icon icon={effectiveWithinRadius ? 'tabler:map-pin-check' : 'tabler:map-pin-x'} className="text-xs" />
-                <span className="text-[11px] font-medium">
+                <span className="text-xs font-medium">
                     {effectiveWithinRadius
                         ? `~${Math.round(distance)}m dari lokasi`
                         : `~${Math.round(distance)}m — di luar radius`
@@ -373,8 +395,8 @@ function LocationIndicator({ distance, radius, accuracy }: { distance: number | 
             </div>
             {accuracy !== null && (
                 <div className={`flex items-center gap-1.5 ${getAccuracyColor(accuracy)}`}>
-                    <Icon icon={accuracy <= 30 ? 'tabler:crosshair' : accuracy <= 100 ? 'tabler:target' : 'tabler:alert-triangle'} className="text-[10px]" />
-                    <span className="text-[10px]">
+                    <Icon icon={accuracy <= 30 ? 'tabler:crosshair' : accuracy <= 100 ? 'tabler:target' : 'tabler:alert-triangle'} className="text-xs" />
+                    <span className="text-xs">
                         ±{Math.round(accuracy)}m ({getAccuracyLabel(accuracy)})
                     </span>
                 </div>
@@ -388,6 +410,7 @@ function SessionCard({ session, attendance, attStatus, position, izinAktif = fal
     const [canCheckoutTime, setCanCheckoutTime] = useState(false);
     const [distance, setDistance] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [gpsError, setGpsError] = useState<string | null>(null);
 
     useEffect(() => {
         const update = () => {
@@ -495,38 +518,38 @@ function SessionCard({ session, attendance, attStatus, position, izinAktif = fal
                     )}
                     <div className="flex flex-wrap gap-1.5 sm:justify-end">
                         {attStatus === 'none' && izinAktif && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg">
                                 <Icon icon="tabler:shield-check" className="text-xs" /> Izin disetujui
                             </span>
                         )}
                         {attStatus === 'none' && !izinAktif && (
                             loading ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-indigo-600 bg-indigo-50 ring-1 ring-indigo-100/80 rounded-lg">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 ring-1 ring-indigo-100/80 rounded-lg">
                                     <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                                     Mengambil GPS...
                                 </span>
                             ) : canCheckin ? (
-                                <Button variant="success" size="sm" onClick={() => handleCheckin(session.id, setLoading)}>
+                                <Button variant="success" size="sm" onClick={() => { setGpsError(null); handleCheckin(session.id, setLoading, setGpsError); }}>
                                     <Icon icon="tabler:login" /> Masuk
                                 </Button>
                             ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed">
                                     <Icon icon="tabler:map-pin" className="text-xs" /> {checkinDisabledReason || 'Belum Waktunya'}
                                 </span>
                             )
                         )}
                         {attStatus === 'checkin' && (
                             loading ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-indigo-600 bg-indigo-50 ring-1 ring-indigo-100/80 rounded-lg">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 ring-1 ring-indigo-100/80 rounded-lg">
                                     <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                                     Mengambil GPS...
                                 </span>
                             ) : canCheckout ? (
-                                <Button variant="danger" size="sm" onClick={() => handleCheckout(session.id, setLoading)}>
+                                <Button variant="danger" size="sm" onClick={() => { setGpsError(null); handleCheckout(session.id, setLoading, setGpsError); }}>
                                     <Icon icon="tabler:logout" /> Keluar
                                 </Button>
                             ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-amber-600 bg-amber-50 rounded-lg cursor-not-allowed">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-amber-600 bg-amber-50 rounded-lg cursor-not-allowed">
                                     <Icon icon="tabler:map-pin" className="text-xs" /> {checkoutDisabledReason || 'Menunggu Selesai'}
                                 </span>
                             )
@@ -534,6 +557,22 @@ function SessionCard({ session, attendance, attStatus, position, izinAktif = fal
                     </div>
                 </div>
             </div>
+            {gpsError && (
+                <div className="flex items-center justify-between p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl mt-3 animate-fade-in">
+                    <div className="flex items-center gap-2">
+                        <Icon icon="tabler:alert-circle" className="text-sm shrink-0 text-rose-600" />
+                        <span>{gpsError}</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setGpsError(null)}
+                        className="p-1 text-rose-400 hover:text-rose-700 transition-colors rounded-lg"
+                        aria-label="Tutup pesan error"
+                    >
+                        <Icon icon="tabler:x" className="text-xs" />
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -568,8 +607,8 @@ function UpcomingSessionCard({ session }: { session: any }) {
                 </div>
                 <Badge variant="info" size="sm">{upcomingDateLabel(session.tanggal)}</Badge>
             </div>
-            <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-                <Icon icon="tabler:lock" className="text-[11px] shrink-0" /> Check-in dibuka saat jadwal dimulai (H-30 menit) dengan validasi GPS
+            <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                <Icon icon="tabler:lock" className="text-xs shrink-0" /> Check-in dibuka saat jadwal dimulai (H-30 menit) dengan validasi GPS
             </p>
         </div>
     );
@@ -649,19 +688,19 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                         <Card className="lg:col-span-1">
                             <div className="space-y-4">
                                 <div>
-                                    <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Sudah Dibayar ({periodeLabel})</p>
+                                    <p className="text-xs font-bold tracking-[0.06em] uppercase text-slate-500">Sudah Dibayar ({periodeLabel})</p>
                                     <p className="text-[20px] font-[800] tracking-tight text-emerald-600 mt-1 break-words">{formatCurrency(stats.total_sudah_dibayar)}</p>
                                 </div>
                                 <div className="h-px bg-slate-100" />
                                 <div>
-                                    <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Belum Dibayar ({periodeLabel})</p>
+                                    <p className="text-xs font-bold tracking-[0.06em] uppercase text-slate-500">Belum Dibayar ({periodeLabel})</p>
                                     <p className="text-[20px] font-[800] tracking-tight text-amber-600 mt-1 break-words">{formatCurrency(stats.pengeluaran_belum_dibayar)}</p>
                                 </div>
                                 <Link
                                     href={route('penggajian.index')}
-                                    className="inline-flex items-center gap-1.5 text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 transition-colors"
+                                    className="inline-flex items-center gap-1.5 text-sm font-[700] text-indigo-600 hover:text-indigo-800 transition-colors"
                                 >
-                                    Kelola penggajian <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                    Kelola penggajian <Icon icon="tabler:arrow-right" className="text-sm" />
                                 </Link>
                             </div>
                         </Card>
@@ -671,8 +710,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                             title="Sesi Mengajar Hari Ini"
                             description={`${todaySessions?.length ?? 0} sesi aktif terjadwal hari ini`}
                             headerAction={
-                                <Link href={route('jadwal.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                    Jadwal mingguan <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                <Link href={route('jadwal.index')} className="text-sm font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Jadwal mingguan <Icon icon="tabler:arrow-right" className="text-sm" />
                                 </Link>
                             }
                             noPadding
@@ -684,8 +723,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                         return (
                                             <div key={s.id} className="flex items-center justify-between gap-3 px-5 sm:px-7 py-3.5">
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-[700] text-slate-900 truncate">{s.guru.nama}</p>
-                                                    <p className="text-[11.5px] text-slate-500 truncate">
+                                                    <p className="text-sm font-[700] text-slate-900 truncate">{s.guru.nama}</p>
+                                                    <p className="text-xs text-slate-500 truncate">
                                                         {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi ?? '-'}
                                                     </p>
                                                 </div>
@@ -697,7 +736,7 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     })}
                                 </div>
                             ) : (
-                                <p className="text-[13px] text-slate-500 text-center py-8">Tidak ada sesi mengajar hari ini.</p>
+                                <p className="text-sm text-slate-500 text-center py-8">Tidak ada sesi mengajar hari ini.</p>
                             )}
                         </Card>
                     </div>
@@ -708,8 +747,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                             description="Ajukan persetujuan atau penolakan sesegera mungkin"
                             headerAction={
                                 stats.izin_pending > 0 ? (
-                                    <Link href={route('perizinan.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                        Tinjau semua <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                    <Link href={route('perizinan.index')} className="text-sm font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                        Tinjau semua <Icon icon="tabler:arrow-right" className="text-sm" />
                                     </Link>
                                 ) : undefined
                             }
@@ -719,8 +758,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     {pendingPerizinan.map((p) => (
                                         <div key={p.id} className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white">
                                             <div className="min-w-0">
-                                                <p className="text-[13px] font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
-                                                <p className="text-[11.5px] text-slate-500 truncate">
+                                                <p className="text-sm font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
+                                                <p className="text-xs text-slate-500 truncate">
                                                     {p.jenis} · {p.tanggal_mulai} s/d {p.tanggal_selesai}
                                                 </p>
                                             </div>
@@ -729,7 +768,7 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-[13px] text-slate-500 text-center py-6">Tidak ada perizinan yang menunggu tinjauan.</p>
+                                <p className="text-sm text-slate-500 text-center py-6">Tidak ada perizinan yang menunggu tinjauan.</p>
                             )}
                         </Card>
 
@@ -737,8 +776,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                             title="Rekap Penggajian Bulan Ini"
                             description={`Periode ${periodeLabel}`}
                             headerAction={
-                                <Link href={route('laporan.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                    Laporan <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                <Link href={route('laporan.index')} className="text-sm font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Laporan <Icon icon="tabler:arrow-right" className="text-sm" />
                                 </Link>
                             }
                         >
@@ -747,11 +786,11 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     {recentPenggajian.map((p) => (
                                         <div key={p.id} className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 bg-white">
                                             <div className="min-w-0">
-                                                <p className="text-[13px] font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
-                                                <p className="text-[11.5px] text-slate-500 truncate">{p.jumlah_sesi} sesi · {p.jumlah_hadir} hadir</p>
+                                                <p className="text-sm font-[700] text-slate-900 truncate">{p.guru?.nama ?? '-'}</p>
+                                                <p className="text-xs text-slate-500 truncate">{p.jumlah_sesi} sesi · {p.jumlah_hadir} hadir</p>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <p className="text-[13px] font-[800] text-slate-900 break-words">{formatCurrency(p.total)}</p>
+                                                <p className="text-sm font-[800] text-slate-900 break-words">{formatCurrency(p.total)}</p>
                                                 <Badge variant={p.status_bayar === 'sudah_dibayar' ? 'success' : 'warning'} size="sm">
                                                     {p.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Belum Dibayar'}
                                                 </Badge>
@@ -760,7 +799,7 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-[13px] text-slate-500 text-center py-6">
+                                <p className="text-sm text-slate-500 text-center py-6">
                                     Belum ada data penggajian bulan ini. Hitung gaji dari halaman Penggajian.
                                 </p>
                             )}
@@ -773,8 +812,8 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                             title="Sesi Mengajar Terbaru"
                             description="Sesi yang baru saja dibuat atau diperbarui"
                             headerAction={
-                                <Link href={route('session.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                    Kelola sesi <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                <Link href={route('session.index')} className="text-sm font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Kelola sesi <Icon icon="tabler:arrow-right" className="text-sm" />
                                 </Link>
                             }
                             noPadding
@@ -785,11 +824,11 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                     return (
                                         <div key={s.id} className="flex items-center justify-between gap-3 px-5 sm:px-7 py-3.5">
                                             <div className="min-w-0">
-                                                <p className="text-[13px] font-[700] text-slate-900 truncate">
+                                                <p className="text-sm font-[700] text-slate-900 truncate">
                                                     {s.guru.nama}
                                                     {s.guru.kode_grade !== '-' && <span className="text-slate-400 font-[500]"> ({s.guru.kode_grade})</span>}
                                                 </p>
-                                                <p className="text-[11.5px] text-slate-500 truncate">
+                                                <p className="text-xs text-slate-500 truncate">
                                                     {s.tanggal} · {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi}
                                                 </p>
                                             </div>
@@ -945,13 +984,13 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                     <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-5 shadow-[0_1px_3px_rgba(79,70,229,0.05)] hover:shadow-[0_12px_26px_-8px_rgba(79,70,229,0.18)] hover:-translate-y-0.5 transition-all duration-300">
                         <div className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full blur-2xl bg-indigo-400/20" />
                         <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500 opacity-90" />
-                        <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">Gaji Bulan Ini</p>
+                        <p className="text-xs font-bold tracking-[0.06em] uppercase text-slate-500">Gaji Bulan Ini</p>
                         <p className="text-xl font-extrabold tracking-tight text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
                         <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500">
                             <span>Potensi Gaji:</span>
                             <span className="font-bold text-slate-900">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
                         </div>
-                        <div className="mt-2.5 flex items-center gap-2 text-[11px] font-medium text-slate-500">
+                        <div className="mt-2.5 flex items-center gap-2 text-xs font-medium text-slate-500">
                             <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
                             <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                         </div>
@@ -968,8 +1007,8 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                             title="Jadwal Mengajar Terdekat"
                             description="Jadwal sesi mengajar aktif Anda mendatang — presensi dilakukan via SI ADIK-KK"
                             headerAction={
-                                <Link href={route('jadwal.index')} className="text-[12.5px] font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
-                                    Lihat jadwal mingguan <Icon icon="tabler:arrow-right" className="text-[13px]" />
+                                <Link href={route('jadwal.index')} className="text-sm font-[700] text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                    Lihat jadwal mingguan <Icon icon="tabler:arrow-right" className="text-sm" />
                                 </Link>
                             }
                         >
@@ -999,7 +1038,7 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                                                                 {session.location?.nama_lokasi ?? 'Lokasi belum diatur'}
                                                             </p>
                                                             {session.is_today && (
-                                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 border border-indigo-200">
+                                                                <span className="px-2 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 border border-indigo-200">
                                                                     Hari Ini
                                                                 </span>
                                                             )}
@@ -1008,7 +1047,7 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                                                             {session.jam_mulai?.substring(0, 5)}–{session.jam_selesai?.substring(0, 5)} · {session.program ?? session.mapel} · {session.jumlah_sesi} sesi
                                                         </p>
                                                         {session.transport && (
-                                                            <p className="text-[11px] text-slate-400 mt-0.5">
+                                                            <p className="text-xs text-slate-400 mt-0.5">
                                                                 Transport: {session.transport.jenis}
                                                             </p>
                                                         )}
@@ -1049,29 +1088,29 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                             <div className="space-y-4">
                                 <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 p-5">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <p className="text-[11px] font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
-                                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                                        <p className="text-xs font-[700] tracking-[0.08em] uppercase text-slate-500">Dibayar</p>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-[700] border ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                                             {stats.status_bayar === 'sudah_dibayar' ? 'Lunas' : 'Pending'}
                                         </span>
                                     </div>
                                     <p className="text-[22px] sm:text-[26px] font-[800] tracking-[-0.03em] text-slate-900 mt-2 leading-none break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
-                                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-[500] text-slate-500">
+                                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-[500] text-slate-500">
                                         <Icon icon="tabler:trending-up" className="text-emerald-500" /> Potensi: <span className="font-[700] text-slate-900 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</span>
                                     </div>
                                     <div className="mt-4 h-2 rounded-full bg-indigo-100/80 overflow-hidden">
                                         <div className="h-full bg-gradient-to-r from-indigo-600 to-violet-600 rounded-full transition-all duration-700" style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }} />
                                     </div>
-                                    <p className="text-[11px] text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi hadir</p>
+                                    <p className="text-xs text-slate-500 mt-2">{stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi hadir</p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
-                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
+                                        <p className="text-xs font-[700] tracking-[0.06em] uppercase text-slate-500">Mapel</p>
+                                        <p className="text-sm font-[700] text-slate-900 mt-1 break-words">{guru?.mapel ?? '-'}</p>
                                     </div>
                                     <div className="rounded-2xl bg-white border border-indigo-100 hover:border-indigo-200 p-4 transition-colors">
-                                        <p className="text-[11px] font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
-                                        <p className="text-[14px] font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
+                                        <p className="text-xs font-[700] tracking-[0.06em] uppercase text-slate-500">Grade</p>
+                                        <p className="text-sm font-[700] text-slate-900 mt-1 break-words">Grade {guru?.grade?.kode_grade ?? '-'}</p>
                                     </div>
                                 </div>
 
@@ -1131,17 +1170,17 @@ function SunnahSummaryCard({ hariIni, bulanIni }: {
                     </span>
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-[15px] sm:text-base font-[800] tracking-[-0.015em] text-slate-900">Amalan 7SPS Hari Ini</h3>
-                            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-bold ${statusMeta.className}`}>
-                                <Icon icon={statusMeta.icon} className="text-[11px]" /> {statusMeta.label}
+                            <h3 className="text-sm sm:text-base font-[800] tracking-[-0.015em] text-slate-900">Amalan 7SPS Hari Ini</h3>
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-bold ${statusMeta.className}`}>
+                                <Icon icon={statusMeta.icon} className="text-xs" /> {statusMeta.label}
                             </span>
                         </div>
-                        <p className="mt-1 text-[12px] sm:text-[13px] text-slate-600">
+                        <p className="mt-1 text-xs sm:text-sm text-slate-600">
                             {hariIni
                                 ? `Poin hari ini ${hariIni.total_poin}/100. ${hariIni.catatan ? `Catatan admin: ${hariIni.catatan}` : 'Lengkapi checklist agar poin bertambah.'}`
                                 : 'Belum ada checklist hari ini. Isi 12 amalan sunnah untuk mengumpulkan hingga 100 poin.'}
                         </p>
-                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-semibold text-slate-500">
+                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-500">
                             <span className="inline-flex items-center gap-1"><Icon icon="tabler:star" className="text-amber-500" /> {bulanIni?.total_poin ?? 0} poin bulan ini</span>
                             <span className="inline-flex items-center gap-1"><Icon icon="tabler:calendar-check" className="text-emerald-500" /> {bulanIni?.total_hari ?? 0} hari terisi</span>
                         </div>
@@ -1150,7 +1189,7 @@ function SunnahSummaryCard({ hariIni, bulanIni }: {
 
                 <div className="flex items-center gap-4 lg:shrink-0">
                     <div className="min-w-[140px] flex-1 lg:w-48">
-                        <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-500">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-500">
                             <span>Progress</span>
                             <span className="tabular-nums">{poin}%</span>
                         </div>
@@ -1160,7 +1199,7 @@ function SunnahSummaryCard({ hariIni, bulanIni }: {
                     </div>
                     <Link
                         href={route('my-sunnah.index')}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-[12.5px] font-bold text-white shadow-[0_6px_14px_-6px_rgba(16,185,129,0.8)] transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-[0_6px_14px_-6px_rgba(16,185,129,0.8)] transition-all hover:-translate-y-0.5 hover:shadow-lg"
                     >
                         Isi Checklist <Icon icon="tabler:arrow-right" className="text-sm" />
                     </Link>

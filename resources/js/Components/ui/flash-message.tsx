@@ -10,23 +10,41 @@ interface FlashMessageProps {
 export default function FlashMessage({ type, message, onClose }: FlashMessageProps) {
     const [show, setShow] = useState(true);
     const [progress, setProgress] = useState(100);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         if (!message) return;
         setShow(true);
         setProgress(100);
+
+        // Do not auto-dismiss errors so critical messages/passwords are never lost
+        if (type === 'error') {
+            return;
+        }
+
+        const duration = 6000;
+        const intervalTime = 100;
+        const step = (100 / (duration / intervalTime));
+
         const interval = setInterval(() => {
-            setProgress((p) => Math.max(0, p - (100 / 50)));
-        }, 100);
-        const timer = setTimeout(() => {
-            setShow(false);
-            onClose?.();
-        }, 5200);
+            if (!isHovered) {
+                setProgress((p) => {
+                    const next = p - step;
+                    if (next <= 0) {
+                        clearInterval(interval);
+                        setShow(false);
+                        onClose?.();
+                        return 0;
+                    }
+                    return next;
+                });
+            }
+        }, intervalTime);
+
         return () => {
             clearInterval(interval);
-            clearTimeout(timer);
         };
-    }, [message, onClose]);
+    }, [message, type, isHovered, onClose]);
 
     if (!show || !message) return null;
 
@@ -63,28 +81,32 @@ export default function FlashMessage({ type, message, onClose }: FlashMessagePro
 
     return (
         <div
-            className={`relative overflow-hidden border rounded-2xl flex items-center gap-4 px-4 py-4 animate-slide-down ${config.container}`}
+            className={`relative overflow-hidden border rounded-2xl flex items-center gap-4 px-4 py-3.5 shadow-float animate-slide-down ${config.container}`}
             role="alert"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.accent}`} />
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ring-1 ${config.iconBg}`}>
                 <Icon icon={config.icon} className="text-[18px]" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-[800] tracking-[0.08em] text-slate-500 uppercase">{config.title}</p>
-                <p className="text-[13.5px] font-[600] tracking-[-0.01em] leading-5 text-slate-900 mt-0.5">{message}</p>
+                <p className="text-xs font-bold tracking-[0.08em] text-slate-500 uppercase">{config.title}</p>
+                <p className="text-sm font-semibold tracking-[-0.01em] leading-5 text-slate-900 mt-0.5">{message}</p>
             </div>
             <button
                 type="button"
                 onClick={() => { setShow(false); onClose?.(); }}
                 className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors"
-                aria-label="Tutup"
+                aria-label="Tutup pemberitahuan"
             >
                 <Icon icon="tabler:x" className="text-[16px]" />
             </button>
-            <div className="absolute bottom-0 left-0 h-0.5 bg-slate-900/10 w-full">
-                <div className={`h-full transition-all duration-100 ease-linear ${config.accent}`} style={{ width: `${progress}%` }} />
-            </div>
+            {type !== 'error' && (
+                <div className="absolute bottom-0 left-0 h-0.5 bg-slate-900/10 w-full">
+                    <div className={`h-full transition-all duration-100 ease-linear ${config.accent}`} style={{ width: `${progress}%` }} />
+                </div>
+            )}
         </div>
     );
 }

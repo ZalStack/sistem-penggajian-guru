@@ -7,6 +7,7 @@ import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
 import Pagination from '@/Components/ui/pagination';
 import Select from '@/Components/ui/select';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, Link } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Attendance, Guru, Grade, PaginatedData } from '@/types';
@@ -83,7 +84,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
         router.get(
             route('attendance.index'),
             { ...filters, [key]: value || undefined },
-            { preserveState: true, replace: true }
+            { preserveState: true, preserveScroll: true, replace: true }
         );
     };
 
@@ -227,7 +228,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                 router.get(
                                     route('attendance.index'),
                                     {},
-                                    { preserveState: true, replace: true }
+                                    { preserveState: true, preserveScroll: true, replace: true }
                                 );
                             }}
                         >
@@ -265,14 +266,12 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                         <TableBody>
                             {attendanceList.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={12}>
-                                        <div className="text-center py-16">
-                                            <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                                                <Icon icon="tabler:inbox" className="text-[32px]" />
-                                            </div>
-                                            <p className="text-sm font-medium text-slate-700 mb-1">Tidak ada data absensi</p>
-                                            <p className="text-xs text-slate-400">Coba ubah filter atau tambahkan data baru</p>
-                                        </div>
+                                    <TableCell colSpan={12} className="p-0">
+                                        <EmptyState
+                                            icon="tabler:inbox"
+                                            title="Tidak ada data absensi"
+                                            description="Coba ubah filter atau tambahkan data baru"
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -305,13 +304,13 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                                     ? `${att.session.jam_mulai?.substring(0,5)} – ${att.session.jam_selesai?.substring(0,5)}`
                                                     : '-'}
                                             </span>
-                                            <span className="text-[10.5px] text-slate-400">
+                                            <span className="text-xs text-slate-400">
                                                 {att.session?.program?.nama ?? att.session?.mapel ?? ''}
                                             </span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
-                                                <Icon icon="tabler:map-pin" className="text-[14px] text-slate-400 flex-shrink-0" />
+                                                <Icon icon="tabler:map-pin" className="text-sm text-slate-400 flex-shrink-0" />
                                                 <span className="text-slate-600 text-sm truncate max-w-[140px]">{att.session?.location?.nama_lokasi ?? '-'}</span>
                                             </div>
                                         </TableCell>
@@ -321,7 +320,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                                     {formatDisplayTime(att.checkin_time)}
                                                 </span>
                                                 {att.checkin_accuracy != null && (
-                                                    <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
+                                                    <p className="text-xs text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
                                                 )}
                                             </div>
                                         </TableCell>
@@ -331,7 +330,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                                     {formatDisplayTime(att.checkout_time)}
                                                 </span>
                                                 {att.checkout_accuracy != null && (
-                                                    <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
+                                                    <p className="text-xs text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
                                                 )}
                                             </div>
                                         </TableCell>
@@ -350,7 +349,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                                 {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                             </span>
                                         </TableCell>
@@ -365,13 +364,11 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                 {/* Mobile Cards */}
                 <div className="lg:hidden space-y-3">
                     {attendanceList.length === 0 ? (
-                        <div className="text-center py-16">
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                                <Icon icon="tabler:inbox" className="text-[32px]" />
-                            </div>
-                            <p className="text-sm font-medium text-slate-700">Tidak ada data absensi ditemukan</p>
-                            <p className="text-xs text-slate-400 mt-1">Coba ubah filter atau tambahkan data baru</p>
-                        </div>
+                        <EmptyState
+                            icon="tabler:inbox"
+                            title="Tidak ada data absensi"
+                            description="Coba ubah filter atau tambahkan data baru"
+                        />
                     ) : (
                         attendanceList.map((att, index) => (
                             <div
@@ -396,7 +393,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                         <span className="text-xs font-semibold text-slate-400">
                                             #{index + 1}
                                         </span>
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                             {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                         </span>
                                         {getStatusBadge(att.status)}
@@ -434,7 +431,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                             {att.checkin_time ?? '-'}
                                         </p>
                                         {att.checkin_accuracy != null && (
-                                            <p className="text-[10px] text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
+                                            <p className="text-xs text-slate-400">±{Math.round(att.checkin_accuracy)}m</p>
                                         )}
                                     </div>
                                     <div>
@@ -443,7 +440,7 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                             {att.checkout_time ?? '-'}
                                         </p>
                                         {att.checkout_accuracy != null && (
-                                            <p className="text-[10px] text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
+                                            <p className="text-xs text-slate-400">±{Math.round(att.checkout_accuracy)}m</p>
                                         )}
                                     </div>
                                 </div>
@@ -452,7 +449,14 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                     )}
                 </div>
 
-                {attendances.links && <Pagination links={attendances.links} />}
+                {attendances.links && (
+                    <Pagination
+                        links={attendances.links}
+                        from={attendances.from}
+                        to={attendances.to}
+                        total={attendances.total}
+                    />
+                )}
             </Card>
         </AuthenticatedLayout>
     );

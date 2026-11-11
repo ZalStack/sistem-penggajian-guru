@@ -48,7 +48,7 @@ export default function MilestoneModal({ show, milestone, totalPoin, onClose }: 
                 <div className="space-y-2.5 rounded-2xl border border-slate-200/80 bg-slate-50 p-3.5 text-left">
                     <div className="flex items-center justify-between text-xs">
                         <span className="font-bold text-slate-500">Target Milestone</span>
-                        <span className="rounded-lg px-2 py-0.5 text-[11px] font-black text-white" style={{ background: color }}>
+                        <span className="rounded-lg px-2 py-0.5 text-xs font-black text-white" style={{ background: color }}>
                             {milestone.point} Poin
                         </span>
                     </div>

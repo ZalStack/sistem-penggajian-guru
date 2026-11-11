@@ -163,6 +163,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                     setSelectedIds([]);
                     setBulkModalOpen(false);
                     setBulkCatatan('');
+                    router.reload();
                 },
                 onFinish: () => setBulkProcessing(false),
             },
@@ -173,7 +174,12 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
         router.put(
             route('sunnah-guru.approve', record.id),
             { status, catatan: record.catatan },
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload();
+                },
+            },
         );
     };
 
@@ -194,7 +200,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                     </div>
                     {statistik.pending > 0 && (
                         <Link href={route('sunnah-guru.index', { status: 'pending', periode: form.periode })}>
-                            <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-[12px] font-bold text-amber-700 shadow-sm transition-colors hover:bg-amber-100">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-700 shadow-sm transition-colors hover:bg-amber-100">
                                 <span className="relative flex h-2 w-2">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                                     <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
@@ -216,7 +222,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                 <form onSubmit={applyFilters} className="card-modern p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                         <Icon icon="mdi:filter-variant" className="text-lg text-indigo-500" />
-                        <h2 className="text-[13px] font-bold text-slate-800">Filter Data</h2>
+                        <h2 className="text-sm font-bold text-slate-800">Filter Data</h2>
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -272,7 +278,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                         <Button type="button" variant="secondary" size="sm" onClick={resetFilters}>
                             <Icon icon="mdi:refresh" className="text-base" /> Reset
                         </Button>
-                        <span className="text-[11px] font-medium text-slate-500">
+                        <span className="text-xs font-medium text-slate-500">
                             {filters.start_date} s.d. {filters.end_date}
                         </span>
                     </div>
@@ -280,8 +286,8 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
 
                 {selectedCount > 0 && (
                     <div className="animate-slide-down flex flex-col gap-3 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-2 text-[12.5px] font-semibold text-indigo-800">
-                            <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-indigo-600 px-2 text-[11px] font-bold text-white">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-indigo-800">
+                            <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-indigo-600 px-2 text-xs font-bold text-white">
                                 {selectedCount}
                             </span>
                             data dipilih
@@ -306,8 +312,8 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                 <div className="card-modern overflow-hidden">
                     <div className="flex flex-col gap-1 border-b border-indigo-100/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                         <div>
-                            <h2 className="text-[14px] font-bold text-slate-900">Daftar Checklist 7SPS</h2>
-                            <p className="mt-0.5 text-[12px] font-medium text-slate-500">
+                            <h2 className="text-sm font-bold text-slate-900">Daftar Checklist 7SPS</h2>
+                            <p className="mt-0.5 text-xs font-medium text-slate-500">
                                 {records.total} data ditemukan pada periode ini
                             </p>
                         </div>
@@ -350,12 +356,12 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2.5">
-                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-[11px] font-extrabold text-white shadow-sm">
+                                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-extrabold text-white shadow-sm">
                                                         {record.guru.nama.split(' ').map((name) => name[0]).slice(0, 2).join('').toUpperCase()}
                                                     </span>
                                                     <div className="min-w-0">
-                                                        <p className="truncate text-[13px] font-bold text-slate-900">{record.guru.nama}</p>
-                                                        <p className="text-[11px] font-medium text-slate-500">
+                                                        <p className="truncate text-sm font-bold text-slate-900">{record.guru.nama}</p>
+                                                        <p className="text-xs font-medium text-slate-500">
                                                             Grade {record.guru.kode_grade}
                                                             {record.guru.programs.length > 0 ? ` · ${record.guru.programs.join(' · ')}` : ''}
                                                         </p>
@@ -363,10 +369,10 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-[12.5px] font-semibold text-slate-700">{record.tanggal}</span>
+                                                <span className="text-sm font-semibold text-slate-700">{record.tanggal}</span>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-[12px] font-extrabold text-amber-700 ring-1 ring-amber-200">
+                                                <span className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-extrabold text-amber-700 ring-1 ring-amber-200">
                                                     <Icon icon="mdi:star" className="text-xs" /> {record.total_poin}
                                                 </span>
                                             </TableCell>
@@ -374,10 +380,10 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                                                 <Badge variant={statusVariant[record.status_approval] ?? 'default'} size="sm" dot>
                                                     {statusLabel[record.status_approval] ?? record.status_label}
                                                 </Badge>
-                                            </TableCell>
-                                            <TableCell className="max-w-[220px] whitespace-normal">
-                                                <p className="line-clamp-2 text-[12px] leading-snug text-slate-500">{record.catatan || '—'}</p>
-                                            </TableCell>
+                                             </TableCell>
+                                             <TableCell className="max-w-[220px] whitespace-normal">
+                                                <p className="line-clamp-2 text-xs leading-snug text-slate-500">{record.catatan || '—'}</p>
+                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     {record.status_approval !== 'approved' && (
@@ -447,7 +453,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                         </span>
                         <div>
                             <h3 className="text-[15px] font-bold text-slate-900">Approval Massal</h3>
-                            <p className="mt-0.5 text-[12px] font-medium text-slate-500">
+                            <p className="mt-0.5 text-xs font-medium text-slate-500">
                                 {selectedCount} data akan diubah menjadi{' '}
                                 <span className="font-bold text-slate-700">{statusLabel[bulkStatus]}</span>.
                             </p>
@@ -467,7 +473,7 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                         />
 
                         <div>
-                            <label htmlFor="bulk-catatan" className="mb-1.5 block text-[12.5px] font-semibold text-slate-700">
+                            <label htmlFor="bulk-catatan" className="mb-1.5 block text-sm font-semibold text-slate-700">
                                 Catatan untuk Guru <span className="font-medium text-slate-400">(opsional)</span>
                             </label>
                             <textarea

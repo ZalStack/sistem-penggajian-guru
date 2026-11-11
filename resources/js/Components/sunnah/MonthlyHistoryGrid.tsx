@@ -26,7 +26,7 @@ export default function MonthlyHistoryGrid({ days, monthLabel, onSelect }: Month
                     <Icon icon="mdi:calendar-month" className="text-lg text-teal-600" />
                     <h3 className="text-xs font-bold text-slate-800 sm:text-sm">Riwayat Poin Bulan Ini</h3>
                 </div>
-                <span className="rounded-full border border-teal-200/60 bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700">
+                <span className="rounded-full border border-teal-200/60 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700">
                     {monthLabel || 'Bulan Ini'}
                 </span>
             </div>
@@ -37,7 +37,7 @@ export default function MonthlyHistoryGrid({ days, monthLabel, onSelect }: Month
                     const content = (
                         <>
                             <span
-                                className={`mb-1 truncate text-[9px] font-medium sm:text-[10px] ${
+                                className={`mb-1 truncate text-xs font-medium ${
                                     day.is_selected ? 'font-bold text-indigo-600' : day.is_today ? 'font-bold text-teal-600' : 'text-slate-500'
                                 }`}
                             >
@@ -57,7 +57,7 @@ export default function MonthlyHistoryGrid({ days, monthLabel, onSelect }: Month
                                 )}
                             </div>
 
-                            <span className={`mt-1 text-[10px] font-bold sm:text-[11px] ${day.is_selected ? 'text-teal-700' : 'text-slate-700'}`}>
+                            <span className={`mt-1 text-xs font-bold ${day.is_selected ? 'text-teal-700' : 'text-slate-700'}`}>
                                 {day.poin}
                             </span>
                         </>
@@ -81,7 +81,7 @@ export default function MonthlyHistoryGrid({ days, monthLabel, onSelect }: Month
                 })}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500">
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs font-medium text-slate-500">
                 <span className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-teal-500" /> Hari ini
                 </span>

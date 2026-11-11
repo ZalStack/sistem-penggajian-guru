@@ -3,6 +3,7 @@ import { Card } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Penggajian, Guru } from '@/types';
@@ -175,7 +176,7 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className="shrink-0 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
+                                        <span className="shrink-0 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
                                             #{index + 1}
                                         </span>
                                     </div>
@@ -234,15 +235,11 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-16 sm:py-20 px-2">
-                        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mx-auto mb-4 shadow-[0_12px_26px_-8px_rgba(99,102,241,0.7)]">
-                            <Icon icon="tabler:wallet" className="text-[28px]" />
-                        </div>
-                        <h3 className="text-base font-bold text-slate-900">Belum ada data penggajian</h3>
-                        <p className="text-sm text-slate-500 mt-1 mx-auto max-w-sm break-words">
-                            Data penggajian akan muncul setelah Anda memiliki riwayat mengajar.
-                        </p>
-                    </div>
+                    <EmptyState
+                        icon="tabler:wallet"
+                        title="Belum ada data penggajian"
+                        description="Data penggajian akan muncul setelah Anda memiliki riwayat mengajar."
+                    />
                 )}
             </Card>
         </AuthenticatedLayout>

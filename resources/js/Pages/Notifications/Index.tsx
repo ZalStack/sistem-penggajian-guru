@@ -2,6 +2,10 @@ import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Badge from '@/Components/ui/badge';
+import Button from '@/Components/ui/button';
+import StatCard from '@/Components/ui/stat-card';
+import EmptyState from '@/Components/ui/empty-state';
+import Pagination from '@/Components/ui/pagination';
 import { Icon } from '@iconify/react';
 
 interface Notification {
@@ -52,6 +56,13 @@ const tipeBadge: Record<string, 'info' | 'success' | 'warning' | 'danger'> = {
     error: 'danger',
 };
 
+const tipeLabel: Record<string, string> = {
+    info: 'Informasi',
+    success: 'Sukses',
+    warning: 'Peringatan',
+    error: 'Penting',
+};
+
 const kategoriLabel: Record<string, string> = {
     sistem: 'Sistem',
     absensi: 'Absensi',
@@ -78,7 +89,10 @@ function formatRelativeTime(dateStr: string): string {
 
 export default function NotificationsIndex({ notifications, unreadCount }: Props) {
     const handleMarkAllRead = () => {
-        router.post(route('notifications.markAllRead'));
+        router.post(route('notifications.markAllRead'), {}, {
+            preserveScroll: true,
+            onSuccess: () => router.reload(),
+        });
     };
 
     return (
@@ -92,64 +106,48 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                         <p className="page-subtitle">Pusat notifikasi dan informasi sistem</p>
                     </div>
                     {unreadCount > 0 && (
-                        <button
+                        <Button
+                            variant="secondary"
                             onClick={handleMarkAllRead}
-                            className="btn-secondary w-full sm:w-auto"
+                            className="w-full sm:w-auto"
                         >
                             <Icon icon="tabler:checks" className="text-sm" />
                             Tandai semua sudah dibaca
-                        </button>
+                        </Button>
                     )}
                 </div>
 
-                <div className="animate-fade-in grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                    <div className="card-modern-hover p-4">
-                        <div className="flex items-center gap-2.5 mb-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                <Icon icon="tabler:bell" className="text-sm" />
-                            </span>
-                            <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Total</span>
-                        </div>
-                        <p className="text-2xl font-extrabold text-slate-900 break-words">{notifications.total}</p>
-                    </div>
-                    <div className="card-modern-hover p-4">
-                        <div className="flex items-center gap-2.5 mb-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100">
-                                <Icon icon="tabler:mail" className="text-sm text-rose-600" />
-                            </span>
-                            <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Belum Dibaca</span>
-                        </div>
-                        <p className="text-2xl font-extrabold text-rose-600 break-words">{unreadCount}</p>
-                    </div>
-                    <div className="card-modern-hover p-4">
-                        <div className="flex items-center gap-2.5 mb-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100">
-                                <Icon icon="tabler:circle-check" className="text-sm text-emerald-600" />
-                            </span>
-                            <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Dibaca</span>
-                        </div>
-                        <p className="text-2xl font-extrabold text-emerald-600 break-words">{notifications.total - unreadCount}</p>
-                    </div>
-                    <div className="card-modern-hover p-4">
-                        <div className="flex items-center gap-2.5 mb-2">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100">
-                                <Icon icon="tabler:filter" className="text-sm text-indigo-600" />
-                            </span>
-                            <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wide">Halaman</span>
-                        </div>
-                        <p className="text-2xl font-extrabold text-indigo-600 break-words">{notifications.current_page}/{notifications.last_page}</p>
-                    </div>
+                <div className="animate-fade-in grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <StatCard
+                        title="Total Notifikasi"
+                        value={notifications.total}
+                        icon="tabler:bell"
+                        color="accent"
+                        description="Semua pemberitahuan sistem"
+                    />
+                    <StatCard
+                        title="Belum Dibaca"
+                        value={unreadCount}
+                        icon="tabler:mail"
+                        color="danger"
+                        description="Pemberitahuan yang butuh perhatian"
+                    />
+                    <StatCard
+                        title="Sudah Dibaca"
+                        value={notifications.total - unreadCount}
+                        icon="tabler:circle-check"
+                        color="success"
+                        description="Arsip riwayat terbaca"
+                    />
                 </div>
 
                 <div className="card-modern overflow-hidden">
                     {notifications.data.length === 0 ? (
-                        <div className="text-center py-20 px-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-brand">
-                                <Icon icon="tabler:inbox" className="text-3xl text-white" />
-                            </div>
-                            <p className="text-sm font-semibold text-slate-900 mb-1">Tidak ada notifikasi</p>
-                            <p className="text-xs text-slate-500 leading-relaxed">Semua notifikasi sudah dibaca atau belum ada notifikasi baru.</p>
-                        </div>
+                        <EmptyState
+                            icon="tabler:inbox"
+                            title="Tidak ada notifikasi"
+                            description="Semua notifikasi sudah dibaca atau belum ada notifikasi baru."
+                        />
                     ) : (
                         <div className="divide-y divide-slate-100">
                             {notifications.data.map((notif) => (
@@ -177,18 +175,18 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                                                     <span className="inline-block w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />
                                                 )}
                                             </div>
-                                            <Badge variant={tipeBadge[notif.tipe]} className="text-[10px] flex-shrink-0">
-                                                {notif.tipe}
+                                            <Badge variant={tipeBadge[notif.tipe]} size="sm" className="flex-shrink-0">
+                                                {tipeLabel[notif.tipe] || notif.tipe}
                                             </Badge>
                                         </div>
                                         <p className={`text-xs mt-1 line-clamp-2 leading-relaxed ${notif.dibaca ? 'text-slate-500' : 'text-slate-600'}`}>
                                             {notif.pesan}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
-                                            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">
+                                            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
                                                 {kategoriLabel[notif.kategori]}
                                             </span>
-                                            <span className="text-[10px] text-slate-400">
+                                            <span className="text-xs text-slate-500">
                                                 {formatRelativeTime(notif.created_at)}
                                             </span>
                                         </div>
@@ -199,28 +197,13 @@ export default function NotificationsIndex({ notifications, unreadCount }: Props
                     )}
 
                     {notifications.last_page > 1 && (
-                        <div className="border-t border-indigo-100 px-5 py-4">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <p className="text-xs text-slate-500">
-                                    Menampilkan {notifications.from}-{notifications.to} dari {notifications.total}
-                                </p>
-                                <div className="flex flex-wrap items-center gap-1">
-                                    {notifications.links.map((link, idx) => (
-                                        <button
-                                            key={idx}
-                                            disabled={!link.url}
-                                            onClick={() => link.url && router.get(link.url)}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                                link.active
-                                                    ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]'
-                                                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700'
-                                            } disabled:opacity-40 disabled:cursor-not-allowed`}
-                                        >
-                                            <span dangerouslySetInnerHTML={{ __html: link.label }} />
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                        <div className="px-5 pb-5">
+                            <Pagination
+                                links={notifications.links}
+                                from={notifications.from ?? undefined}
+                                to={notifications.to ?? undefined}
+                                total={notifications.total}
+                            />
                         </div>
                     )}
                 </div>

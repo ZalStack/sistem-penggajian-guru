@@ -143,7 +143,7 @@ export default function YearPicker({
                         >
                             &larr;
                         </button>
-                        <span className="font-bold text-slate-700 font-mono text-[11px]">
+                        <span className="font-bold text-slate-700 font-mono text-xs">
                             {decadeStart} – {decadeStart + 9}
                         </span>
                         <button
@@ -185,7 +185,7 @@ export default function YearPicker({
                         })}
                     </div>
 
-                    <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                    <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between text-xs">
                         <button
                             type="button"
                             onClick={(e) => {

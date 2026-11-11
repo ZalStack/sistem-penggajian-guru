@@ -1,5 +1,6 @@
 import Dropdown from '@/Components/Dropdown';
 import FlashMessage from '@/Components/ui/flash-message';
+import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { Link, usePage } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState, useEffect, ReactNode } from 'react';
@@ -84,8 +85,8 @@ const adminNavGroups = [
 ];
 
 const guruNavItems = [
-    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Riwayat Kehadiran', icon: 'tabler:clipboard-check', desc: 'Riwayat presensi dari SI ADIK-KK' },
     { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard', desc: 'Ringkasan hari ini' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Riwayat Kehadiran', icon: 'tabler:clipboard-check', desc: 'Riwayat presensi dari SI ADIK-KK' },
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Agenda mingguan' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'tabler:moon-stars', desc: 'Checklist & poin' },
     { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'tabler:shield-check', desc: 'Ajukan izin' },
@@ -117,10 +118,11 @@ function NavList({ items, collapsed, onNavigate }: {
                         href={route(item.href)}
                         onClick={onNavigate}
                         title={collapsed ? item.label : undefined}
+                        aria-current={active ? 'page' : undefined}
                         className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${collapsed ? 'justify-center p-3' : 'px-3 py-2.5'} ${
                             active
                                 ? 'bg-white/15 text-white shadow-sm ring-1 ring-white/10'
-                                : 'text-slate-300/70 hover:bg-white/8 hover:text-white'
+                                : 'text-slate-300/80 hover:bg-white/8 hover:text-white'
                         }`}
                     >
                         {active && !collapsed && (
@@ -136,7 +138,7 @@ function NavList({ items, collapsed, onNavigate }: {
                         {!collapsed && (
                             <span className="min-w-0 flex-1">
                                 <span className={`block text-[13px] font-semibold leading-tight ${active ? 'text-white' : ''}`}>{item.label}</span>
-                                {item.desc && <span className={`block text-[11px] leading-none mt-0.5 ${active ? 'text-white/50' : 'text-slate-500'}`}>{item.desc}</span>}
+                                {item.desc && <span className={`block text-xs leading-none mt-1 ${active ? 'text-indigo-200' : 'text-slate-400'}`}>{item.desc}</span>}
                             </span>
                         )}
                     </Link>
@@ -166,6 +168,9 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const flatAdminItems = adminNavGroups.flatMap(g => g.items);
     const navItems = isAdmin ? flatAdminItems : guruNavItems;
     const activeItem = navItems.find((item) => route().current(item.pattern));
+    const isProfile = route().current('profile.*');
+    const headerTitle = isProfile ? 'Profil Pengguna' : (activeItem?.label || 'Dashboard');
+    const headerDesc = isProfile ? 'Kelola akun, data diri & kata sandi' : activeItem?.desc;
 
     const initials = (user?.name || 'A').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
 
@@ -181,13 +186,18 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         <p className="text-[14px] font-black tracking-wider text-white truncate leading-tight uppercase">
                             SATU GURU KPM
                         </p>
-                        <p className="text-[10px] font-semibold text-indigo-200/80 leading-none mt-1 truncate" title={appTagline}>
+                        <p className="text-xs font-semibold text-indigo-200/90 leading-none mt-1 truncate" title={appTagline}>
                             {appTagline || 'Sistem Informasi Administrasi Terpadu Guru KPM'}
                         </p>
                     </div>
                 )}
                 {forMobile && (
-                    <button onClick={() => setMobileOpen(false)} className="ml-auto p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" aria-label="Tutup menu">
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen(false)}
+                        className="ml-auto p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                        aria-label="Tutup menu navigasi"
+                    >
                         <Icon icon="tabler:x" className="text-[18px]" />
                     </button>
                 )}
@@ -200,7 +210,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         {adminNavGroups.map(group => (
                             <div key={group.title}>
                                 {!isCollapsed && (
-                                    <p className="px-4 mb-1.5 text-[10px] font-bold tracking-[0.12em] text-slate-500 uppercase">{group.title}</p>
+                                    <p className="px-4 mb-2 text-xs font-bold tracking-[0.12em] text-slate-400 uppercase">{group.title}</p>
                                 )}
                                 <NavList items={group.items} collapsed={isCollapsed} onNavigate={forMobile ? () => setMobileOpen(false) : undefined} />
                             </div>
@@ -209,7 +219,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 ) : (
                     <div>
                         {!isCollapsed && (
-                            <p className="px-4 mb-1.5 text-[10px] font-bold tracking-[0.12em] text-slate-500 uppercase">Menu Guru</p>
+                            <p className="px-4 mb-2 text-xs font-bold tracking-[0.12em] text-slate-400 uppercase">Menu Guru</p>
                         )}
                         <NavList items={guruNavItems} collapsed={isCollapsed} onNavigate={forMobile ? () => setMobileOpen(false) : undefined} />
                     </div>
@@ -220,27 +230,33 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             <div className="p-3 border-t border-white/5 space-y-2 shrink-0">
                 {!forMobile && (
                     <button
+                        type="button"
                         onClick={() => setCollapsed(!isCollapsed)}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-colors text-[12px] font-medium"
+                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-colors text-xs font-medium"
                         title={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+                        aria-label={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
                     >
                         <Icon icon={isCollapsed ? 'tabler:layout-sidebar-right-expand' : 'tabler:layout-sidebar-left-collapse'} className="text-[18px]" />
                         {!isCollapsed && <span>Ciutkan</span>}
                     </button>
                 )}
-                <Link href={route('profile.edit')} className={`flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/8 transition-all group ${isCollapsed ? 'justify-center' : ''}`}>
+                <Link
+                    href={route('profile.edit')}
+                    className={`flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/8 transition-all group ${isCollapsed ? 'justify-center' : ''}`}
+                    aria-label="Pengaturan profil akun"
+                >
                     <UserAvatar
                         src={fotoUrl}
                         initials={initials}
-                        className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/30 text-indigo-300 font-extrabold text-[11px] ring-1 ring-white/10"
+                        className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/30 text-indigo-300 font-extrabold text-xs ring-1 ring-white/10"
                     />
                     {!isCollapsed && (
                         <>
                             <span className="min-w-0 flex-1">
-                                <span className="block text-[12.5px] font-semibold text-white truncate leading-tight">{user.name}</span>
-                                <span className="block text-[10.5px] text-slate-500 truncate leading-none mt-0.5">{isAdmin ? 'Administrator' : 'Guru'}</span>
+                                <span className="block text-xs font-semibold text-white truncate leading-tight">{user.name}</span>
+                                <span className="block text-xs text-slate-400 truncate leading-none mt-0.5">{isAdmin ? 'Administrator' : 'Guru'}</span>
                             </span>
-                            <Icon icon="tabler:chevron-right" className="text-slate-600 group-hover:text-slate-400 text-[14px] shrink-0" />
+                            <Icon icon="tabler:chevron-right" className="text-slate-400 group-hover:text-slate-200 text-sm shrink-0" />
                         </>
                     )}
                 </Link>
@@ -249,19 +265,50 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     );
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white">
+        <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white relative">
+            {/* Skip to main content link for keyboard & screen reader accessibility */}
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-indigo-600 focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-semibold text-xs transition-all"
+            >
+                Lewati ke konten utama
+            </a>
+
             {/* Sidebar — desktop */}
             <aside className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col transition-all duration-300 bg-sidebar-gradient border-r border-white/10 ${collapsed ? 'w-[72px]' : 'w-[260px]'}`}>
                 <div className="relative flex flex-col h-full">{sidebarInner(collapsed)}</div>
             </aside>
 
-            {/* Mobile sidebar overlay */}
-            <div className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${mobileOpen ? 'visible' : 'invisible'}`}>
-                <div onClick={() => setMobileOpen(false)} className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity ${mobileOpen ? 'opacity-100' : 'opacity-0'}`} />
-                <aside className={`absolute left-0 top-0 bottom-0 w-[280px] max-w-[85vw] flex flex-col transition-transform duration-300 bg-sidebar-gradient border-r border-white/10 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                    {sidebarInner(false, true)}
-                </aside>
-            </div>
+            {/* Mobile sidebar Dialog using Headless UI for focus trap & ESC handling */}
+            <Transition show={mobileOpen}>
+                <Dialog as="div" className="relative z-50 lg:hidden" onClose={() => setMobileOpen(false)}>
+                    <TransitionChild
+                        enter="transition-opacity ease-linear duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity ease-linear duration-300"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" />
+                    </TransitionChild>
+
+                    <div className="fixed inset-0 flex">
+                        <TransitionChild
+                            enter="transition ease-in-out duration-300 transform"
+                            enterFrom="-translate-x-full"
+                            enterTo="translate-x-0"
+                            leave="transition ease-in-out duration-300 transform"
+                            leaveFrom="translate-x-0"
+                            leaveTo="-translate-x-full"
+                        >
+                            <DialogPanel className="relative mr-16 flex w-full max-w-[280px] flex-1 flex-col bg-sidebar-gradient border-r border-white/10 shadow-2xl">
+                                {sidebarInner(false, true)}
+                            </DialogPanel>
+                        </TransitionChild>
+                    </div>
+                </Dialog>
+            </Transition>
 
             {/* Main content area */}
             <div className={`flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-[260px]'}`}>
@@ -270,16 +317,18 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                     <div className="flex items-center justify-between h-[64px] px-4 sm:px-6 lg:px-8 xl:px-10 gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <button
+                                type="button"
                                 onClick={() => setMobileOpen(true)}
-                                className="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                                aria-label="Buka menu"
+                                aria-expanded={mobileOpen}
+                                aria-label="Buka menu navigasi"
+                                className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                             >
                                 <Icon icon="tabler:menu-2" className="text-[20px]" />
                             </button>
                             <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-[14.5px] font-bold text-slate-900 tracking-tight truncate">{activeItem?.label || 'Dashboard'}</span>
-                                {activeItem?.desc && (
-                                    <span className="hidden md:inline text-[12px] text-slate-400 truncate">· {activeItem.desc}</span>
+                                <span className="text-[15px] font-bold text-slate-900 tracking-tight truncate">{headerTitle}</span>
+                                {headerDesc && (
+                                    <span className="hidden md:inline text-xs text-slate-500 truncate">· {headerDesc}</span>
                                 )}
                             </div>
                         </div>
@@ -288,7 +337,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                             {/* Notification bell */}
                             <Link
                                 href={route('notifications.index')}
-                                className="relative w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                                className="relative w-9 h-9 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                                 aria-label="Notifikasi"
                             >
                                 <Icon icon="tabler:bell" className="text-[20px]" />
@@ -302,25 +351,29 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                             {/* User dropdown */}
                             <Dropdown>
                                 <Dropdown.Trigger>
-                                    <button className="flex items-center gap-2 pl-2 ml-1 border-l border-slate-200">
+                                    <button
+                                        type="button"
+                                        aria-label="Menu akun pengguna"
+                                        className="flex items-center gap-2 pl-2 ml-1 border-l border-slate-200 cursor-pointer"
+                                    >
                                         <div className="hidden sm:block text-right">
-                                            <p className="text-[12.5px] font-bold leading-tight text-slate-900">{user.name}</p>
-                                            <p className="text-[11px] text-slate-400 leading-tight">{isAdmin ? 'Administrator' : 'Guru'}</p>
+                                            <p className="text-xs font-bold leading-tight text-slate-900">{user.name}</p>
+                                            <p className="text-xs text-slate-500 leading-tight">{isAdmin ? 'Administrator' : 'Guru'}</p>
                                         </div>
                                         <UserAvatar
                                             src={fotoUrl}
                                             initials={initials}
-                                            className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-extrabold text-[11px] shadow-sm"
+                                            className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-extrabold text-xs shadow-sm"
                                         />
                                         <Icon icon="tabler:chevron-down" className="text-slate-400 text-[14px] hidden sm:block" />
                                     </button>
                                 </Dropdown.Trigger>
                                 <Dropdown.Content width="64">
                                     <div className="px-4 py-3 border-b border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50">
-                                        <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Masuk sebagai</p>
-                                        <p className="text-[13.5px] font-bold text-slate-900 mt-0.5 truncate">{user.name}</p>
-                                        <p className="text-[11.5px] text-slate-500 truncate">{user.email}</p>
-                                        <span className={`inline-flex mt-2 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase ${isAdmin ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                                        <p className="text-xs font-bold tracking-widest text-slate-500 uppercase">Masuk sebagai</p>
+                                        <p className="text-sm font-bold text-slate-900 mt-0.5 truncate">{user.name}</p>
+                                        <p className="text-xs text-slate-600 truncate">{user.email}</p>
+                                        <span className={`inline-flex mt-2 px-2 py-0.5 rounded text-xs font-bold tracking-wider uppercase ${isAdmin ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
                                             {isAdmin ? 'Administrator' : 'Guru'}
                                         </span>
                                     </div>
@@ -329,19 +382,19 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                             <span className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                                                 <Icon icon="tabler:user" className="text-[15px] text-slate-600" />
                                             </span>
-                                            <span className="text-[13px] font-semibold">Profil Saya</span>
+                                            <span className="text-xs font-semibold">Profil Saya</span>
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('profile.edit') + '#ubah-kata-sandi'} className="flex items-center gap-3">
                                             <span className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
                                                 <Icon icon="tabler:key" className="text-[15px] text-amber-600" />
                                             </span>
-                                            <span className="text-[13px] font-semibold">Ubah Kata Sandi</span>
+                                            <span className="text-xs font-semibold">Ubah Kata Sandi</span>
                                         </Dropdown.Link>
                                         <Dropdown.Link href={route('logout')} method="post" as="button" className="flex items-center gap-3 text-rose-600 w-full">
                                             <span className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
                                                 <Icon icon="tabler:logout" className="text-[15px] text-rose-600" />
                                             </span>
-                                            <span className="text-[13px] font-semibold">Keluar Akun</span>
+                                            <span className="text-xs font-semibold">Keluar Akun</span>
                                         </Dropdown.Link>
                                     </div>
                                 </Dropdown.Content>
@@ -350,8 +403,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                     </div>
                 </header>
 
-                {/* Flash messages */}
-                <div className="px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 space-y-3 w-full">
+                {/* Fixed floating Toast Stack for flash messages — prevents layout pushdown */}
+                <div className="fixed top-20 right-4 sm:right-6 z-50 flex flex-col gap-2.5 max-w-sm sm:max-w-md w-full pointer-events-none [&>*]:pointer-events-auto">
                     {flash?.success && <FlashMessage type="success" message={flash.success} />}
                     {(flash?.error || (props.errors as any)?.error) && <FlashMessage type="error" message={flash?.error || (props.errors as any)?.error} />}
                     {flash?.warning && <FlashMessage type="warning" message={flash.warning} />}
@@ -359,12 +412,12 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 </div>
 
                 {/* Page content */}
-                <main className={`flex-1 px-4 sm:px-6 lg:px-8 xl:px-10 py-6 w-full ${!isAdmin ? 'pb-28 lg:pb-8' : 'pb-8'}`}>
+                <main id="main-content" tabIndex={-1} className={`flex-1 px-4 sm:px-6 lg:px-8 xl:px-10 py-6 w-full focus:outline-none ${!isAdmin ? 'pb-28 lg:pb-8' : 'pb-8'}`}>
                     {children}
                 </main>
 
                 <footer className="hidden lg:block border-t border-slate-200/60 bg-white/60 backdrop-blur-md px-4 sm:px-6 lg:px-8 xl:px-10 py-3.5">
-                    <div className="w-full flex items-center justify-between text-[11px] font-medium text-slate-400">
+                    <div className="w-full flex items-center justify-between text-xs font-medium text-slate-500">
                         <span>© {new Date().getFullYear()} SATU GURU KPM — {appTagline}</span>
                     </div>
                 </footer>
@@ -377,7 +430,12 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         {guruBottomNav.map(item => {
                             const active = route().current(item.pattern);
                             return (
-                                <Link key={item.href} href={route(item.href)} className="flex flex-col items-center gap-1 flex-1 py-2 min-w-0">
+                                <Link
+                                    key={item.href}
+                                    href={route(item.href)}
+                                    aria-current={active ? 'page' : undefined}
+                                    className="flex flex-col items-center gap-1 flex-1 py-2 min-w-0"
+                                >
                                     <span className={`w-10 h-8 rounded-xl flex items-center justify-center transition-all ${
                                         active
                                             ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-400/30'
@@ -385,7 +443,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                     }`}>
                                         <Icon icon={item.icon} className="text-[20px]" />
                                     </span>
-                                    <span className={`text-[10px] font-bold tracking-wide truncate ${active ? 'text-indigo-600' : 'text-slate-400'}`}>{item.label}</span>
+                                    <span className={`text-xs font-bold tracking-wide truncate ${active ? 'text-indigo-600' : 'text-slate-500'}`}>{item.label}</span>
                                 </Link>
                             );
                         })}

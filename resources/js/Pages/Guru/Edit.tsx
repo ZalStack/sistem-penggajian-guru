@@ -3,8 +3,10 @@ import { Card } from '@/Components/ui/card';
 import Input from '@/Components/ui/input';
 import Select from '@/Components/ui/select';
 import Button from '@/Components/ui/button';
+import Modal from '@/Components/ui/modal';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
+import { useState } from 'react';
 import { Grade, Guru, Program } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
@@ -15,6 +17,8 @@ interface GuruEditProps {
 }
 
 export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const { data, setData, put, processing, errors } = useForm({
         nama: guru.nama,
         grade_id: guru.grade_id as string | number,
@@ -67,13 +71,23 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('guru.update', guru.id));
+        put(route('guru.update', guru.id), {
+            preserveScroll: true,
+        });
     };
 
-    const handleResetPassword = () => {
-        if (confirm(`Reset password guru "${guru.nama}"? Password baru akan ditampilkan setelah reset.`)) {
-            router.post(route('guru.resetPassword', guru.id));
-        }
+    const confirmResetPassword = () => {
+        setIsResetting(true);
+        router.post(route('guru.resetPassword', guru.id), {}, {
+            preserveScroll: true,
+            onFinish: () => {
+                setIsResetting(false);
+                setShowResetModal(false);
+            },
+            onSuccess: () => {
+                router.reload({ preserveScroll: true });
+            },
+        });
     };
 
     return (
@@ -85,6 +99,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                     <Link
                         href={route('guru.index')}
                         className="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors shadow-sm shrink-0"
+                        aria-label="Kembali ke data guru"
                     >
                         <Icon icon="tabler:arrow-left" className="text-lg" />
                     </Link>
@@ -94,16 +109,38 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                     </div>
                 </div>
                 {guru.user && (
-                    <button
-                        onClick={handleResetPassword}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white text-xs font-semibold rounded-xl hover:bg-amber-600 transition-colors shadow-[0_4px_10px_-4px_rgba(217,119,6,0.6)] w-full sm:w-auto"
+                    <Button
+                        type="button"
+                        variant="warning"
+                        onClick={() => setShowResetModal(true)}
+                        className="w-full sm:w-auto"
+                        aria-label={`Reset password untuk ${guru.nama}`}
                     >
-                        <Icon icon="tabler:key" /> Reset Password
-                    </button>
+                        <Icon icon="tabler:key" className="text-base" /> Reset Password
+                    </Button>
                 )}
             </div>
 
             <form onSubmit={submit} className="w-full space-y-6">
+                {/* Ringkasan Kesalahan Formulir */}
+                {Object.keys(errors).length > 0 && (
+                    <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3.5 animate-slide-down" role="alert" aria-live="assertive">
+                        <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                            <Icon icon="tabler:alert-triangle" className="text-xl" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-bold text-rose-900">Terdapat kesalahan pada formulir</h4>
+                            <p className="text-xs text-rose-700 mt-0.5">Ada {Object.keys(errors).length} bidang yang perlu diperiksa kembali sebelum menyimpan:</p>
+                            <ul className="mt-2 list-disc list-inside text-xs text-rose-600 space-y-1">
+                                {Object.entries(errors).slice(0, 5).map(([field, msg]) => (
+                                    <li key={field}>
+                                        <span className="font-semibold capitalize">{field.replace('_', ' ')}</span>: {msg}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                )}
                 <Card title="Data Utama Guru" description="Identitas dan penugasan">
                     <div className="space-y-5">
                         <Input
@@ -158,7 +195,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                                                         : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
                                                 }`}
                                             >
-                                                {active && <Icon icon="tabler:check" className="text-[13px]" />}
+                                                {active && <Icon icon="tabler:check" className="text-xs" />}
                                                 {p.nama}
                                             </button>
                                         );
@@ -256,8 +293,8 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                                             placeholder="Belum diisi"
                                             error={errors.pelatihan_suprarasional}
                                         />
-                                        <p className="text-[11px] leading-4 text-slate-500 font-[450] flex items-center gap-1">
-                                            <Icon icon="tabler:school" className="text-[12px] shrink-0" />
+                                        <p className="text-xs leading-4 text-slate-500 font-[450] flex items-center gap-1">
+                                            <Icon icon="tabler:school" className="text-xs shrink-0" />
                                             Pilih IYA jika guru pernah mengikuti pelatihan Suprarasional.
                                         </p>
                                     </div>
@@ -371,18 +408,41 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                     </div>
                 </Card>
 
-                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <div className="sticky bottom-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 xl:-mx-10 px-4 sm:px-6 lg:px-8 xl:px-10 py-4 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-float flex flex-col-reverse sm:flex-row items-center justify-end gap-3 rounded-b-2xl">
                     <Link
                         href={route('guru.index')}
-                        className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50/50 hover:border-indigo-200 hover:text-indigo-700 text-sm font-medium transition-colors text-center"
+                        className="w-full sm:w-auto text-center"
                     >
-                        Batal
+                        <Button variant="secondary" type="button" className="w-full sm:w-auto">
+                            Batal
+                        </Button>
                     </Link>
                     <Button type="submit" processing={processing} className="w-full sm:w-auto">
-                        <Icon icon="tabler:device-floppy" /> Simpan Perubahan
+                        <Icon icon="tabler:device-floppy" className="text-base" /> Simpan Perubahan
                     </Button>
                 </div>
             </form>
+
+            {/* Modal Konfirmasi Reset Password */}
+            <Modal show={showResetModal} onClose={() => setShowResetModal(false)} showCloseButton={true}>
+                <div className="p-6 text-center">
+                    <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 ring-1 ring-amber-100">
+                        <Icon icon="tabler:key" className="text-2xl" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Reset Password Guru?</h3>
+                    <p className="text-sm text-slate-500 mb-6">
+                        Password untuk akun <strong className="text-slate-800">{guru.nama}</strong> akan direset secara acak. Password baru akan muncul pada notifikasi sistem setelah proses berhasil.
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        <Button variant="secondary" onClick={() => setShowResetModal(false)}>
+                            Batal
+                        </Button>
+                        <Button variant="warning" processing={isResetting} onClick={confirmResetPassword}>
+                            Ya, Reset Password
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

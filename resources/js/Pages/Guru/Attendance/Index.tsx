@@ -3,6 +3,7 @@ import { Card } from '@/Components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
@@ -96,8 +97,8 @@ function UpcomingSessionCard({ session }: { session: any }) {
                 </div>
                 <Badge variant="info" size="sm">{upcomingDateLabel(session.tanggal)}</Badge>
             </div>
-            <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-                <Icon icon="tabler:map-pin" className="text-[11px] shrink-0" /> Presensi dilakukan di aplikasi SI ADIK-KK sesuai ploting sesi admin.
+            <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
+                <Icon icon="tabler:map-pin" className="text-xs shrink-0" /> Presensi dilakukan di aplikasi SI ADIK-KK sesuai ploting sesi admin.
             </p>
         </div>
     );
@@ -121,7 +122,7 @@ export default function AttendanceIndex({
         router.get(
             route('my-attendance'),
             { bulan: value || undefined },
-            { preserveState: true, replace: true }
+            { preserveState: true, preserveScroll: true, replace: true }
         );
     };
 
@@ -245,7 +246,7 @@ export default function AttendanceIndex({
                             <h2 className="text-xl font-bold text-slate-900">Jadwal Mengajar Terdekat</h2>
                             <p className="text-sm text-indigo-500 mt-1">Presensi dilakukan di SI ADIK-KK sesuai ploting sesi admin</p>
                         </div>
-                        <span className="text-[11px] font-semibold text-indigo-500 border-b-2 border-indigo-500 px-2 py-1 rounded">
+                        <span className="text-xs font-semibold text-indigo-500 border-b-2 border-indigo-500 px-2 py-1 rounded">
                             {upcomingSessions.length} sesi
                         </span>
                     </div>
@@ -260,8 +261,8 @@ export default function AttendanceIndex({
                             <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
                                 <Icon icon="tabler:calendar-off" className="text-[28px] text-indigo-400" />
                             </div>
-                            <p className="text-[13px] font-medium text-slate-700">Jadwal Mengajar</p>
-                            <p className="text-[12px] text-slate-500">Tidak ada jadwal mendatang. Lihat jadwal mingguan di menu Jadwal.</p>
+                            <p className="text-sm font-medium text-slate-700">Jadwal Mengajar</p>
+                            <p className="text-xs text-slate-500">Tidak ada jadwal mendatang. Lihat jadwal mingguan di menu Jadwal.</p>
                         </div>
                     )}
                 </div>
@@ -274,16 +275,16 @@ export default function AttendanceIndex({
                         <h2 className="text-xl font-bold text-slate-900 mb-4">Ringkasan Pembayaran</h2>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div>
-                                <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-indigo-500">Gaji Bulan Ini</p>
+                                <p className="text-xs font-bold tracking-[0.08em] uppercase text-indigo-500">Gaji Bulan Ini</p>
                                 <p className="text-[20px] sm:text-[22px] font-[800] tracking-tight text-slate-900 mt-1 break-words">{formatCurrency(stats.gaji_bulan ?? 0)}</p>
                             </div>
                             <div className="sm:pt-1 sm:text-right">
-                                <p className="text-[10px] font-bold tracking-[0.06em] uppercase text-indigo-400">Potensi Gaji Bulan Ini</p>
+                                <p className="text-xs font-bold tracking-[0.06em] uppercase text-indigo-400">Potensi Gaji Bulan Ini</p>
                                 <p className="text-[16px] font-[800] tracking-[-0.02em] text-slate-900 mt-1 break-words">{formatCurrency(stats.potensi_gaji ?? 0)}</p>
                             </div>
                         </div>
                         <div className="mt-4 pt-4 border-t border-slate-100">
-                            <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500">
+                            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                                 <span>Status: {stats.status_bayar === 'sudah_dibayar' ? 'Sudah Dibayar' : 'Menunggu Pembayaran'}</span>
                                 <span className={`w-2 h-2 rounded-full ${stats.status_bayar === 'sudah_dibayar' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                             </div>
@@ -293,7 +294,7 @@ export default function AttendanceIndex({
                                     style={{ width: `${Math.min(100, ((stats.total_hadir ?? 0) / Math.max(1, stats.total_sesi_bulan ?? 1)) * 100)}%` }}
                                 />
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-2">
+                            <p className="text-xs text-slate-500 mt-2">
                                 {stats.total_hadir ?? 0} dari {stats.total_sesi_bulan ?? 0} sesi hadir
                             </p>
                         </div>
@@ -371,7 +372,7 @@ export default function AttendanceIndex({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                                         {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                                     </span>
                                                 </TableCell>
@@ -411,7 +412,7 @@ export default function AttendanceIndex({
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className="shrink-0 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
+                                        <span className="shrink-0 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5">
                                             #{index + 1}
                                         </span>
                                     </div>
@@ -445,7 +446,7 @@ export default function AttendanceIndex({
                                         <Badge variant={statusConfig[att.status]?.variant || 'default'}>
                                             {statusConfig[att.status]?.label || att.status}
                                         </Badge>
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold border ${(att as any).source === 'adik' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
                                             {(att as any).source === 'adik' ? 'SI ADIK-KK' : 'SiGuru'}
                                         </span>
                                     </div>
@@ -454,17 +455,15 @@ export default function AttendanceIndex({
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-20 sm:py-24 px-4">
-                        <div className="w-16 h-16 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-5 shadow-sm">
-                            <Icon icon="tabler:clipboard-check" className="text-[32px] text-indigo-400" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900">Belum ada data absensi</h3>
-                        <p className="text-sm text-slate-500 mt-2 mx-auto max-w-sm break-words">
-                            {filters.bulan
+                    <EmptyState
+                        icon="tabler:clipboard-check"
+                        title="Belum ada data absensi"
+                        description={
+                            filters.bulan
                                 ? 'Tidak ada data absensi untuk bulan yang dipilih.'
-                                : 'Absen akan muncul di sini setelah dilakukan check-in melalui aplikasi SI ADIK-KK.'}
-                        </p>
-                    </div>
+                                : 'Absen akan muncul di sini setelah dilakukan check-in melalui aplikasi SI ADIK-KK.'
+                        }
+                    />
                 )}
             </Card>
         </AuthenticatedLayout>

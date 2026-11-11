@@ -5,6 +5,7 @@ import Input from '@/Components/ui/input';
 import Button from '@/Components/ui/button';
 import Badge from '@/Components/ui/badge';
 import Modal from '@/Components/ui/modal';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
@@ -44,9 +45,21 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (editId) {
-            put(route('location.update', editId), { onSuccess: () => resetForm() });
+            put(route('location.update', editId), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    resetForm();
+                    router.reload();
+                },
+            });
         } else {
-            post(route('location.store'), { onSuccess: () => resetForm() });
+            post(route('location.store'), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    resetForm();
+                    router.reload();
+                },
+            });
         }
     };
 
@@ -64,8 +77,12 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
         if (locationToDelete) {
             setDeleting(true);
             router.delete(route('location.destroy', locationToDelete.id), {
+                preserveScroll: true,
                 onFinish: () => setDeleting(false),
-                onSuccess: () => setLocationToDelete(null),
+                onSuccess: () => {
+                    setLocationToDelete(null);
+                    router.reload();
+                },
             });
         }
     };
@@ -173,140 +190,160 @@ export default function LocationIndex({ locations }: LocationIndexProps) {
                 >
                     {/* Desktop / Tablet Table */}
                     <div className="hidden md:block">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-16">No</TableHead>
-                                    <TableHead>Nama Lokasi</TableHead>
-                                    <TableHead>Alamat</TableHead>
-                                    <TableHead>Radius</TableHead>
-                                    <TableHead>Guru Penugasan</TableHead>
-                                    <TableHead>Jumlah Sesi</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {locations.map((location, index) => (
-                                    <TableRow key={location.id}>
-                                        <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                                    <Icon icon="tabler:map-pin" className="text-lg" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <span className="font-bold text-slate-900 block">{location.nama_lokasi}</span>
-                                                    <span className="text-[11px] text-slate-400 font-mono">
-                                                        {Number(location.latitude).toFixed(5)}, {Number(location.longitude).toFixed(5)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-slate-600 text-sm max-w-[200px] block truncate" title={location.alamat ?? ''}>
-                                                {location.alamat || '-'}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="info">{location.radius} m</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {location.gurus && location.gurus.length > 0 ? (
-                                                <div className="flex flex-wrap gap-1 max-w-[180px]">
-                                                    {location.gurus.slice(0, 3).map((g) => (
-                                                        <Badge key={g.id} variant="outline" size="sm">{g.nama}</Badge>
-                                                    ))}
-                                                    {location.gurus.length > 3 && (
-                                                        <span className="text-[11px] text-slate-400 font-semibold">+{location.gurus.length - 3} lagi</span>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <span className="text-xs text-slate-400">-</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
-                                                {location.sessions_count} sesi
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEdit(location)}
-                                                    className="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
-                                                    title="Edit Lokasi"
-                                                >
-                                                    <Icon icon="tabler:pencil" className="text-base" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => openDeleteModal(location)}
-                                                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
-                                                    title="Hapus Lokasi"
-                                                >
-                                                    <Icon icon="tabler:trash" className="text-base" />
-                                                </button>
-                                            </div>
-                                        </TableCell>
+                        {locations.length === 0 ? (
+                            <EmptyState
+                                icon="tabler:map-pin-off"
+                                title="Belum ada lokasi terdaftar"
+                                description="Tambahkan data lokasi mengajar pertama untuk memulai penugasan guru."
+                            />
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-16">No</TableHead>
+                                        <TableHead>Nama Lokasi</TableHead>
+                                        <TableHead>Alamat</TableHead>
+                                        <TableHead>Radius</TableHead>
+                                        <TableHead>Guru Penugasan</TableHead>
+                                        <TableHead>Jumlah Sesi</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {locations.map((location, index) => (
+                                        <TableRow key={location.id}>
+                                            <TableCell className="font-medium text-slate-400">{index + 1}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                        <Icon icon="tabler:map-pin" className="text-lg" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <span className="font-bold text-slate-900 block">{location.nama_lokasi}</span>
+                                                        <span className="text-xs text-slate-400 font-mono">
+                                                            {Number(location.latitude).toFixed(5)}, {Number(location.longitude).toFixed(5)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-slate-600 text-sm max-w-[200px] block truncate" title={location.alamat ?? ''}>
+                                                    {location.alamat || '-'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="info">{location.radius} m</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {location.gurus && location.gurus.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                                        {location.gurus.slice(0, 3).map((g) => (
+                                                            <Badge key={g.id} variant="outline" size="sm">{g.nama}</Badge>
+                                                        ))}
+                                                        {location.gurus.length > 3 && (
+                                                            <span className="text-xs text-slate-400 font-semibold">+{location.gurus.length - 3} lagi</span>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">-</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
+                                                    {location.sessions_count} sesi
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleEdit(location)}
+                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
+                                                        title="Edit Lokasi"
+                                                        aria-label={`Edit lokasi ${location.nama_lokasi}`}
+                                                    >
+                                                        <Icon icon="tabler:pencil" className="text-base" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openDeleteModal(location)}
+                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
+                                                        title="Hapus Lokasi"
+                                                        aria-label={`Hapus lokasi ${location.nama_lokasi}`}
+                                                    >
+                                                        <Icon icon="tabler:trash" className="text-base" />
+                                                    </button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </div>
 
                     {/* Mobile Cards View */}
                     <div className="md:hidden space-y-3">
-                        {locations.map((location, index) => (
-                            <div
-                                key={location.id}
-                                className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
-                            >
-                                <div className="flex items-start justify-between gap-2">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
-                                            <Icon icon="tabler:map-pin" className="text-lg" />
+                        {locations.length === 0 ? (
+                            <EmptyState
+                                icon="tabler:map-pin-off"
+                                title="Belum ada lokasi terdaftar"
+                                description="Tambahkan data lokasi mengajar pertama untuk memulai penugasan guru."
+                            />
+                        ) : (
+                            locations.map((location, index) => (
+                                <div
+                                    key={location.id}
+                                    className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
+                                                <Icon icon="tabler:map-pin" className="text-lg" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-slate-900 text-sm truncate">{location.nama_lokasi}</p>
+                                                {location.alamat && (
+                                                    <p className="text-xs text-slate-500 truncate">{location.alamat}</p>
+                                                )}
+                                                <p className="text-xs text-slate-500 font-mono break-all">
+                                                    {Number(location.latitude).toFixed(4)}, {Number(location.longitude).toFixed(4)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-slate-900 text-sm truncate">{location.nama_lokasi}</p>
-                                            {location.alamat && (
-                                                <p className="text-xs text-slate-500 truncate">{location.alamat}</p>
-                                            )}
-                                            <p className="text-xs text-slate-500 font-mono break-all">
-                                                {Number(location.latitude).toFixed(4)}, {Number(location.longitude).toFixed(4)}
-                                            </p>
-                                        </div>
+                                        <span className="text-xs font-semibold text-slate-400 flex-shrink-0">
+                                            #{index + 1}
+                                        </span>
                                     </div>
-                                    <span className="text-xs font-semibold text-slate-400 flex-shrink-0">
-                                        #{index + 1}
-                                    </span>
-                                </div>
 
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="info">{location.radius} m radius</Badge>
-                                    <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
-                                        {location.sessions_count} sesi
-                                    </Badge>
-                                </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="info">{location.radius} m radius</Badge>
+                                        <Badge variant={location.sessions_count > 0 ? 'purple' : 'default'}>
+                                            {location.sessions_count} sesi
+                                        </Badge>
+                                    </div>
 
-                                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleEdit(location)}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
-                                    >
-                                        <Icon icon="tabler:pencil" /> Edit
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => openDeleteModal(location)}
-                                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1"
-                                    >
-                                        <Icon icon="tabler:trash" /> Hapus
-                                    </button>
+                                    <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200/60">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleEdit(location)}
+                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors inline-flex items-center gap-1"
+                                            aria-label={`Edit lokasi ${location.nama_lokasi}`}
+                                        >
+                                            <Icon icon="tabler:pencil" /> Edit
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => openDeleteModal(location)}
+                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1"
+                                            aria-label={`Hapus lokasi ${location.nama_lokasi}`}
+                                        >
+                                            <Icon icon="tabler:trash" /> Hapus
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </Card>
             </div>

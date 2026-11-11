@@ -55,16 +55,16 @@ export default function StatCard({ title, value, icon, color = 'slate', descript
             <div className={cn('absolute top-0 left-0 h-1 w-full bg-gradient-to-r opacity-90', c.bar)} />
             <div className="relative flex items-start justify-between gap-4 pt-1.5">
                 <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold tracking-[0.06em] uppercase text-slate-500">{title}</p>
+                    <p className="text-xs font-bold tracking-[0.06em] uppercase text-slate-500">{title}</p>
                     <p className="text-xl font-extrabold tracking-tight text-slate-900 mt-2 leading-none">{value}</p>
                     {description && <p className="text-xs text-slate-500 mt-1.5 leading-4">{description}</p>}
                     {trend && (
                         <div className="flex items-center gap-1.5 mt-3">
-                            <span className={cn('inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold border', trend.isPositive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200')}>
+                            <span className={cn('inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border', trend.isPositive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200')}>
                                 <Icon icon={trend.isPositive ? 'tabler:trending-up' : 'tabler:trending-down'} className="w-3 h-3" />
                                 {trend.isPositive ? '+' : ''}{trend.value}%
                             </span>
-                            {trend.label && <span className="text-[11px] text-slate-400 font-medium">{trend.label}</span>}
+                            {trend.label && <span className="text-xs text-slate-400 font-medium">{trend.label}</span>}
                         </div>
                     )}
                 </div>

@@ -29,16 +29,16 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
     const [search, setSearch] = useState(filters.search || '');
 
     const updateFilter = (key: string, value: string) => {
-        router.get(route('laporan.index'), { ...filters, [key]: value || undefined, search: search || undefined }, { preserveState: true, replace: true });
+        router.get(route('laporan.index'), { ...filters, [key]: value || undefined, search: search || undefined }, { preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handleSearch = () => {
-        router.get(route('laporan.index'), { ...filters, search: search || undefined }, { preserveState: true, replace: true });
+        router.get(route('laporan.index'), { ...filters, search: search || undefined }, { preserveState: true, preserveScroll: true, replace: true });
     };
 
     const resetFilters = () => {
         setSearch('');
-        router.get(route('laporan.index'), {}, { preserveState: true, replace: true });
+        router.get(route('laporan.index'), {}, { preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handleExportPdf = () => { window.location.href = route('laporan.exportPdf') + '?' + qs; };
@@ -94,7 +94,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
             <div className="print:hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
                 <div className="card-modern hover:border-indigo-200 px-4 sm:px-5 py-4 flex items-start justify-between gap-3 transition-colors">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Guru Digaji</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Guru Digaji</p>
                         <p className="text-lg font-semibold text-slate-900 mt-1 break-words">{displayCount} <span className="font-normal text-slate-600">Guru</span></p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
@@ -103,7 +103,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                 </div>
                 <div className="card-modern hover:border-indigo-200 px-4 sm:px-5 py-4 flex items-start justify-between gap-3 transition-colors">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Sesi Mengajar</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Sesi Mengajar</p>
                         <p className="text-lg font-semibold text-slate-900 mt-1 break-words">{displaySesi} <span className="font-normal text-slate-600">Sesi</span></p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
@@ -112,7 +112,7 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                 </div>
                 <div className="card-modern hover:border-indigo-200 px-4 sm:px-5 py-4 flex items-start justify-between gap-3 transition-colors">
                     <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Total Realisasi Dana</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Realisasi Dana</p>
                         <p className="text-lg font-semibold text-indigo-600 mt-1 break-words">{formatCurrency(displayTotal)}</p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center shrink-0 shadow-[0_4px_10px_-4px_rgba(99,102,241,0.7)]">
@@ -212,17 +212,17 @@ export default function LaporanIndex({ penggajians, grandTotal, totalSesi, grade
                     <table className="w-full min-w-[720px] text-sm">
                         <thead>
                             <tr className="bg-gradient-to-r from-indigo-50/70 to-violet-50/50 border-b border-indigo-100">
-                                <th className="px-4 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider w-12">No</th>
-                                <th className="px-4 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Nama Guru & NIP</th>
-                                <th className="px-3 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Grade</th>
-                                <th className="px-3 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Mapel</th>
-                                <th className="px-3 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Periode</th>
-                                <th className="px-3 py-3 text-center text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Sesi</th>
-                                <th className="px-3 py-3 text-left text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Transport</th>
-                                <th className="px-3 py-3 text-right text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Honor Sesi</th>
-                                <th className="px-3 py-3 text-right text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Biaya Transport</th>
-                                <th className="px-4 py-3 text-right text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Total Gaji</th>
-                                <th className="px-4 py-3 text-center text-[11px] font-semibold text-indigo-900/70 uppercase tracking-wider">Status / Aksi</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider w-12">No</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Nama Guru & NIP</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Grade</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Mapel</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Periode</th>
+                                <th className="px-3 py-3 text-center text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Sesi</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Transport</th>
+                                <th className="px-3 py-3 text-right text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Honor Sesi</th>
+                                <th className="px-3 py-3 text-right text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Biaya Transport</th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Total Gaji</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-indigo-900/70 uppercase tracking-wider">Status / Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">

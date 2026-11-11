@@ -7,6 +7,7 @@ import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
 import Select from '@/Components/ui/select';
 import Pagination from '@/Components/ui/pagination';
+import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Fragment, useState } from 'react';
@@ -51,17 +52,27 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
         router.get(
             route('penggajian.index'),
             { ...filters, [key]: value || undefined },
-            { preserveState: true, replace: true }
+            { preserveState: true, preserveScroll: true, replace: true }
         );
     };
 
     const handleCalculate = (e: React.FormEvent) => {
         e.preventDefault();
-        calculateForm.post(route('penggajian.calculate'));
+        calculateForm.post(route('penggajian.calculate'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload();
+            },
+        });
     };
 
     const handlePay = (id: number) => {
-        router.post(route('penggajian.pay', id));
+        router.post(route('penggajian.pay', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload();
+            },
+        });
     };
 
     const periodeLabel = new Date(periodeAktif + '-01T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
@@ -183,13 +194,11 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                 description={`Menampilkan ${penggajians.total} rekap honor${filters.periode ? ` periode ${periodeLabel}` : ' seluruh periode'}`}
             >
                 {penggajians.data.length === 0 ? (
-                    <div className="text-center py-16">
-                        <div className="w-16 h-16 bg-indigo-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                            <Icon icon="tabler:inbox" className="text-[32px]" />
-                        </div>
-                        <p className="text-sm font-medium text-slate-900">Tidak ada data penggajian</p>
-                        <p className="text-xs text-slate-500 mt-1">Gunakan filter atau hitung gaji untuk periode baru</p>
-                    </div>
+                    <EmptyState
+                        icon="tabler:wallet-off"
+                        title="Tidak ada data penggajian"
+                        description="Gunakan filter atau hitung gaji untuk periode baru."
+                    />
                 ) : (
                     <>
                         {/* Desktop Table */}
@@ -223,6 +232,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                         onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
                                                         className="flex items-center gap-3 text-left group"
                                                         title="Lihat rincian perhitungan"
+                                                        aria-label="Lihat rincian perhitungan"
                                                     >
                                                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-lg shadow-indigo-900/40">
                                                             {p.guru?.nama?.substring(0, 2).toUpperCase() ?? 'GU'}
@@ -231,8 +241,8 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                             <span className="font-semibold text-slate-900 block truncate group-hover:text-indigo-700 transition-colors">
                                                                 {p.guru?.nama ?? '-'}
                                                             </span>
-                                                            <span className="text-[11px] text-slate-400 inline-flex items-center gap-1">
-                                                                <Icon icon={expandedId === p.id ? 'tabler:chevron-up' : 'tabler:chevron-down'} className="text-[11px]" />
+                                                            <span className="text-xs text-slate-400 inline-flex items-center gap-1">
+                                                                <Icon icon={expandedId === p.id ? 'tabler:chevron-up' : 'tabler:chevron-down'} className="text-xs" />
                                                                 Rincian perhitungan
                                                             </span>
                                                         </div>
@@ -303,15 +313,15 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             {expandedId === p.id && (
                                                 <TableRow>
                                                     <TableCell colSpan={11} className="bg-indigo-50/40 p-0">
-                                                        <div className="px-6 py-4">
-                                                            <p className="text-[12px] font-[700] uppercase tracking-wider text-slate-500 mb-3">
+                                                         <div className="px-6 py-4">
+                                                            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
                                                                 Rincian Per Program &amp; Transport
                                                             </p>
                                                             {p.detail && p.detail.length > 0 ? (
                                                                 <div className="rounded-xl border border-indigo-100 bg-white overflow-hidden">
                                                                     <table className="w-full text-sm">
                                                                         <thead>
-                                                                            <tr className="border-b border-slate-100 text-left text-[11px] uppercase tracking-wider text-slate-400">
+                                                                            <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wider text-slate-400">
                                                                                 <th className="px-4 py-2.5 font-[600]">Program</th>
                                                                                 <th className="px-4 py-2.5 font-[600]">Transport</th>
                                                                                 <th className="px-4 py-2.5 font-[600] text-center">Sesi</th>
@@ -347,11 +357,11 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                                     </table>
                                                                 </div>
                                                             ) : (
-                                                                <p className="text-[13px] text-slate-500">
+                                                                <p className="text-sm text-slate-500">
                                                                     Tidak ada rincian program — honor dihitung langsung dari total kehadiran.
                                                                 </p>
                                                             )}
-                                                            <p className="text-[11.5px] text-slate-400 mt-3">
+                                                            <p className="text-xs text-slate-400 mt-3">
                                                                 Data dihitung dari presensi valid pada periode {p.periode}. Baris yang sudah dibayar tidak dihitung ulang.
                                                             </p>
                                                         </div>
@@ -394,15 +404,15 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
 
                                     <div className="grid grid-cols-3 gap-3">
                                         <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hadir</p>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Hadir</p>
                                             <p className="text-sm font-bold text-slate-900 mt-1">{p.jumlah_hadir} / {p.jumlah_sesi}</p>
                                         </div>
                                         <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Transport</p>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Transport</p>
                                             <p className="text-sm font-bold text-slate-900 mt-1 break-words">{formatCurrency(p.total_transport)}</p>
                                         </div>
                                         <div className="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl p-3 text-white shadow-sm">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/80">Total</p>
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-white/80">Total</p>
                                             <p className="text-sm font-bold mt-1 break-words">{formatCurrency(p.total)}</p>
                                         </div>
                                     </div>

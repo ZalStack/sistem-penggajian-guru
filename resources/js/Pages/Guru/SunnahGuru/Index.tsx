@@ -393,7 +393,7 @@ export default function SunnahGuruIndex({
                                     .toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                                <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100/90 sm:text-[11px]">
+                                <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-emerald-100/90">
                                     <Icon icon="mdi:mosque" className="text-sm" /> Amalan 7SPS
                                 </p>
                                 <h1 className="mt-1 truncate text-lg font-extrabold tracking-tight sm:text-xl">
@@ -401,19 +401,19 @@ export default function SunnahGuruIndex({
                                 </h1>
                                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                     {guru?.kode_grade && (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold ring-1 ring-white/25 backdrop-blur-sm sm:text-[11px]">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25 backdrop-blur-sm">
                                             <Icon icon="mdi:medal-outline" className="text-xs" /> Grade {guru.kode_grade}
                                         </span>
                                     )}
                                     {guru?.programs?.map((program) => (
                                         <span
                                             key={program}
-                                            className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold ring-1 ring-white/25 backdrop-blur-sm sm:text-[11px]"
+                                            className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25 backdrop-blur-sm"
                                         >
                                             {program}
                                         </span>
                                     ))}
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-semibold ring-1 ring-white/25 backdrop-blur-sm sm:text-[11px]">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25 backdrop-blur-sm">
                                         <Icon icon="mdi:calendar-today" className="text-xs" /> {formatTanggalPanjang(today)}
                                     </span>
                                 </div>
@@ -421,11 +421,11 @@ export default function SunnahGuruIndex({
                         </div>
 
                         <div className="flex items-center gap-3 sm:flex-col sm:items-end">
-                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[11px] font-bold shadow-sm ${statusInfo.className}`}>
+                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold shadow-sm ${statusInfo.className}`}>
                                 <Icon icon={statusInfo.icon} className="text-sm" />
                                 {statusInfo.label}
                             </span>
-                            <div className="text-right text-[11px] font-medium text-emerald-100/90">
+                            <div className="text-right text-xs font-medium text-emerald-100/90">
                                 {isPending
                                     ? 'Checklist menunggu ditinjau admin'
                                     : isApproved
@@ -527,7 +527,7 @@ export default function SunnahGuruIndex({
                                         {switching && <Icon icon="mdi:loading" className="animate-spin text-sm text-slate-400" />}
                                     </div>
 
-                                    <p className="mt-2 text-[11px] font-normal text-blue-600/90">
+                                    <p className="mt-2 text-xs font-normal text-blue-600/90">
                                         Checklist hanya dapat diisi untuk hari ini atau kemarin.
                                     </p>
                                 </div>
@@ -561,11 +561,11 @@ export default function SunnahGuruIndex({
                                             <h3 className="text-sm font-extrabold leading-tight tracking-tight text-slate-800 sm:text-base">
                                                 Progress Poin {selectedDate === today ? 'Hari Ini' : 'Kemarin'}
                                             </h3>
-                                            <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
+                                            <span className="inline-flex shrink-0 items-center rounded-full bg-emerald-100/80 px-2 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
                                                 {progressPercent}%
                                             </span>
                                         </div>
-                                        <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-500 sm:text-xs">
+                                        <p className="mt-1 text-xs font-medium leading-relaxed text-slate-500">
                                             {checkedCount} dari 12 amalan · {jumlahBerjamaah}/5 berjamaah
                                         </p>
                                     </div>
@@ -581,7 +581,7 @@ export default function SunnahGuruIndex({
                                             </span>
                                             <span className="text-xs font-bold text-slate-500 sm:text-sm">poin</span>
                                         </div>
-                                        <p className="mt-1.5 text-[10.5px] font-semibold leading-snug text-slate-500 sm:text-[11px]">
+                                        <p className="mt-1.5 text-xs font-semibold leading-snug text-slate-500">
                                             Poin wajib: {poinWajib} · Maksimal 100
                                         </p>
                                     </div>
@@ -598,7 +598,7 @@ export default function SunnahGuruIndex({
                                     <Icon icon="mdi:mosque" className="text-lg text-amber-500 sm:text-xl" />
                                     <h2 className="text-xs font-bold text-slate-800 sm:text-sm">Amalan 7 Sunnah Suprarasional</h2>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-medium text-slate-600 sm:text-xs">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-slate-600">
                                     <span>
                                         Berjamaah: <span className="font-bold text-slate-800">{jumlahBerjamaah}/5</span>
                                     </span>
@@ -617,13 +617,13 @@ export default function SunnahGuruIndex({
                             <ChecklistGrid config={poinConfig} state={fields} disabled={isApproved} onToggle={toggleItem} />
 
                             {isApproved && (
-                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-700">
+                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
                                     <Icon icon="mdi:lock" className="text-sm" />
                                     Checklist sudah disetujui admin dan terkunci. Hubungi admin bila perlu perubahan.
                                 </p>
                             )}
                             {isRejected && (
-                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-rose-200/70 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-700">
+                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-rose-200/70 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
                                     <Icon icon="mdi:alert-circle" className="text-sm" />
                                     Checklist ditolak admin. Perbaiki lalu simpan kembali untuk diajukan ulang.
                                 </p>
@@ -639,10 +639,10 @@ export default function SunnahGuruIndex({
                                     </span>
                                     <div>
                                         <h3 className="text-xs font-bold text-slate-800 sm:text-sm">Status Approval &amp; Catatan Admin</h3>
-                                        <p className="text-[10px] font-medium text-slate-500">Pemantauan checklist oleh admin</p>
+                                        <p className="text-xs font-medium text-slate-500">Pemantauan checklist oleh admin</p>
                                     </div>
                                 </div>
-                                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10.5px] font-bold ${statusInfo.className}`}>
+                                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${statusInfo.className}`}>
                                     <Icon icon={statusInfo.icon} className="text-xs" />
                                     {statusInfo.label}
                                 </span>
@@ -650,12 +650,12 @@ export default function SunnahGuruIndex({
 
                             <div className="grid gap-3 md:grid-cols-2">
                                 <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
-                                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Catatan Admin</p>
+                                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Catatan Admin</p>
                                     <p className="mt-1.5 whitespace-pre-wrap text-xs font-medium leading-relaxed text-slate-700">
                                         {catatan || 'Belum ada catatan dari admin untuk checklist tanggal ini.'}
                                     </p>
                                     {(approvedBy || approvedAt) && (
-                                        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-medium text-slate-400">
+                                        <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-medium text-slate-400">
                                             {approvedBy && <span>Oleh {approvedBy}</span>}
                                             {approvedAt && <span>• {approvedAt}</span>}
                                         </p>
@@ -663,13 +663,13 @@ export default function SunnahGuruIndex({
                                 </div>
 
                                 <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
-                                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Catatan Terbaru</p>
+                                    <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Catatan Terbaru</p>
                                     {catatanTerbaru.length === 0 ? (
                                         <p className="mt-1.5 text-xs font-medium text-slate-500">Belum ada catatan admin pada bulan ini.</p>
                                     ) : (
                                         <ul className="mt-2 space-y-2">
                                             {catatanTerbaru.map((item) => (
-                                                <li key={item.id} className="flex items-start gap-2 text-[11px] leading-snug">
+                                                <li key={item.id} className="flex items-start gap-2 text-xs leading-snug">
                                                     <span
                                                         className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
                                                             item.status_approval === 'approved'
@@ -738,7 +738,7 @@ function StatMiniCard({
                 <p className={`text-2xl font-extrabold tracking-tight sm:text-3xl ${valueClass}`}>{value}</p>
             </div>
             <div className={`px-3 py-1.5 text-center text-white ${footerClass}`}>
-                <p className="text-[11px] font-bold tracking-wide sm:text-xs">{label}</p>
+                <p className="text-xs font-bold tracking-wide">{label}</p>
             </div>
         </div>
     );

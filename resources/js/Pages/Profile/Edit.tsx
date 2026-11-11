@@ -473,7 +473,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                     </button>
                                 </div>
                             )}
-                            <p className="text-[11px] text-gray-400 mt-2">JPG, PNG, atau WEBP, maksimal 5 MB.</p>
+                            <p className="text-xs text-gray-400 mt-2">JPG, PNG, atau WEBP, maksimal 5 MB.</p>
                         </div>
                     </div>
                 </div>
@@ -517,7 +517,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         <label className="block text-xs font-bold text-gray-700 uppercase">
                                             Grade Honorarium
                                         </label>
-                                        <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
                                             Terkunci Resmi
                                         </span>
                                     </div>
@@ -531,7 +531,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         }
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-600 font-bold text-sm cursor-not-allowed select-none"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-1">
+                                    <p className="text-xs text-gray-400 mt-1">
                                         Grade honorarium hanya dapat diubah oleh admin SiGuru.
                                     </p>
                                 </div>
@@ -573,13 +573,13 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                                             : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600'
                                                     }`}
                                                 >
-                                                    {active && <Icon icon="tabler:check" className="text-[12px]" />}
+                                                    {active && <Icon icon="tabler:check" className="text-xs" />}
                                                     {p.nama}
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                    <p className="text-[10px] text-gray-400 mt-1">
+                                    <p className="text-xs text-gray-400 mt-1">
                                         Pilih jenis kelas penugasan Anda (bisa lebih dari satu).
                                     </p>
                                 </div>
@@ -598,7 +598,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         placeholder="Contoh: SMP / SMA / KPM Pusat"
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-medium transition"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-1">Grup kelas atau tingkatan yang Anda ajar.</p>
+                                    <p className="text-xs text-gray-400 mt-1">Grup kelas atau tingkatan yang Anda ajar.</p>
                                 </div>
 
                                 <div>
@@ -667,7 +667,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         value={lamaMengajarInfo.text}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-800 font-bold text-sm cursor-not-allowed select-none"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-1">
+                                    <p className="text-xs text-gray-400 mt-1">
                                         Dikonversi otomatis dari tanggal bergabung di KPM hingga saat ini.
                                     </p>
                                 </div>
@@ -695,7 +695,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                             <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
                                                 Riwayat Pendidikan
                                             </label>
-                                            <p className="text-[11px] text-slate-500 mt-0.5">
+                                            <p className="text-xs text-slate-500 mt-0.5">
                                                 Contoh: <code>S1 Pendidikan IPA — UNJ</code>
                                             </p>
                                         </div>
@@ -735,7 +735,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         ))}
                                     </div>
 
-                                    <div className="pt-1 text-[11px] text-slate-400">
+                                    <div className="pt-1 text-xs text-slate-400">
                                         <span>Tulis satu riwayat pendidikan per baris</span>
                                     </div>
                                 </div>
@@ -747,7 +747,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                             <label className="block text-xs font-black text-slate-800 uppercase tracking-wider">
                                                 Riwayat Mengajar
                                             </label>
-                                            <p className="text-[11px] text-slate-500 mt-0.5">
+                                            <p className="text-xs text-slate-500 mt-0.5">
                                                 Instansi &amp; rentang periode mengajar
                                             </p>
                                         </div>
@@ -815,7 +815,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         ))}
                                     </div>
 
-                                    <div className="pt-1 text-[11px] text-slate-400">
+                                    <div className="pt-1 text-xs text-slate-400">
                                         <span>Tulis satu riwayat mengajar per baris (nama instansi &amp; rentang tahun)</span>
                                     </div>
                                 </div>
@@ -886,7 +886,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                     placeholder="081234567890"
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-mono transition"
                                 />
-                                <p className="text-[10px] text-gray-400 mt-1">Digunakan untuk koordinasi jadwal &amp; absensi kelas.</p>
+                                <p className="text-xs text-gray-400 mt-1">Digunakan untuk koordinasi jadwal &amp; absensi kelas.</p>
                             </div>
 
                             <div>
@@ -912,7 +912,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         <label className="block text-xs font-bold text-gray-700 uppercase">
                                             Tunjangan Khusus (IDR)
                                         </label>
-                                        <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                                        <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
                                             Terkunci
                                         </span>
                                     </div>
@@ -922,7 +922,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         value={formatCurrency(Number(guru?.tunjangan_khusus) || 0)}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-600 font-mono font-bold text-sm cursor-not-allowed select-none"
                                     />
-                                    <p className="text-[10px] text-gray-400 mt-1">Hanya admin SiGuru yang dapat mengubah nominal ini.</p>
+                                    <p className="text-xs text-gray-400 mt-1">Hanya admin SiGuru yang dapat mengubah nominal ini.</p>
                                 </div>
 
                                 <div>

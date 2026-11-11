@@ -1,4 +1,5 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
+import { Icon } from '@iconify/react';
 import { ReactNode } from 'react';
 
 interface ModalProps {
@@ -6,6 +7,7 @@ interface ModalProps {
     onClose: () => void;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
     children: ReactNode;
+    showCloseButton?: boolean;
 }
 
 const maxWidths: Record<string, string> = {
@@ -16,7 +18,7 @@ const maxWidths: Record<string, string> = {
     '2xl': 'sm:max-w-2xl',
 };
 
-export default function Modal({ show, onClose, maxWidth = 'md', children }: ModalProps) {
+export default function Modal({ show, onClose, maxWidth = 'md', children, showCloseButton = true }: ModalProps) {
     return (
         <Transition show={show} leave="duration-200">
             <Dialog as="div" className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" onClose={onClose}>
@@ -32,6 +34,16 @@ export default function Modal({ show, onClose, maxWidth = 'md', children }: Moda
                 >
                     <DialogPanel className={`relative w-full bg-white rounded-[20px] border border-indigo-100/70 shadow-float max-h-[90vh] overflow-auto overscroll-contain ${maxWidths[maxWidth]} animate-scale-in`}>
                         <div className="absolute top-0 inset-x-0 h-1 bg-brand-gradient rounded-t-[20px]" />
+                        {showCloseButton && (
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="absolute top-3.5 right-3.5 z-10 w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/25"
+                                aria-label="Tutup modal"
+                            >
+                                <Icon icon="tabler:x" className="text-lg" />
+                            </button>
+                        )}
                         {children}
                     </DialogPanel>
                 </TransitionChild>
