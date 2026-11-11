@@ -174,6 +174,10 @@ class AttendanceController extends ApiController
         }
         if (! $guru && ! empty($validated['teacher_email'])) {
             $user = User::where('email', $validated['teacher_email'])->first();
+            if (! $user) {
+                $base = explode('@', $validated['teacher_email'])[0];
+                $user = User::where('email', 'like', $base.'@%')->orWhere('name', 'like', '%'.$base.'%')->first();
+            }
             $guru = $user?->guru()->with('grade')->first();
         }
         if (! $guru && ! empty($validated['nip'])) {
