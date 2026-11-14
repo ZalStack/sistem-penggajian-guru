@@ -28,7 +28,7 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
 
     public function headings(): array
     {
-        return ['No', 'Nama Guru', 'Grade', 'Mapel', 'Periode', 'Sesi', 'Hadir', 'Jenis Transport', 'Honor', 'Transport', 'Tunjangan Khusus', 'Total Gaji'];
+        return ['No', 'Nama Guru', 'Grade', 'Mapel', 'Periode', 'Sesi', 'Hadir', 'Honor', 'Tunjangan Khusus', 'Total Gaji'];
     }
 
     public function map($penggajian): array
@@ -43,9 +43,7 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
             $penggajian->periode,
             $penggajian->jumlah_sesi,
             $penggajian->jumlah_hadir,
-            $penggajian->transport->jenis ?? '-',
             $penggajian->honor,
-            $penggajian->total_transport,
             (float) $penggajian->tunjangan_khusus,
             $penggajian->total,
         ];
@@ -60,10 +58,9 @@ class PenggajianExport implements FromCollection, ShouldAutoSize, WithHeadings, 
             'A' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
             'G' => ['alignment' => ['horizontal' => 'center']],
+            'H' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
             'I' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
             'J' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
-            'K' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
-            'L' => ['numFmt' => '#,##0', 'alignment' => ['horizontal' => 'right']],
             ($lastRow + 1) => ['font' => ['bold' => true], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'F3F4F6']]],
         ];
     }

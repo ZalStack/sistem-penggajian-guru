@@ -40,7 +40,7 @@ class TeacherController extends ApiController
                 });
             })
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->where('grade_id', $g))
-            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->where('mapel', $m));
+            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->where(fn ($w) => $w->where('mapel', $m)->orWhere('bidang_2', $m)));
 
         $gurus = $query->orderBy('nama')
             ->paginate($request->integer('per_page', 15))
@@ -78,6 +78,8 @@ class TeacherController extends ApiController
             'nama' => 'required|string|max:255',
             'grade_id' => 'required|exists:grades,id',
             'mapel' => 'required|in:IPA,MTK',
+            'bidang_2' => 'nullable|in:IPA,MTK|different:mapel',
+            'aktivitas_luar_kpm' => 'nullable|string|max:2000',
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
             'alamat' => 'nullable|string|max:1000',
@@ -109,6 +111,8 @@ class TeacherController extends ApiController
                 'nama' => $validated['nama'],
                 'grade_id' => $validated['grade_id'],
                 'mapel' => $validated['mapel'],
+                'bidang_2' => $validated['bidang_2'] ?? null,
+                'aktivitas_luar_kpm' => $validated['aktivitas_luar_kpm'] ?? null,
                 'jenjang' => $validated['jenjang'] ?? null,
                 'domisili' => $validated['domisili'] ?? null,
                 'alamat' => $validated['alamat'] ?? null,
@@ -147,6 +151,8 @@ class TeacherController extends ApiController
             'nama' => 'required|string|max:255',
             'grade_id' => 'required|exists:grades,id',
             'mapel' => 'required|string',
+            'bidang_2' => 'nullable|string',
+            'aktivitas_luar_kpm' => 'nullable|string|max:2000',
             'jenjang' => 'nullable|string|max:100',
             'domisili' => 'nullable|string|max:255',
             'alamat' => 'nullable|string|max:1000',
@@ -179,6 +185,8 @@ class TeacherController extends ApiController
             'nama' => $validated['nama'],
             'grade_id' => $validated['grade_id'],
             'mapel' => $mapel,
+            'bidang_2' => $this->normalisasiBidang($validated['bidang_2'] ?? null, $mapel),
+            'aktivitas_luar_kpm' => $validated['aktivitas_luar_kpm'] ?? null,
             'jenjang' => $validated['jenjang'] ?? null,
             'domisili' => $validated['domisili'] ?? null,
             'alamat' => $validated['alamat'] ?? null,
@@ -273,5 +281,19 @@ class TeacherController extends ApiController
         $filename = 'data-login-guru-'.now()->format('Ymd_His').'.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Normalisasi bidang kedua guru agar selalu berbeda dari bidang utamanya.
+     */
+    private function normalisasiBidang(?string $bidang, string $mapel): ?string
+    {
+        if ($bidang === null || trim($bidang) === '') {
+            return null;
+        }
+
+        $normalisasi = in_array(strtoupper(trim($bidang)), ['MTK', 'MATEMATIKA'], true) ? 'MTK' : 'IPA';
+
+        return $normalisasi === $mapel ? null : $normalisasi;
     }
 }

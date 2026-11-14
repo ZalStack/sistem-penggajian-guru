@@ -24,6 +24,8 @@ class AttendanceService
 
     public const NOT_SESSION_OWNER = 'not_session_owner';
 
+    public const NOT_PLOTTED_CLASS = 'not_plotted_class';
+
     public const WRONG_DATE = 'wrong_date';
 
     public const OUTSIDE_TIME_WINDOW = 'outside_time_window';
@@ -59,6 +61,15 @@ class AttendanceService
             if ($session->guru_id !== $guru->id) {
                 return AttendanceResult::failure(self::NOT_SESSION_OWNER, [
                     'session_id' => $session->id,
+                ]);
+            }
+
+            // Guru hanya boleh mengabsen pada kelas/program yang menjadi
+            // plotingannya — sesi di luar penugasan guru ditolak.
+            if ($session->program_id && ! $guru->programs->contains('id', (int) $session->program_id)) {
+                return AttendanceResult::failure(self::NOT_PLOTTED_CLASS, [
+                    'session_id' => $session->id,
+                    'program_id' => (int) $session->program_id,
                 ]);
             }
 

@@ -6,6 +6,7 @@ import Button from '@/Components/ui/button';
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
+import { programStyle } from '@/lib/program-colors';
 import { useState, useEffect, useRef } from 'react';
 
 interface AdminStats {
@@ -491,7 +492,12 @@ function SessionCard({ session, attendance, attStatus, position, izinAktif = fal
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
-                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull;{' '}
+                            <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(session.program).badge}`}>
+                                <span className={`w-1 h-1 rounded-full ${programStyle(session.program).dot}`} />
+                                {session.program ?? session.mapel}
+                            </span>{' '}
+                            &bull; {session.jumlah_sesi} sesi
                         </p>
                         {session.transport && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">
@@ -598,7 +604,12 @@ function UpcomingSessionCard({ session }: { session: any }) {
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
-                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull;{' '}
+                            <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(session.program).badge}`}>
+                                <span className={`w-1 h-1 rounded-full ${programStyle(session.program).dot}`} />
+                                {session.program ?? session.mapel}
+                            </span>{' '}
+                            &bull; {session.jumlah_sesi} sesi
                         </p>
                         {session.transport && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">Transport: {session.transport.jenis}</p>
@@ -725,7 +736,12 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-[700] text-slate-900 truncate">{s.guru.nama}</p>
                                                     <p className="text-xs text-slate-500 truncate">
-                                                        {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi ?? '-'}
+                                                        {s.jam_mulai}–{s.jam_selesai} ·{' '}
+                                                    <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(s.program).badge}`}>
+                                                        <span className={`w-1 h-1 rounded-full ${programStyle(s.program).dot}`} />
+                                                        {s.program ?? s.mapel}
+                                                    </span>
+                                                    {' · '}{s.lokasi ?? '-'}
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
@@ -829,7 +845,12 @@ function AdminDashboard({ stats, todaySessions, recentSessions, recentPenggajian
                                                     {s.guru.kode_grade !== '-' && <span className="text-slate-400 font-[500]"> ({s.guru.kode_grade})</span>}
                                                 </p>
                                                 <p className="text-xs text-slate-500 truncate">
-                                                    {s.tanggal} · {s.jam_mulai}–{s.jam_selesai} · {s.program ?? s.mapel} · {s.lokasi}
+                                                    {s.tanggal} · {s.jam_mulai}–{s.jam_selesai} ·{' '}
+                                                    <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(s.program).badge}`}>
+                                                        <span className={`w-1 h-1 rounded-full ${programStyle(s.program).dot}`} />
+                                                        {s.program ?? s.mapel}
+                                                    </span>
+                                                    {' · '}{s.lokasi}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
@@ -1044,7 +1065,12 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                                                             )}
                                                         </div>
                                                         <p className="text-xs text-slate-500 mt-1 truncate">
-                                                            {session.jam_mulai?.substring(0, 5)}–{session.jam_selesai?.substring(0, 5)} · {session.program ?? session.mapel} · {session.jumlah_sesi} sesi
+                                                            {session.jam_mulai?.substring(0, 5)}–{session.jam_selesai?.substring(0, 5)} ·{' '}
+                                                            <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(session.program).badge}`}>
+                                                                <span className={`w-1 h-1 rounded-full ${programStyle(session.program).dot}`} />
+                                                                {session.program ?? session.mapel}
+                                                            </span>
+                                                            {' · '}{session.jumlah_sesi} sesi
                                                         </p>
                                                         {session.transport && (
                                                             <p className="text-xs text-slate-400 mt-0.5">
@@ -1054,7 +1080,7 @@ function GuruDashboard({ stats, upcomingSessions, todayAttendances, guru, izinHa
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
-                                                    <Badge variant={session.is_today ? 'accent' : 'neutral'} size="sm">
+                                                    <Badge variant={session.is_today ? 'brand' : 'neutral'} size="sm">
                                                         {upcomingDateLabel(session.tanggal)}
                                                     </Badge>
                                                 </div>

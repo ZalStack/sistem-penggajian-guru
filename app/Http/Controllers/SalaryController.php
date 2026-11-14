@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Guru;
 use App\Models\Notification;
 use App\Models\Penggajian;
+use App\Support\RiwayatMengajar;
 use App\Support\Tanggal;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ class SalaryController extends Controller
             'periode' => 'nullable|date_format:Y-m',
             'filter_guru' => 'nullable|integer|exists:gurus,id',
             'status_bayar' => 'nullable|in:belum_dibayar,sudah_dibayar',
+            'search' => 'nullable|string|max:100',
         ]);
 
         $periodeDefault = now()->format('Y-m');
@@ -33,6 +35,11 @@ class SalaryController extends Controller
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
             ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
             ->when($validated['status_bayar'] ?? null, fn ($q, $s) => $q->where('status_bayar', $s))
+            ->when($validated['search'] ?? null, function ($q, $search) {
+                $escaped = addcslashes($search, '%_\\');
+
+                $q->whereHas('guru', fn ($gq) => $gq->where('nama', 'like', "%{$escaped}%"));
+            })
             ->orderBy('periode', 'desc')
             ->orderBy('guru_id');
 
@@ -42,12 +49,15 @@ class SalaryController extends Controller
 
         $periodeQuery = Penggajian::where('periode', $periodeAktif);
 
+        $riwayatMengajar = RiwayatMengajar::perPeriode($penggajians->pluck('guru_id'), $periodeAktif);
+
         return Inertia::render('Admin/Salary/Index', [
             'penggajians' => $penggajians,
             'gurus' => Guru::with('grade')->orderBy('nama')->get(),
-            'filters' => $request->only(['periode', 'filter_guru', 'status_bayar']),
+            'filters' => $request->only(['periode', 'filter_guru', 'status_bayar', 'search']),
             'periodeDefault' => $periodeDefault,
             'periodeAktif' => $periodeAktif,
+            'riwayatMengajar' => $riwayatMengajar,
             'ringkasan' => [
                 'total_guru' => (clone $periodeQuery)->count(),
                 'total_honor' => (float) (clone $periodeQuery)->sum('honor'),
@@ -112,7 +122,7 @@ class SalaryController extends Controller
                 $user,
                 'Honor Sudah Dibayar',
                 'Honor periode '.$penggajian->periode.' sebesar Rp '.number_format((float) $penggajian->total, 0, ',', '.')
-                    .' atas '.$penggajian->jumlah_hadir.' kehadiran telah dibayar. Slip gaji dapat diunduh melalui menu Slip Gaji.',
+                    .' atas '.$penggajian->jumlah_hadir.' kehadiran telah dibayar. Slip gaji dapat diunduh melalui menu Riwayat Mengajar.',
                 'success',
                 'gaji'
             );
@@ -145,8 +155,15 @@ class SalaryController extends Controller
 
     public function guruSalary(Request $request)
     {
+        $validated = $request->validate([
+            'periode' => 'nullable|date_format:Y-m',
+        ]);
+
         $user = $request->user();
         $guru = $user->guru;
+
+        $periodeDefault = now()->format('Y-m');
+        $periodeAktif = $validated['periode'] ?? $periodeDefault;
 
         if (! $guru) {
             return Inertia::render('Guru/Salary/Index', [
@@ -155,6 +172,10 @@ class SalaryController extends Controller
                 'totalGaji' => 0,
                 'totalBayar' => 0,
                 'gajiBulanIni' => null,
+                'periodeDefault' => $periodeDefault,
+                'periodeAktif' => $periodeAktif,
+                'filters' => $request->only(['periode']),
+                'riwayatMengajar' => [],
             ]);
         }
 
@@ -168,12 +189,18 @@ class SalaryController extends Controller
             ->where('periode', $now->format('Y-m'))
             ->first();
 
+        $riwayatMengajar = RiwayatMengajar::perPeriode(collect([$guru->id]), $periodeAktif);
+
         return Inertia::render('Guru/Salary/Index', [
             'penggajians' => $penggajians,
             'guru' => $guru->load(['grade', 'programs']),
             'totalGaji' => (float) $penggajians->sum('total'),
             'totalBayar' => (float) $penggajians->where('status_bayar', Penggajian::STATUS_SUDAH)->sum('total'),
             'gajiBulanIni' => $bulanIni,
+            'periodeDefault' => $periodeDefault,
+            'periodeAktif' => $periodeAktif,
+            'filters' => $request->only(['periode']),
+            'riwayatMengajar' => $riwayatMengajar,
         ]);
     }
 }

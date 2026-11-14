@@ -1,8 +1,7 @@
 import { Icon } from '@iconify/react';
 import { ReactNode } from 'react';
 
-const APP_NAME = 'SATU GURU KPM';
-const APP_TAGLINE = 'Sistem Informasi Administrasi Terpadu Guru KPM';
+const APP_NAME = 'SATU GURU';
 
 export default function GuestLayout({ children }: { children: ReactNode }) {
     return (
@@ -30,7 +29,6 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                         </div>
                         <div>
                             <p className="text-white font-extrabold tracking-wider text-[15px] leading-tight uppercase">{APP_NAME}</p>
-                            <p className="text-indigo-200/80 text-[10.5px] font-medium leading-tight mt-0.5">KPM</p>
                         </div>
                     </div>
 
@@ -41,13 +39,13 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                             Akses Karyawan Resmi
                         </div>
                         <h1 className="text-[34px] xl:text-[38px] font-extrabold tracking-tight leading-[1.1] text-white">
-                            Sistem Informasi Administrasi Terpadu{' '}
+                            Satu{' '}
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-indigo-300">
-                                Guru KPM
+                                Guru
                             </span>
                         </h1>
                         <p className="text-[15px] leading-relaxed text-slate-400 mt-4">
-                            Kelola data guru, jadwal mengajar, presensi berbasis GPS, honor per sesi, hingga slip gaji dalam satu sistem terpadu.
+                            Kelola data guru, jadwal mengajar, presensi berbasis GPS, honor per sesi, hingga riwayat mengajar dalam satu sistem terpadu.
                         </p>
 
                         <div className="mt-10 space-y-3">
@@ -71,7 +69,7 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                     </div>
 
                     <p className="text-slate-600 text-[11px] font-medium">
-                        © {new Date().getFullYear()} {APP_NAME} · KPM
+                        © {new Date().getFullYear()} {APP_NAME}
                     </p>
                 </div>
             </div>
@@ -86,7 +84,6 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                                 <Icon icon="tabler:school" className="text-white text-[26px]" />
                             </div>
                             <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 mt-4">{APP_NAME}</h1>
-                            <p className="text-[12px] font-semibold tracking-widest uppercase text-indigo-500 mt-1">{APP_TAGLINE}</p>
                         </div>
 
                         {/* Form card */}
@@ -98,7 +95,7 @@ export default function GuestLayout({ children }: { children: ReactNode }) {
                         </div>
 
                         <p className="text-center text-[11.5px] font-medium text-slate-400 mt-5">
-                            Butuh bantuan? Hubungi admin KPM
+                            Butuh bantuan? Hubungi admin
                         </p>
                     </div>
                 </div>

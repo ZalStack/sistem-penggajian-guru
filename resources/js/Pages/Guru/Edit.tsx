@@ -23,6 +23,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
         nama: guru.nama,
         grade_id: guru.grade_id as string | number,
         mapel: guru.mapel,
+        bidang_2: (guru.bidang_2 ?? '') as 'IPA' | 'MTK' | '',
         jenjang: guru.jenjang || '',
         program_ids: (guru.programs ?? []).map((p) => p.id),
         domisili: guru.domisili || '',
@@ -39,6 +40,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
         bank: guru.bank || '',
         nomor_rekening: guru.nomor_rekening || '',
         keterangan_mengajar: guru.keterangan_mengajar || '',
+        aktivitas_luar_kpm: guru.aktivitas_luar_kpm || '',
         email: guru.user?.email ?? '',
     });
 
@@ -85,7 +87,7 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                 setShowResetModal(false);
             },
             onSuccess: () => {
-                router.reload({ preserveScroll: true });
+                router.reload();
             },
         });
     };
@@ -152,27 +154,51 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                             required
                         />
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Select
-                                label="Grade Honorarium"
-                                value={data.grade_id}
-                                onChange={(e) => setData('grade_id', Number(e.target.value))}
-                                options={gradeOptions}
-                                placeholder="Pilih Grade Guru"
-                                error={errors.grade_id}
-                                required
-                            />
-                            <Select
-                                label="Mata Pelajaran"
-                                value={data.mapel}
-                                onChange={(e) => setData('mapel', e.target.value as 'IPA' | 'MTK')}
-                                options={[
-                                    { value: 'IPA', label: 'IPA (Ilmu Pengetahuan Alam)' },
-                                    { value: 'MTK', label: 'MTK (Matematika)' },
-                                ]}
-                                error={errors.mapel}
-                                required
-                            />
+                        <Select
+                            label="Grade Honorarium"
+                            value={data.grade_id}
+                            onChange={(e) => setData('grade_id', Number(e.target.value))}
+                            options={gradeOptions}
+                            placeholder="Pilih Grade Guru"
+                            error={errors.grade_id}
+                            required
+                        />
+
+                        <div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Select
+                                    label="Bidang / Mata Pelajaran 1"
+                                    value={data.mapel}
+                                    onChange={(e) => {
+                                        const next = e.target.value as 'IPA' | 'MTK';
+                                        setData({
+                                            mapel: next,
+                                            bidang_2: data.bidang_2 === next ? '' : data.bidang_2,
+                                        });
+                                    }}
+                                    options={[
+                                        { value: 'IPA', label: 'IPA (Ilmu Pengetahuan Alam)' },
+                                        { value: 'MTK', label: 'MTK (Matematika)' },
+                                    ]}
+                                    error={errors.mapel}
+                                    required
+                                />
+                                <Select
+                                    label="Bidang / Mata Pelajaran 2"
+                                    value={data.bidang_2}
+                                    onChange={(e) => setData('bidang_2', e.target.value as 'IPA' | 'MTK')}
+                                    options={[
+                                        { value: 'IPA', label: 'IPA (Ilmu Pengetahuan Alam)' },
+                                        { value: 'MTK', label: 'MTK (Matematika)' },
+                                    ]}
+                                    placeholder="Pilih bidang kedua"
+                                    error={errors.bidang_2}
+                                    required
+                                />
+                            </div>
+                            <p className="text-xs text-slate-400 mt-1.5">
+                                Pilih tepat 2 bidang — bidang utama dan bidang kedua tidak boleh sama.
+                            </p>
                         </div>
 
                         <div>
@@ -343,6 +369,23 @@ export default function GuruEdit({ guru, grades, programs }: GuruEditProps) {
                             {errors.keterangan_mengajar && (
                                 <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.keterangan_mengajar}</p>
                             )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Aktivitas di luar KPM
+                            </label>
+                            <textarea
+                                value={data.aktivitas_luar_kpm}
+                                onChange={(e) => setData('aktivitas_luar_kpm', e.target.value)}
+                                placeholder="Kegiatan/pekerjaan di luar KPM, satu aktivitas per baris"
+                                rows={3}
+                                className="input-modern resize-none"
+                            />
+                            {errors.aktivitas_luar_kpm && (
+                                <p className="text-xs text-rose-500 font-medium mt-1.5">{errors.aktivitas_luar_kpm}</p>
+                            )}
+                            <p className="text-xs text-slate-400 mt-1">Opsional — tulis satu aktivitas di luar KPM per baris</p>
                         </div>
                     </div>
                 </Card>

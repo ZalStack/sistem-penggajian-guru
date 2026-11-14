@@ -20,7 +20,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
 
     return (
         <GuestLayout>
-            <Head title="Masuk — SATU GURU KPM" />
+            <Head title="Masuk — SATU GURU" />
 
             <div className="mb-6">
                 <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 leading-tight">
@@ -102,7 +102,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                 </Button>
 
                 <p className="text-center text-xs leading-4 text-slate-400 font-medium pt-1">
-                    Belum punya akun? Hubungi admin KPM untuk mendapatkan akses.
+                    Belum punya akun? Hubungi admin untuk mendapatkan akses.
                 </p>
             </form>
         </GuestLayout>

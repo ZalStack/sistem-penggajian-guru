@@ -240,6 +240,11 @@ class AttendanceController extends ApiController
             );
         }
 
+        // Guru hanya dapat diabsen pada kelas/program yang menjadi plotingannya.
+        if ($session->program_id && ! $guru->programs->contains('id', (int) $session->program_id)) {
+            return $this->errorResponse('Sesi mengajar tersebut bukan merupakan kelas/plotingan guru ini.', 422);
+        }
+
         // 4. Find or create Attendance (sumber = SI ADIK-KK)
         $attendance = Attendance::where('guru_id', $guru->id)
             ->where('session_id', $session->id)
@@ -331,6 +336,7 @@ class AttendanceController extends ApiController
         return match ($result->code) {
             AttendanceService::NO_TEACHER_LINK => 'This account is not linked to a teacher profile.',
             AttendanceService::NOT_SESSION_OWNER => 'This session does not belong to you.',
+            AttendanceService::NOT_PLOTTED_CLASS => 'Check-in rejected: this session is not one of your plotted classes. Please contact the admin for class assignment.',
             AttendanceService::WRONG_DATE => 'Check-in can only be performed on the session date ('.Carbon::parse($context['session_date'])->format('d/m/Y').').',
             AttendanceService::OUTSIDE_TIME_WINDOW => 'Check-in is only allowed from 30 minutes before the session start time until the session ends ('.$context['window_start'].' - '.$context['window_end'].').',
             AttendanceService::ALREADY_CHECKED_IN => 'You have already checked in for this session today.',

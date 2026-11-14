@@ -8,6 +8,7 @@ import Modal from '@/Components/ui/modal';
 import Select from '@/Components/ui/select';
 import Pagination from '@/Components/ui/pagination';
 import EmptyState from '@/Components/ui/empty-state';
+import { programStyle } from '@/lib/program-colors';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import React, { useState, useMemo } from 'react';
@@ -57,6 +58,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
         status: 'dijadwalkan',
         catatan: '',
         tanggal: '',
+        pekan: 1,
+        bahan_ajar: '',
         jam_mulai: '',
         jam_selesai: '',
         jumlah_sesi: 1,
@@ -72,6 +75,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
         setData('status', session.status);
         setData('catatan', session.catatan ?? '');
         setData('tanggal', session.tanggal.substring(0, 10));
+        setData('pekan', session.pekan ?? 1);
+        setData('bahan_ajar', session.bahan_ajar ?? '');
         setData('jam_mulai', session.jam_mulai.substring(0, 5));
         setData('jam_selesai', session.jam_selesai.substring(0, 5));
         setData('jumlah_sesi', session.jumlah_sesi);
@@ -189,7 +194,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
 
     return (
         <AuthenticatedLayout>
-            <Head title="Kelola Sesi Mengajar" />
+            <Head title="Ploting Guru" />
 
             {/* Page Header */}
             <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
@@ -198,10 +203,10 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-900/40">
                             <Icon icon="tabler:calendar-event" className="text-[18px]" />
                         </div>
-                        <h1 className="page-title">Sesi Mengajar</h1>
+                        <h1 className="page-title">Ploting Guru</h1>
                     </div>
                     <p className="page-subtitle">
-                        Kelola jadwal sesi mengajar guru: program kelas, status, dan lokasi.
+                        Plotingan sesi mengajar guru: kelas/program, tanggal & pekan, jam, hingga bahan ajar.
                     </p>
                 </div>
                 <Button
@@ -212,7 +217,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                     className="shrink-0"
                 >
                     <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-[18px]" />
-                    {showForm ? 'Tutup Formulir' : 'Tambah Sesi Baru'}
+                    {showForm ? 'Tutup Formulir' : 'Tambah Ploting Baru'}
                 </Button>
             </div>
 
@@ -220,8 +225,8 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                 {/* Add/Edit Form */}
                 {showForm && (
                     <Card
-                        title={editId ? 'Edit Sesi Mengajar' : 'Tambah Sesi Mengajar Baru'}
-                        description="Lengkapi data jadwal sesi mengajar termasuk program, status, dan lokasi"
+                        title={editId ? 'Edit Ploting Guru' : 'Tambah Ploting Guru Baru'}
+                        description="Lengkapi data plotingan: kelas/program, tanggal & pekan, jam, bahan ajar, dan lokasi"
                     >
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -235,37 +240,18 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     required
                                 />
                                 <Select
-                                    label="Program / Kelas"
+                                    label="Kelas / Program"
                                     value={data.program_id}
                                     onChange={(e) => setData('program_id', e.target.value)}
                                     options={programOptions}
-                                    placeholder="Tanpa program"
+                                    placeholder="Pilih kelas plotingan"
                                     error={errors.program_id}
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Select
-                                    label="Lokasi"
-                                    value={data.location_id}
-                                    onChange={(e) => setData('location_id', e.target.value)}
-                                    options={locationOptions}
-                                    placeholder="Pilih Lokasi"
-                                    error={errors.location_id}
-                                    required
-                                />
-                                <Select
-                                    label="Transport"
-                                    value={data.transport_id}
-                                    onChange={(e) => setData('transport_id', e.target.value)}
-                                    options={transportOptions}
-                                    placeholder="Pilih Transport"
-                                    error={errors.transport_id}
                                     required
                                 />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Select
-                                    label="Mata Pelajaran"
+                                    label="Bidang / Mata Pelajaran"
                                     value={data.mapel}
                                     onChange={(e) => setData('mapel', e.target.value as 'IPA' | 'MTK')}
                                     options={[
@@ -289,7 +275,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     required
                                 />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <Input
                                     label="Tanggal"
                                     type="date"
@@ -297,6 +283,16 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     onChange={(e) => setData('tanggal', e.target.value)}
                                     error={errors.tanggal}
                                     required
+                                />
+                                <Input
+                                    label="Pekan (2-mingguan)"
+                                    type="number"
+                                    value={data.pekan}
+                                    onChange={(e) => setData('pekan', Number(e.target.value))}
+                                    error={errors.pekan}
+                                    min={1}
+                                    max={53}
+                                    hint="Siklus 14 hari, mis. 1 = pekan pertama"
                                 />
                                 <Input
                                     label="Jam Mulai"
@@ -315,7 +311,7 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     required
                                 />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <Input
                                     label="Jumlah Sesi"
                                     type="number"
@@ -325,17 +321,57 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                     min={1}
                                     required
                                 />
-                                <Input
-                                    label="Catatan"
+                                <Select
+                                    label="Lokasi"
+                                    value={data.location_id}
+                                    onChange={(e) => setData('location_id', e.target.value)}
+                                    options={locationOptions}
+                                    placeholder="Pilih Lokasi"
+                                    error={errors.location_id}
+                                    required
+                                />
+                                <Select
+                                    label="Transport"
+                                    value={data.transport_id}
+                                    onChange={(e) => setData('transport_id', e.target.value)}
+                                    options={transportOptions}
+                                    placeholder="Pilih Transport"
+                                    error={errors.transport_id}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="bahan_ajar" className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                    Bahan Ajar / Materi
+                                    <span className="text-rose-500 ml-0.5">*</span>
+                                </label>
+                                <textarea
+                                    id="bahan_ajar"
+                                    rows={3}
+                                    value={data.bahan_ajar}
+                                    onChange={(e) => setData('bahan_ajar', e.target.value)}
+                                    placeholder="Materi / bahan ajar yang diajarkan pada sesi ini"
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
+                                />
+                                {errors.bahan_ajar && <p className="mt-1.5 text-xs font-medium text-rose-600">{errors.bahan_ajar}</p>}
+                            </div>
+                            <div>
+                                <label htmlFor="catatan" className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                    Catatan
+                                </label>
+                                <textarea
+                                    id="catatan"
+                                    rows={2}
                                     value={data.catatan}
                                     onChange={(e) => setData('catatan', e.target.value)}
-                                    error={errors.catatan}
                                     placeholder="Opsional: alasan pembatalan / catatan admin"
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
                                 />
+                                {errors.catatan && <p className="mt-1.5 text-xs font-medium text-rose-600">{errors.catatan}</p>}
                             </div>
                             <div className="flex flex-wrap items-center gap-3 pt-2">
                                 <Button type="submit" processing={processing}>
-                                    <Icon icon="tabler:device-floppy" className="text-[18px]" /> {editId ? 'Simpan Perubahan' : 'Tambah Sesi'}
+                                    <Icon icon="tabler:device-floppy" className="text-[18px]" /> {editId ? 'Simpan Perubahan' : 'Tambah Ploting'}
                                 </Button>
                                 <Button variant="secondary" onClick={resetForm}>
                                     Batal
@@ -465,7 +501,19 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell>
-                                                                <span className="text-slate-600 text-sm font-medium">{session.program?.nama ?? '-'}</span>
+                                                                <div className="min-w-0 space-y-1">
+                                                                    {session.program?.nama ? (
+                                                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(session.program.nama).badge}`}>
+                                                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(session.program.nama).dot}`} />
+                                                                            {session.program.nama}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-slate-400 text-sm">-</span>
+                                                                    )}
+                                                                    {(session.pekan ?? 1) > 0 && (
+                                                                        <span className="block text-xs text-slate-400">Pekan {session.pekan ?? 1}</span>
+                                                                    )}
+                                                                </div>
                                                             </TableCell>
                                                             <TableCell>
                                                                 <Badge variant={statusVariant[displayStatus] ?? 'default'} size="sm">
@@ -579,10 +627,24 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                                     </div>
 
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <Badge variant="info">{session.program?.nama ?? session.mapel}</Badge>
+                                                        {session.program?.nama ? (
+                                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(session.program.nama).badge}`}>
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${programStyle(session.program.nama).dot}`} />
+                                                                {session.program.nama}
+                                                            </span>
+                                                        ) : (
+                                                            <Badge variant="info">{session.mapel}</Badge>
+                                                        )}
+                                                        <Badge variant="default">Pekan {session.pekan ?? 1}</Badge>
                                                         <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
                                                         <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
                                                     </div>
+
+                                                    {session.bahan_ajar && (
+                                                        <p className="text-xs text-slate-500 leading-relaxed">
+                                                            <span className="font-semibold text-slate-600">Bahan ajar:</span> {session.bahan_ajar}
+                                                        </p>
+                                                    )}
 
                                                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                                                         <button
@@ -616,22 +678,23 @@ export default function SessionIndex({ sessions, gurus, locations, transports, p
                                 title={hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
                                 description={hasActiveFilters
                                     ? 'Coba ubah atau reset filter yang dipilih.'
-                                    : 'Mulai dengan menambahkan sesi mengajar baru untuk memulai penjadwalan.'}
-                                action={
-                                    hasActiveFilters ? {
-                                        label: 'Reset Semua Filter',
-                                        onClick: resetFilters,
-                                        icon: 'tabler:refresh',
-                                    } : {
-                                        label: 'Tambah Sesi Sekarang',
-                                        onClick: () => {
+                                    : 'Mulai dengan menambahkan plotingan sesi mengajar baru untuk memulai penjadwalan.'}
+                            >
+                                {hasActiveFilters ? (
+                                    <Button variant="secondary" onClick={resetFilters}>
+                                        <Icon icon="tabler:refresh" className="text-[18px]" /> Reset Semua Filter
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={() => {
                                             resetForm();
                                             setShowForm(true);
-                                        },
-                                        icon: 'tabler:plus',
-                                    }
-                                }
-                            />
+                                        }}
+                                    >
+                                        <Icon icon="tabler:plus" className="text-[18px]" /> Tambah Ploting Sekarang
+                                    </Button>
+                                )}
+                            </EmptyState>
                         </div>
                     )}
                 </Card>

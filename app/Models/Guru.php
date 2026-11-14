@@ -17,6 +17,7 @@ class Guru extends Model
         'foto',
         'grade_id',
         'mapel',
+        'bidang_2',
         'jenjang',
         'user_id',
         'domisili',
@@ -32,6 +33,7 @@ class Guru extends Model
         'bank',
         'nomor_rekening',
         'keterangan_mengajar',
+        'aktivitas_luar_kpm',
     ];
 
     protected $casts = [
@@ -115,5 +117,20 @@ class Guru extends Model
         return $this->programs->contains(
             fn (Program $program) => str_contains(strtolower($program->nama), 'khusus')
         );
+    }
+
+    /**
+     * Daftar bidang / mata pelajaran guru (bidang utama + bidang kedua).
+     *
+     * @return array<int, string>
+     */
+    public function daftarBidang(): array
+    {
+        $bidang = array_values(array_unique(array_filter([
+            $this->mapel,
+            $this->bidang_2,
+        ])));
+
+        return $bidang;
     }
 }

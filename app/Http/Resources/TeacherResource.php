@@ -15,6 +15,8 @@ class TeacherResource extends JsonResource
             'id' => $this->id,
             'nama' => $this->nama,
             'mapel' => $this->mapel,
+            'bidang_2' => $this->bidang_2,
+            'aktivitas_luar_kpm' => $this->aktivitas_luar_kpm,
             'jenjang' => $this->jenjang,
             'domisili' => $this->domisili,
             'tanggal_bergabung' => $this->tanggal_bergabung?->toDateString(),

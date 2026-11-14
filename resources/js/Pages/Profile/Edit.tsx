@@ -196,6 +196,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
         password: '',
         password_confirmation: '',
         mapel: (guru?.mapel ?? 'IPA') as 'IPA' | 'MTK',
+        bidang_2: (guru?.bidang_2 ?? '') as 'IPA' | 'MTK' | '',
         program_ids: (guru?.programs ?? []).map((p) => p.id),
         jenjang: guru?.jenjang || '',
         domisili: guru?.domisili || '',
@@ -206,6 +207,7 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
         nomor_telepon: guru?.nomor_telepon || '',
         bank: guru?.bank || '',
         nomor_rekening: guru?.nomor_rekening || '',
+        aktivitas_luar_kpm: guru?.aktivitas_luar_kpm || '',
         foto: null as File | null,
     });
 
@@ -333,6 +335,8 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
 
         if (isGuru) {
             formData.append('mapel', data.mapel);
+            formData.append('bidang_2', data.bidang_2);
+            formData.append('aktivitas_luar_kpm', data.aktivitas_luar_kpm);
             data.program_ids.forEach((pid) => {
                 formData.append('program_ids[]', String(pid));
             });
@@ -445,6 +449,9 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                 <div className="mt-3.5 flex flex-wrap justify-center md:justify-start gap-2">
                                     <span className="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold">
                                         Bidang: {data.mapel === 'MTK' ? 'Matematika' : 'IPA'}
+                                        {data.bidang_2
+                                            ? ` & ${data.bidang_2 === 'MTK' ? 'Matematika' : 'IPA'}`
+                                            : ''}
                                     </span>
                                     {guru?.grade && (
                                         <span className="px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-semibold">
@@ -541,18 +548,42 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
-                                        Mata Pelajaran *
+                                        Bidang / Mata Pelajaran 1 *
                                     </label>
                                     <select
                                         required
                                         value={data.mapel}
-                                        onChange={(e) => setData('mapel', e.target.value as 'IPA' | 'MTK')}
+                                        onChange={(e) => {
+                                            const next = e.target.value as 'IPA' | 'MTK';
+                                            setData({
+                                                mapel: next,
+                                                bidang_2: data.bidang_2 === next ? '' : data.bidang_2,
+                                            });
+                                        }}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer font-medium transition bg-white"
                                     >
                                         <option value="IPA">IPA (Ilmu Pengetahuan Alam)</option>
                                         <option value="MTK">MTK (Matematika)</option>
                                     </select>
                                     {errors.mapel && <p className="text-xs text-rose-500 mt-1">{errors.mapel}</p>}
+
+                                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5 mt-4">
+                                        Bidang / Mata Pelajaran 2 *
+                                    </label>
+                                    <select
+                                        required
+                                        value={data.bidang_2}
+                                        onChange={(e) => setData('bidang_2', e.target.value as 'IPA' | 'MTK')}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer font-medium transition bg-white"
+                                    >
+                                        <option value="">Pilih bidang kedua</option>
+                                        <option value="IPA">IPA (Ilmu Pengetahuan Alam)</option>
+                                        <option value="MTK">MTK (Matematika)</option>
+                                    </select>
+                                    {errors.bidang_2 && <p className="text-xs text-rose-500 mt-1">{errors.bidang_2}</p>}
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Pilih tepat 2 bidang — bidang utama dan bidang kedua tidak boleh sama.
+                                    </p>
                                 </div>
 
                                 <div>
@@ -671,6 +702,26 @@ function calculateLamaMengajar(tanggalStr: string | null | undefined): { text: s
                                         Dikonversi otomatis dari tanggal bergabung di KPM hingga saat ini.
                                     </p>
                                 </div>
+                            </div>
+
+                            {/* Baris 6: Aktivitas di luar KPM */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                                    Aktivitas di luar KPM
+                                </label>
+                                <textarea
+                                    value={data.aktivitas_luar_kpm}
+                                    onChange={(e) => setData('aktivitas_luar_kpm', e.target.value)}
+                                    placeholder="Kegiatan/pekerjaan di luar KPM, satu aktivitas per baris"
+                                    rows={3}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-medium transition resize-none"
+                                />
+                                {errors.aktivitas_luar_kpm && (
+                                    <p className="text-xs text-rose-500 mt-1">{errors.aktivitas_luar_kpm}</p>
+                                )}
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Opsional — tulis satu aktivitas di luar KPM per baris.
+                                </p>
                             </div>
                         </div>
                     )}

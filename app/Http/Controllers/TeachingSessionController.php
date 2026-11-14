@@ -50,7 +50,7 @@ class TeachingSessionController extends Controller
                 });
             })
             ->orderBy('tanggal', 'desc')
-            ->orderBy('jam_mulai');
+            ->orderBy('jam_mulai', 'desc');
 
         $sessions = $query->paginate(12)->withQueryString();
 
@@ -72,6 +72,12 @@ class TeachingSessionController extends Controller
             return back()->withErrors(['jam_mulai' => 'Guru sudah memiliki sesi di rentang waktu yang sama. Silakan pilih jadwal lain.'])->withInput();
         }
 
+        if ($error = $this->validatePlotting($validated)) {
+            return back()->withErrors($error)->withInput();
+        }
+
+        $validated['pekan'] = $validated['pekan'] ?? 1;
+
         $session = TeachingSession::create($validated);
 
         $this->notifyGuruAboutSession($session, 'ditugaskan');
@@ -86,6 +92,12 @@ class TeachingSessionController extends Controller
         if ($this->hasOverlap($validated['guru_id'], $validated['tanggal'], $validated['jam_mulai'], $validated['jam_selesai'], $session->id)) {
             return back()->withErrors(['jam_mulai' => 'Guru sudah memiliki sesi di rentang waktu yang sama. Silakan pilih jadwal lain.'])->withInput();
         }
+
+        if ($error = $this->validatePlotting($validated, $session->id)) {
+            return back()->withErrors($error)->withInput();
+        }
+
+        $validated['pekan'] = $validated['pekan'] ?? 1;
 
         $guruBerubah = $session->guru_id !== (int) $validated['guru_id'];
         $session->update($validated);
@@ -130,12 +142,50 @@ class TeachingSessionController extends Controller
             'program_id' => 'nullable|exists:programs,id',
             'mapel' => 'required|in:IPA,MTK',
             'tanggal' => 'required|date',
+            'pekan' => 'nullable|integer|min:1|max:53',
+            'bahan_ajar' => 'nullable|string|max:1000',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',
             'status' => 'required|in:dijadwalkan,selesai,dibatalkan',
             'catatan' => 'nullable|string|max:500',
         ];
+    }
+
+    /**
+     * Alarm anti-bentrok + validasi kelas plotingan guru.
+     *
+     * 1. Kelas/program yang dipilih harus benar-benar menjadi penugasan guru tersebut.
+     * 2. Guru tidak boleh terploting ganda pada kelas & hari yang sama — admin wajib
+     *    membatalkan sesi lama terlebih dahulu sebelum membuat sesi baru.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, string>|null
+     */
+    private function validatePlotting(array $validated, ?int $exceptId = null): ?array
+    {
+        $programId = $validated['program_id'] ?? null;
+
+        if ($programId) {
+            $guru = Guru::with('programs')->find($validated['guru_id']);
+
+            if ($guru && ! $guru->programs->contains('id', (int) $programId)) {
+                return ['program_id' => 'Guru ini tidak memiliki penugasan pada kelas/program tersebut. Pilih kelas yang menjadi plotingan guru.'];
+            }
+
+            $bentrok = TeachingSession::where('guru_id', $validated['guru_id'])
+                ->where('program_id', $programId)
+                ->whereDate('tanggal', $validated['tanggal'])
+                ->when($exceptId, fn ($q, $id) => $q->where('id', '!=', $id))
+                ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+                ->exists();
+
+            if ($bentrok) {
+                return ['program_id' => 'Alarm bentrok: guru sudah terploting di kelas & hari yang sama. Batalkan sesi lama terlebih dahulu sebelum menyimpan sesi baru.'];
+            }
+        }
+
+        return null;
     }
 
     private function hasOverlap(int $guruId, string $tanggal, string $jamMulai, string $jamSelesai, ?int $exceptId = null): bool

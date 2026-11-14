@@ -11,6 +11,7 @@ import EmptyState from '@/Components/ui/empty-state';
 import { Head, router, Link } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Attendance, Guru, Grade, PaginatedData } from '@/types';
+import { programStyle } from '@/lib/program-colors';
 
 interface AttendanceRecap {
     total: number;
@@ -304,7 +305,8 @@ export default function AttendanceIndex({ attendances, gurus, filters, recap }: 
                                                     ? `${att.session.jam_mulai?.substring(0,5)} – ${att.session.jam_selesai?.substring(0,5)}`
                                                     : '-'}
                                             </span>
-                                            <span className="text-xs text-slate-400">
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${programStyle(att.session?.program?.nama ?? att.session?.mapel).badge}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${programStyle(att.session?.program?.nama ?? att.session?.mapel).dot}`} />
                                                 {att.session?.program?.nama ?? att.session?.mapel ?? ''}
                                             </span>
                                         </TableCell>

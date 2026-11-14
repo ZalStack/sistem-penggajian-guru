@@ -64,6 +64,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
         tanggal_selesai: '',
         session_id: '' as string,
         alasan: '',
+        lampiran_surat_sakit: null as File | null,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -105,7 +106,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                     <div className="min-w-0">
                         <h1 className="page-title">Perizinan Saya</h1>
                         <p className="page-subtitle">
-                            Ajukan izin, sakit, atau cuti dan pantau status pengajuan Anda
+                            Ajukan izin atau sakit dan pantau status pengajuan Anda
                         </p>
                     </div>
                 </div>
@@ -159,22 +160,32 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="block text-sm font-medium text-slate-700">Jenis Perizinan</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                    {Object.entries(jenisConfig).map(([key, config]) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            onClick={() => setData('jenis', key)}
-                                            className={`flex items-center justify-center gap-2 px-4 py-3 min-h-[46px] rounded-xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/25 ${
-                                                data.jenis === key
-                                                    ? 'border-transparent bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]'
-                                                    : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700 active:bg-indigo-100'
-                                            }`}
-                                        >
-                                            <Icon icon={config.icon} className="text-[18px]" />
-                                            {config.label}
-                                        </button>
-                                    ))}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {(['izin', 'sakit'] as const).map((key) => {
+                                        const config = jenisConfig[key];
+
+                                        return (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() =>
+                                                    setData((prev) => ({
+                                                        ...prev,
+                                                        jenis: key,
+                                                        lampiran_surat_sakit: key === 'sakit' ? prev.lampiran_surat_sakit : null,
+                                                    }))
+                                                }
+                                                className={`flex items-center justify-center gap-2 px-4 py-3 min-h-[46px] rounded-xl border text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/25 ${
+                                                    data.jenis === key
+                                                        ? 'border-transparent bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_6px_16px_-6px_rgba(99,102,241,0.7)]'
+                                                        : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700 active:bg-indigo-100'
+                                                }`}
+                                            >
+                                                <Icon icon={config.icon} className="text-[18px]" />
+                                                {config.label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                                 {errors.jenis && <p className="text-xs text-rose-500">{errors.jenis}</p>}
                             </div>
@@ -210,6 +221,23 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                             />
                             {errors.alasan && <p className="text-xs text-rose-500">{errors.alasan}</p>}
                         </div>
+                        {data.jenis === 'sakit' && (
+                            <div className="space-y-1.5">
+                                <label className="block text-sm font-medium text-slate-700">
+                                    Surat Keterangan Sakit <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    onChange={(e) => setData('lampiran_surat_sakit', e.target.files?.[0] ?? null)}
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-400 hover:border-indigo-200 transition-colors duration-200 shadow-sm cursor-pointer file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-xs file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100"
+                                />
+                                <p className="text-xs text-slate-500">
+                                    Wajib untuk pengajuan sakit — format JPG, JPEG, PNG, atau PDF, maksimal 5 MB.
+                                </p>
+                                {errors.lampiran_surat_sakit && <p className="text-xs text-rose-500">{errors.lampiran_surat_sakit}</p>}
+                            </div>
+                        )}
                         {sesiTerjadwal.length > 0 && (
                             <div className="space-y-1.5">
                                 <label className="block text-sm font-medium text-slate-700">
@@ -272,6 +300,7 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                         <TableHead>Jenis</TableHead>
                                         <TableHead>Periode</TableHead>
                                         <TableHead>Alasan</TableHead>
+                                        <TableHead>Lampiran</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Catatan Admin</TableHead>
                                     </TableRow>
@@ -314,6 +343,21 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                             </TableCell>
                                             <TableCell>
                                                 <p className="text-sm text-slate-600 max-w-[200px] truncate" title={p.alasan}>{p.alasan}</p>
+                                            </TableCell>
+                                            <TableCell>
+                                                {p.lampiran_surat_sakit ? (
+                                                    <a
+                                                        href={route('perizinan.surat-sakit', p.id)}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                                                    >
+                                                        <Icon icon="tabler:file-description" className="text-[14px]" />
+                                                        Lihat Surat Sakit
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">-</span>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={statusConfig[p.status]?.variant ?? 'default'}>
@@ -379,6 +423,17 @@ export default function PerizinanIndex({ perizinan, sesiTerjadwal = [] }: Perizi
                                         <p className="text-xs text-slate-500">Alasan</p>
                                         <p className="text-sm text-slate-700 break-words">{p.alasan}</p>
                                     </div>
+                                    {p.lampiran_surat_sakit && (
+                                        <a
+                                            href={route('perizinan.surat-sakit', p.id)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                                        >
+                                            <Icon icon="tabler:file-description" className="text-[14px]" />
+                                            Lihat Surat Sakit
+                                        </a>
+                                    )}
                                     {p.catatan_admin && (
                                         <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
                                             <div className="flex items-center gap-2 mb-1">

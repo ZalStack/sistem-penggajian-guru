@@ -7,6 +7,7 @@ import Button from '@/Components/ui/button';
 import Select from '@/Components/ui/select';
 import EmptyState from '@/Components/ui/empty-state';
 import { Program, Guru, SessionStatus } from '@/types';
+import { programStyle } from '@/lib/program-colors';
 
 interface ScheduleSession {
     id: number;
@@ -105,7 +106,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                         </div>
                     </div>
 
-                    {/* Pintasan / Catatan ke Menu Sesi Mengajar */}
+                    {/* Pintasan / Catatan ke Menu Ploting Guru */}
                     {role === 'admin' && (
                         <div className="mb-6 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm">
                             <div className="flex items-center gap-3">
@@ -124,7 +125,7 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 rounded-xl transition-all shadow-sm shrink-0 self-start sm:self-auto"
                             >
                                 <Icon icon="tabler:list-check" className="text-[16px]" />
-                                Buka Menu Sesi Mengajar →
+                                Buka Menu Ploting Guru →
                             </Link>
                         </div>
                     )}
@@ -227,8 +228,11 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                                         {s.jumlah_sesi} sesi
                                                     </span>
                                                 </div>
-                                                <p className="text-xs font-[700] text-slate-900 leading-snug">
-                                                    {s.program ?? s.mapel}
+                                                <p className="leading-snug">
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-[700] ring-1 ${programStyle(s.program).badge}`}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                                        {s.program ?? s.mapel}
+                                                    </span>
                                                 </p>
                                                 <p className="text-xs text-slate-500 leading-snug">{s.lokasi}</p>
                                                 {role === 'admin' && (
@@ -281,8 +285,11 @@ export default function JadwalIndex({ days, minggu, hariIni, rekapMinggu, gurus,
                                                         {s.jumlah_sesi} sesi
                                                     </span>
                                                 </div>
-                                                <p className="text-sm font-[700] text-slate-900">
-                                                    {s.program ?? s.mapel}
+                                                <p className="leading-snug">
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-[700] ring-1 ${programStyle(s.program).badge}`}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                                        {s.program ?? s.mapel}
+                                                    </span>
                                                 </p>
                                                 <p className="text-xs text-slate-500">{s.lokasi}</p>
                                                 {role === 'admin' && (

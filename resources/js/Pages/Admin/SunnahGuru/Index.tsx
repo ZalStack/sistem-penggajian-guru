@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { FormEvent, useMemo, useState } from 'react';
+import { programStyle } from '@/lib/program-colors';
 
 interface RecordItem {
     id: number;
@@ -361,9 +362,14 @@ export default function AdminSunnahGuruIndex({ records, gurus, programs, statist
                                                     </span>
                                                     <div className="min-w-0">
                                                         <p className="truncate text-sm font-bold text-slate-900">{record.guru.nama}</p>
-                                                        <p className="text-xs font-medium text-slate-500">
+                                                        <p className="text-xs font-medium text-slate-500 flex flex-wrap items-center gap-1">
                                                             Grade {record.guru.kode_grade}
-                                                            {record.guru.programs.length > 0 ? ` · ${record.guru.programs.join(' · ')}` : ''}
+                                                            {record.guru.programs.map((program) => (
+                                                                <span key={program} className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ring-1 ${programStyle(program).badge}`}>
+                                                                    <span className={`w-1 h-1 rounded-full ${programStyle(program).dot}`} />
+                                                                    {program}
+                                                                </span>
+                                                            ))}
                                                         </p>
                                                     </div>
                                                 </div>

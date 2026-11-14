@@ -11,6 +11,7 @@ import { Icon } from '@iconify/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import { Guru, Grade, Program, PaginatedData } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { programBadgeClasses } from '@/lib/program-colors';
 
 interface GuruIndexProps {
     gurus: PaginatedData<Guru>;
@@ -107,7 +108,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                 onSuccess: () => {
                     setDeleteId(null);
                     setGuruToDelete(null);
-                    router.reload({ preserveScroll: true });
+                    router.reload();
                 },
             });
         }
@@ -283,13 +284,18 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                                 <Badge variant="purple" size="sm">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'} size="sm">{guru.mapel}</Badge>
+                                                <div className="flex flex-wrap items-center gap-1">
+                                                    <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'} size="sm">{guru.mapel}</Badge>
+                                                    {guru.bidang_2 && (
+                                                        <Badge variant={guru.bidang_2 === 'IPA' ? 'success' : 'info'} size="sm">{guru.bidang_2}</Badge>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 {guru.programs && guru.programs.length > 0 ? (
                                                     <div className="flex flex-wrap gap-1">
                                                         {guru.programs.map((p) => (
-                                                            <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                                            <Badge key={p.id} variant="outline" size="sm" className={programBadgeClasses(p.nama)}>{p.nama}</Badge>
                                                         ))}
                                                     </div>
                                                 ) : (
@@ -408,7 +414,7 @@ export default function GuruIndex({ gurus, grades, programs, filters }: GuruInde
                                         <Badge variant="purple" size="sm">Grade {guru.grade?.kode_grade ?? '-'}</Badge>
                                         <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'} size="sm">{guru.mapel}</Badge>
                                         {guru.programs?.map((p) => (
-                                            <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                            <Badge key={p.id} variant="outline" size="sm" className={programBadgeClasses(p.nama)}>{p.nama}</Badge>
                                         ))}
                                         {Number(guru.tunjangan_khusus) > 0 && <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full font-bold">{formatCurrency(Number(guru.tunjangan_khusus))}</span>}
                                     </div>

@@ -6,6 +6,7 @@ import Select from '@/Components/ui/select';
 import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
+import { programStyle } from '@/lib/program-colors';
 
 interface ChecklistItem {
     key: string;
@@ -113,7 +114,8 @@ export default function AdminSunnahGuruShow({ record }: AdminSunnahGuruShowProps
                                         Grade {record.guru.kode_grade}
                                     </span>
                                     {record.guru.programs.map((program) => (
-                                        <span key={program} className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/25">
+                                        <span key={program} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${programStyle(program).badge}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(program).dot}`} />
                                             {program}
                                         </span>
                                     ))}

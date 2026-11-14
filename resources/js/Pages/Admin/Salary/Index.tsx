@@ -8,10 +8,11 @@ import StatCard from '@/Components/ui/stat-card';
 import Select from '@/Components/ui/select';
 import Pagination from '@/Components/ui/pagination';
 import EmptyState from '@/Components/ui/empty-state';
+import { programStyle } from '@/lib/program-colors';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { Fragment, useState } from 'react';
-import { Penggajian, Guru, Grade, PaginatedData } from '@/types';
+import { Penggajian, Guru, Grade, PaginatedData, RiwayatMengajarMap, EffectiveSessionStatus } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface Ringkasan {
@@ -34,14 +35,31 @@ interface SalaryIndexProps {
         periode?: string;
         filter_guru?: string;
         status_bayar?: string;
+        search?: string;
     };
     periodeDefault: string;
     periodeAktif: string;
+    riwayatMengajar: RiwayatMengajarMap;
     ringkasan: Ringkasan;
 }
 
-export default function SalaryIndex({ penggajians, gurus, filters, periodeDefault, periodeAktif, ringkasan }: SalaryIndexProps) {
+const sesiStatusVariant: Record<string, 'info' | 'success' | 'danger' | 'warning' | 'default'> = {
+    dijadwalkan: 'info',
+    berlangsung: 'warning',
+    selesai: 'success',
+    dibatalkan: 'danger',
+};
+
+const sesiStatusLabel: Record<string, string> = {
+    dijadwalkan: 'Dijadwalkan',
+    berlangsung: 'Berlangsung',
+    selesai: 'Selesai',
+    dibatalkan: 'Dibatalkan',
+};
+
+export default function SalaryIndex({ penggajians, gurus, filters, periodeDefault, periodeAktif, riwayatMengajar, ringkasan }: SalaryIndexProps) {
     const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [riwayatOpenId, setRiwayatOpenId] = useState<number | null>(null);
 
     const calculateForm = useForm({
         periode: filters.periode ?? periodeDefault,
@@ -77,6 +95,12 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
 
     const periodeLabel = new Date(periodeAktif + '-01T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
+    const riwayatEntries = Object.entries(riwayatMengajar ?? {}).map(([guruId, riwayat]) => ({
+        guruId: Number(guruId),
+        nama: gurus.find((g) => g.id === Number(guruId))?.nama ?? '-',
+        ...riwayat,
+    }));
+
     return (
         <AuthenticatedLayout>
             <Head title="Penggajian Guru" />
@@ -95,7 +119,7 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
             </div>
 
             {/* Stat Cards — Ringkasan Periode Aktif */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <StatCard
                     title={`Total Honor (${periodeLabel})`}
                     value={formatCurrency(ringkasan.grand_total)}
@@ -120,19 +144,18 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                     description={`${ringkasan.belum_dibayar} guru menunggu pembayaran`}
                     className="break-words"
                 />
-                <StatCard
-                    title="Total Sesi / Hadir"
-                    value={`${ringkasan.total_sesi} / ${ringkasan.total_hadir}`}
-                    icon="tabler:books"
-                    color="accent"
-                    description="Sesi terjadwal & kehadiran valid"
-                />
             </div>
 
             {/* Filter & Hitung Gaji */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
                 <Card title="Filter Data" description="Saring rekap honor sesuai kebutuhan" className="xl:col-span-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <Input
+                            label="Cari Nama"
+                            value={filters.search ?? ''}
+                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                            placeholder="Nama guru…"
+                        />
                         <Input
                             label="Periode"
                             type="month"
@@ -187,6 +210,211 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                     </form>
                 </Card>
             </div>
+
+            {/* Riwayat Mengajar & Potensi Gaji */}
+            <Card
+                title="Riwayat Mengajar & Potensi Gaji"
+                description={`Sesi mengajar terjadwal pada periode ${periodeLabel} beserta estimasi honor per guru`}
+                className="mb-8"
+            >
+                {riwayatEntries.length === 0 ? (
+                    <EmptyState
+                        icon="tabler:calendar-stats"
+                        title="Belum ada riwayat mengajar"
+                        description="Tidak ada sesi mengajar terjadwal pada periode ini."
+                    />
+                ) : (
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto -mx-5 sm:-mx-7 lg:-mx-8">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-14">No</TableHead>
+                                        <TableHead>Guru</TableHead>
+                                        <TableHead className="text-center">Total Sesi</TableHead>
+                                        <TableHead className="text-center">Kelas Khusus</TableHead>
+                                        <TableHead className="text-center">Kelas Reguler</TableHead>
+                                        <TableHead>Potensi Gaji</TableHead>
+                                        <TableHead className="text-right">Riwayat</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {riwayatEntries.map((r, index) => (
+                                        <Fragment key={r.guruId}>
+                                            <TableRow className="hover:bg-indigo-50/40">
+                                                <TableCell className="font-medium text-slate-400 text-sm">{index + 1}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center flex-shrink-0 font-bold text-xs shadow-lg shadow-indigo-900/40">
+                                                            {r.nama.substring(0, 2).toUpperCase()}
+                                                        </div>
+                                                        <span className="font-semibold text-slate-900 text-sm">{r.nama}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
+                                                        {r.total_sesi}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-violet-100 text-violet-700 text-xs font-bold">
+                                                        {r.sesi_khusus}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-full bg-sky-100 text-sky-700 text-xs font-bold">
+                                                        {r.sesi_reguler}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="font-bold text-slate-900">{formatCurrency(r.potensi_gaji)}</span>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        onClick={() => setRiwayatOpenId(riwayatOpenId === r.guruId ? null : r.guruId)}
+                                                        className="shadow-sm"
+                                                    >
+                                                        <Icon icon={riwayatOpenId === r.guruId ? 'tabler:chevron-up' : 'tabler:calendar-stats'} className="text-[15px]" />
+                                                        {riwayatOpenId === r.guruId ? 'Tutup' : 'Lihat Sesi'}
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                            {riwayatOpenId === r.guruId && (
+                                                <TableRow>
+                                                    <TableCell colSpan={7} className="bg-slate-50/70 p-0">
+                                                        <div className="px-6 py-4">
+                                                            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                                                                Riwayat Mengajar Lengkap — {r.nama}
+                                                            </p>
+                                                            {r.sessions.length > 0 ? (
+                                                                <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+                                                                    <table className="w-full text-sm">
+                                                                        <thead>
+                                                                            <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wider text-slate-400">
+                                                                                <th className="px-4 py-2.5 font-[600]">Tanggal</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Pekan</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Jam</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Program / Kelas</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Bahan Ajar</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Lokasi</th>
+                                                                                <th className="px-4 py-2.5 font-[600]">Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-slate-50">
+                                                                            {r.sessions.map((s) => (
+                                                                                <tr key={s.id}>
+                                                                                    <td className="px-4 py-2.5 text-slate-700 whitespace-nowrap">
+                                                                                        {s.hari}, {s.tanggal_label}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2.5 text-slate-600">Pekan {s.pekan}</td>
+                                                                                    <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">
+                                                                                        {s.jam_mulai}–{s.jam_selesai}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2.5">
+                                                                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(s.program).badge}`}>
+                                                                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                                                                            {s.program ?? s.mapel}
+                                                                                        </span>
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2.5 text-slate-600 max-w-[220px] truncate" title={s.bahan_ajar ?? ''}>
+                                                                                        {s.bahan_ajar ?? '-'}
+                                                                                    </td>
+                                                                                    <td className="px-4 py-2.5 text-slate-600">{s.lokasi}</td>
+                                                                                    <td className="px-4 py-2.5">
+                                                                                        <Badge variant={sesiStatusVariant[s.status] ?? 'default'} size="sm">
+                                                                                            {sesiStatusLabel[s.status] ?? s.status}
+                                                                                        </Badge>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-sm text-slate-500">Belum ada riwayat mengajar pada periode ini.</p>
+                                                            )}
+                                                            <p className="text-xs text-slate-400 mt-3">
+                                                                Potensi gaji = {r.total_sesi} sesi terjadwal × honor per sesi grade + tunjangan khusus.
+                                                            </p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </Fragment>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-4">
+                            {riwayatEntries.map((r) => (
+                                <div key={r.guruId} className="p-4 bg-white rounded-2xl border border-slate-200/70 shadow-sm space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-indigo-900/40">
+                                            {r.nama.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-slate-900 text-sm truncate">{r.nama}</p>
+                                            <p className="text-xs text-slate-500">{r.total_sesi} sesi terjadwal</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2 text-center">
+                                        <div className="bg-indigo-50 rounded-xl py-2 border border-indigo-100">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">Total</p>
+                                            <p className="text-sm font-bold text-indigo-700 mt-0.5">{r.total_sesi}</p>
+                                        </div>
+                                        <div className="bg-violet-50 rounded-xl py-2 border border-violet-100">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-500">Khusus</p>
+                                            <p className="text-sm font-bold text-violet-700 mt-0.5">{r.sesi_khusus}</p>
+                                        </div>
+                                        <div className="bg-sky-50 rounded-xl py-2 border border-sky-100">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wide text-sky-500">Reguler</p>
+                                            <p className="text-sm font-bold text-sky-700 mt-0.5">{r.sesi_reguler}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-indigo-600 to-violet-600 rounded-xl px-3.5 py-2.5 text-white">
+                                        <span className="text-xs font-semibold uppercase tracking-wide text-white/80">Potensi Gaji</span>
+                                        <span className="text-sm font-bold break-words">{formatCurrency(r.potensi_gaji)}</span>
+                                    </div>
+
+                                    {r.sessions.length > 0 ? (
+                                        <div className="rounded-xl border border-slate-200 divide-y divide-slate-50 max-h-64 overflow-y-auto">
+                                            {r.sessions.map((s) => (
+                                                <div key={s.id} className="px-3.5 py-2.5 text-xs space-y-1">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="font-semibold text-slate-800">
+                                                            {s.tanggal_label} · {s.jam_mulai}–{s.jam_selesai}
+                                                        </span>
+                                                        <Badge variant={sesiStatusVariant[s.status] ?? 'default'} size="sm">
+                                                            {sesiStatusLabel[s.status] ?? s.status}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${programStyle(s.program).badge}`}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                                            {s.program ?? s.mapel}
+                                                        </span>
+                                                        <span className="text-slate-500">Pekan {s.pekan}</span>
+                                                    </div>
+                                                    {s.bahan_ajar && <p className="text-slate-500 truncate">{s.bahan_ajar}</p>}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-slate-500 text-center py-2">Belum ada riwayat mengajar pada periode ini.</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </Card>
 
             {/* Tabel Rekap */}
             <Card
@@ -334,7 +562,12 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                                                         <tbody className="divide-y divide-slate-50">
                                                                             {p.detail.map((d, i) => (
                                                                                 <tr key={i}>
-                                                                                    <td className="px-4 py-2.5 font-[600] text-slate-800">{d.program}</td>
+                                                                                    <td className="px-4 py-2.5">
+                                                                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(d.program).badge}`}>
+                                                                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(d.program).dot}`} />
+                                                                                            {d.program}
+                                                                                        </span>
+                                                                                    </td>
                                                                                     <td className="px-4 py-2.5 text-slate-600">{d.transport}</td>
                                                                                     <td className="px-4 py-2.5 text-center text-slate-600">{d.jumlah_sesi}</td>
                                                                                     <td className="px-4 py-2.5 text-center text-slate-600">{d.jumlah_hadir}</td>
@@ -422,7 +655,12 @@ export default function SalaryIndex({ penggajians, gurus, filters, periodeDefaul
                                             {p.detail.map((d, i) => (
                                                 <div key={i} className="flex items-center justify-between px-3.5 py-2 text-xs gap-2">
                                                     <div className="min-w-0">
-                                                        <p className="font-[700] text-slate-800 truncate">{d.program}</p>
+                                                        <p className="font-[700] text-slate-800 truncate">
+                                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${programStyle(d.program).badge}`}>
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${programStyle(d.program).dot}`} />
+                                                                {d.program}
+                                                            </span>
+                                                        </p>
                                                         <p className="text-slate-500 truncate">{d.transport} · {d.jumlah_hadir} hadir</p>
                                                     </div>
                                                     <p className="font-[700] text-slate-900 shrink-0">{formatCurrency(d.total)}</p>

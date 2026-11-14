@@ -9,10 +9,16 @@ use App\Models\TeachingSession;
 use App\Support\Tanggal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PerizinanController extends Controller
 {
+    private const LAMPIRAN_DISK = 'local';
+
+    private const LAMPIRAN_DIRECTORY = 'perizinan/surat-sakit';
+
     public function guruIndex(Request $request)
     {
         $user = $request->user();
@@ -62,12 +68,23 @@ class PerizinanController extends Controller
         }
 
         $validated = $request->validate([
-            'jenis' => 'required|in:izin,sakit,cuti',
+            'jenis' => 'required|in:izin,sakit',
             'tanggal_mulai' => 'required|date|after_or_equal:today',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'session_id' => 'nullable|integer|exists:teaching_sessions,id',
             'alasan' => 'required|string|max:500',
+            'lampiran_surat_sakit' => 'required_if:jenis,sakit|nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'lampiran_surat_sakit.required_if' => 'Surat keterangan sakit wajib dilampirkan saat mengajukan sakit.',
         ]);
+
+        $lampiranPath = null;
+
+        if ($request->hasFile('lampiran_surat_sakit')) {
+            $lampiranPath = $this->simpanSuratSakit($request, $guru->id);
+        }
+
+        unset($validated['lampiran_surat_sakit']);
 
         if (! empty($validated['session_id'])) {
             $session = TeachingSession::where('id', $validated['session_id'])
@@ -92,11 +109,35 @@ class PerizinanController extends Controller
         $perizinan = Perizinan::create([
             'guru_id' => $guru->id,
             ...$validated,
+            'lampiran_surat_sakit' => $lampiranPath,
         ]);
 
         $this->notifyAdminNewRequest($perizinan);
 
         return back()->with('success', 'Pengajuan perizinan berhasil dikirim dan menunggu tinjauan admin.');
+    }
+
+    /**
+     * Unduh lampiran surat keterangan sakit — hanya pemilik pengajuan atau admin.
+     */
+    public function downloadSuratSakit(Request $request, Perizinan $perizinan)
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin() && $perizinan->guru_id !== $user->guru_id) {
+            abort(403);
+        }
+
+        if (! $perizinan->lampiran_surat_sakit) {
+            abort(404);
+        }
+
+        $disk = Storage::disk(self::LAMPIRAN_DISK);
+        $path = $perizinan->lampiran_surat_sakit;
+
+        abort_unless($disk->exists($path), 404);
+
+        return $disk->download($path, basename($path));
     }
 
     public function adminIndex(Request $request)
@@ -145,6 +186,17 @@ class PerizinanController extends Controller
         $this->notifyGuruAboutDecision($perizinan->fresh(), $validated['status'], $validated['catatan_admin']);
 
         return back()->with('success', 'Status perizinan '.($validated['status'] === Perizinan::STATUS_DISETUJUI ? 'disetujui' : 'ditolak').'. Guru telah diberi notifikasi.');
+    }
+
+    /**
+     * Simpan lampiran surat keterangan sakit pada disk privat.
+     */
+    private function simpanSuratSakit(Request $request, int $guruId): string
+    {
+        $file = $request->file('lampiran_surat_sakit');
+        $filename = 'surat-sakit-'.$guruId.'-'.now()->format('YmdHis').'-'.Str::lower(Str::random(6)).'.'.$file->extension();
+
+        return $file->storeAs(self::LAMPIRAN_DIRECTORY, $filename, self::LAMPIRAN_DISK);
     }
 
     private function notifyAdminNewRequest(Perizinan $perizinan): void

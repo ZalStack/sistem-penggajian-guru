@@ -33,6 +33,7 @@ class AttendanceController extends Controller
         $message = match ($result->code) {
             AttendanceService::NO_TEACHER_LINK => 'Akun ini tidak terhubung dengan data guru.',
             AttendanceService::NOT_SESSION_OWNER => 'Sesi ini bukan milik Anda.',
+            AttendanceService::NOT_PLOTTED_CLASS => 'Check-in ditolak karena sesi ini bukan merupakan kelas/plotingan Anda. Hubungi admin untuk penugasan kelas.',
             AttendanceService::WRONG_DATE => 'Check-in hanya dapat dilakukan pada tanggal jadwal sesi ('.Tanggal::tanggalPanjang($result->context['session_date']).').',
             AttendanceService::OUTSIDE_TIME_WINDOW => 'Check-in hanya dapat dilakukan dalam rentang waktu 30 menit sebelum jam mulai hingga jam selesai sesi ('.$result->context['window_start'].' - '.$result->context['window_end'].').',
             AttendanceService::ALREADY_CHECKED_IN => 'Anda sudah melakukan check-in untuk sesi ini hari ini.',

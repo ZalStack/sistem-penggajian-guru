@@ -165,7 +165,6 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                             <option value="">Semua Jenis</option>
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
-                            <option value="cuti">Cuti</option>
                         </select>
                     </div>
                     <div className="space-y-1.5">
@@ -282,30 +281,47 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {p.status === 'pending' ? (
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openActionModal('disetujui', p)}
-                                                            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
-                                                            title="Setujui"
-                                                            aria-label={`Setujui perizinan ${p.guru?.nama}`}
+                                                <div className="flex flex-col items-end gap-1.5">
+                                                    {p.lampiran_surat_sakit ? (
+                                                        <a
+                                                            href={route('perizinan.surat-sakit', p.id)}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
                                                         >
-                                                            <Icon icon="tabler:check" className="text-base" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openActionModal('ditolak', p)}
-                                                            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
-                                                            title="Tolak"
-                                                            aria-label={`Tolak perizinan ${p.guru?.nama}`}
-                                                        >
-                                                            <Icon icon="tabler:x" className="text-base" />
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs text-slate-400">Selesai</span>
-                                                )}
+                                                            <Icon icon="tabler:file-description" className="text-[14px]" />
+                                                            Lihat Surat Sakit
+                                                        </a>
+                                                    ) : p.jenis === 'sakit' ? (
+                                                        <Badge variant="warning" size="sm">
+                                                            Tanpa surat sakit
+                                                        </Badge>
+                                                    ) : null}
+                                                    {p.status === 'pending' ? (
+                                                        <div className="flex items-center justify-end gap-1">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openActionModal('disetujui', p)}
+                                                                className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/25"
+                                                                title="Setujui"
+                                                                aria-label={`Setujui perizinan ${p.guru?.nama}`}
+                                                            >
+                                                                <Icon icon="tabler:check" className="text-base" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => openActionModal('ditolak', p)}
+                                                                className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/25"
+                                                                title="Tolak"
+                                                                aria-label={`Tolak perizinan ${p.guru?.nama}`}
+                                                            >
+                                                                <Icon icon="tabler:x" className="text-base" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">Selesai</span>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -366,6 +382,24 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                             <p className="text-sm text-slate-700 break-words">{p.catatan_admin}</p>
                                         </div>
                                     )}
+
+                                    {p.lampiran_surat_sakit ? (
+                                        <a
+                                            href={route('perizinan.surat-sakit', p.id)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                                        >
+                                            <Icon icon="tabler:file-description" className="text-[14px]" />
+                                            Lihat Surat Sakit
+                                        </a>
+                                    ) : p.jenis === 'sakit' ? (
+                                        <div>
+                                            <Badge variant="warning" size="sm">
+                                                Tanpa surat sakit
+                                            </Badge>
+                                        </div>
+                                    ) : null}
 
                                     {p.status === 'pending' && (
                                         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
@@ -447,6 +481,23 @@ export default function PerizinanIndex({ perizinan, gurus, filters, ringkasan }:
                                 </span>
                                 {' '}pada rentang tanggal tersebut
                             </p>
+                            {actionModal.item.lampiran_surat_sakit ? (
+                                <a
+                                    href={route('perizinan.surat-sakit', actionModal.item.id)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                                >
+                                    <Icon icon="tabler:file-description" className="text-sm" />
+                                    Lihat Surat Sakit
+                                </a>
+                            ) : actionModal.item.jenis === 'sakit' ? (
+                                <div className="mt-2">
+                                    <Badge variant="warning" size="sm">
+                                        Tanpa surat sakit
+                                    </Badge>
+                                </div>
+                            ) : null}
                             {actionModal.type === 'disetujui' && (
                                 <p className="text-xs text-indigo-600 mt-1">
                                     Bila disetujui, sesi tersebut tercatat sebagai Izin di rekap presensi dan check-in guru dinonaktifkan.

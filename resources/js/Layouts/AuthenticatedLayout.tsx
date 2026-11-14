@@ -55,10 +55,10 @@ const adminNavGroups = [
         title: 'Operasional',
         items: [
             { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Tampilan mingguan' },
-            { href: 'session.index', pattern: 'session.*', label: 'Sesi Mengajar', icon: 'tabler:calendar-event', desc: 'Tugas & status' },
+            { href: 'session.index', pattern: 'session.*', label: 'Ploting Guru', icon: 'tabler:calendar-event', desc: 'Tugas & status' },
             { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'tabler:clipboard-check', desc: 'Kehadiran guru' },
             { href: 'sunnah-guru.index', pattern: 'sunnah-guru.*', label: '7SPS Guru', icon: 'tabler:moon-stars', desc: 'Amalan & approval' },
-            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'tabler:shield-check', desc: 'Izin & cuti' },
+            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'tabler:shield-check', desc: 'Izin & sakit' },
         ],
     },
     {
@@ -90,7 +90,7 @@ const guruNavItems = [
     { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Agenda mingguan' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'tabler:moon-stars', desc: 'Checklist & poin' },
     { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'tabler:shield-check', desc: 'Ajukan izin' },
-    { href: 'my-salary', pattern: 'my-salary.*', label: 'Slip Gaji', icon: 'tabler:cash', desc: 'Honor & slip' },
+    { href: 'my-salary', pattern: 'my-salary.*', label: 'Riwayat Mengajar', icon: 'tabler:cash', desc: 'Riwayat & potensi' },
     { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell', desc: 'Pemberitahuan' },
 ];
 
@@ -98,7 +98,7 @@ const guruBottomNav = [
     { href: 'dashboard', pattern: 'dashboard', label: 'Beranda', icon: 'tabler:layout-dashboard' },
     { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: '7SPS', icon: 'tabler:moon-stars' },
     { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Hadir', icon: 'tabler:clipboard-check' },
-    { href: 'my-salary', pattern: 'my-salary.*', label: 'Gaji', icon: 'tabler:cash' },
+    { href: 'my-salary', pattern: 'my-salary.*', label: 'Riwayat', icon: 'tabler:cash' },
     { href: 'profile.edit', pattern: 'profile.*', label: 'Profil', icon: 'tabler:user-circle' },
 ];
 

@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('my-attendance', [AttendanceController::class, 'guruAttendance'])->name('my-attendance');
     Route::get('my-perizinan', [PerizinanController::class, 'guruIndex'])->name('my-perizinan');
     Route::post('my-perizinan', [PerizinanController::class, 'guruStore'])->name('my-perizinan.store');
+    Route::get('perizinan/{perizinan}/surat-sakit', [PerizinanController::class, 'downloadSuratSakit'])->name('perizinan.surat-sakit');
     Route::get('my-salary', [SalaryController::class, 'guruSalary'])->name('my-salary');
     Route::get('my-salary/{penggajian}/payslip', [SalaryController::class, 'downloadPayslip'])->name('my-salary.payslip');
 

@@ -4,10 +4,12 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import Badge from '@/Components/ui/badge';
 import StatCard from '@/Components/ui/stat-card';
 import EmptyState from '@/Components/ui/empty-state';
-import { Head } from '@inertiajs/react';
+import Input from '@/Components/ui/input';
+import { Head, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { Penggajian, Guru } from '@/types';
+import { Penggajian, Guru, RiwayatMengajarMap } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { programStyle } from '@/lib/program-colors';
 
 interface SalaryIndexProps {
     penggajians: Penggajian[];
@@ -15,6 +17,10 @@ interface SalaryIndexProps {
     totalGaji: number;
     totalBayar: number;
     gajiBulanIni: Penggajian | null;
+    periodeDefault: string;
+    periodeAktif: string;
+    filters: { periode?: string };
+    riwayatMengajar: RiwayatMengajarMap;
 }
 
 const statusConfig: Record<string, { label: string; variant: 'success' | 'danger' }> = {
@@ -22,23 +28,49 @@ const statusConfig: Record<string, { label: string; variant: 'success' | 'danger
     sudah_dibayar: { label: 'Sudah Dibayar', variant: 'success' },
 };
 
-export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, gajiBulanIni }: SalaryIndexProps) {
+const sesiStatusVariant: Record<string, 'info' | 'success' | 'danger' | 'warning' | 'default'> = {
+    dijadwalkan: 'info',
+    berlangsung: 'warning',
+    selesai: 'success',
+    dibatalkan: 'danger',
+};
+
+const sesiStatusLabel: Record<string, string> = {
+    dijadwalkan: 'Dijadwalkan',
+    berlangsung: 'Berlangsung',
+    selesai: 'Selesai',
+    dibatalkan: 'Dibatalkan',
+};
+
+export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, gajiBulanIni, periodeDefault, periodeAktif, filters, riwayatMengajar }: SalaryIndexProps) {
     const belumBayar = totalGaji - totalBayar;
+
+    const periodeLabel = new Date(periodeAktif + '-01T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+    const riwayat = Object.values(riwayatMengajar ?? {})[0] ?? null;
+
+    const handlePeriodeChange = (value: string) => {
+        router.get(
+            route('my-salary'),
+            { periode: value || undefined },
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
 
     return (
         <AuthenticatedLayout>
-            <Head title="Penggajian" />
+            <Head title="Riwayat Mengajar" />
 
             {/* Page header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 animate-fade-in">
                 <div className="flex items-start gap-3.5 min-w-0">
                     <span className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-[0_8px_18px_-6px_rgba(99,102,241,0.7)]">
-                        <Icon icon="tabler:wallet" className="text-[20px]" />
+                        <Icon icon="tabler:book-2" className="text-[20px]" />
                     </span>
                     <div className="min-w-0">
-                        <h1 className="page-title">Penggajian</h1>
+                        <h1 className="page-title">Riwayat Mengajar</h1>
                         <p className="page-subtitle">
-                            Ringkasan penggajian dan riwayat pembayaran Anda
+                            Riwayat sesi mengajar, potensi gaji, dan riwayat pembayaran Anda
                         </p>
                     </div>
                 </div>
@@ -73,8 +105,143 @@ export default function SalaryIndex({ penggajians, guru, totalGaji, totalBayar, 
                 />
             </div>
 
+            {/* Riwayat Mengajar & Potensi Gaji */}
+            <Card
+                title="Riwayat Mengajar & Potensi Gaji"
+                description={`Sesi mengajar terjadwal pada periode ${periodeLabel} beserta estimasi honor Anda`}
+                className="mb-8"
+            >
+                <div className="mb-6 max-w-xs">
+                    <Input
+                        label="Periode"
+                        type="month"
+                        value={filters.periode ?? periodeDefault}
+                        onChange={(e) => handlePeriodeChange(e.target.value)}
+                    />
+                </div>
+
+                {!riwayat || riwayat.sessions.length === 0 ? (
+                    <EmptyState
+                        icon="tabler:calendar-stats"
+                        title="Belum ada riwayat mengajar"
+                        description={`Tidak ada sesi mengajar terjadwal pada periode ${periodeLabel}.`}
+                    />
+                ) : (
+                    <>
+                        {/* Ringkasan potensi */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                            <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-3.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">Total Sesi</p>
+                                <p className="text-lg font-extrabold text-indigo-700 mt-1">{riwayat.total_sesi}</p>
+                            </div>
+                            <div className="rounded-xl border border-violet-100 bg-violet-50/70 p-3.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-violet-500">Kelas Khusus</p>
+                                <p className="text-lg font-extrabold text-violet-700 mt-1">{riwayat.sesi_khusus}</p>
+                            </div>
+                            <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-sky-500">Kelas Reguler</p>
+                                <p className="text-lg font-extrabold text-sky-700 mt-1">{riwayat.sesi_reguler}</p>
+                            </div>
+                            <div className="rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-3.5">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Potensi Gaji</p>
+                                <p className="text-lg font-extrabold text-emerald-700 mt-1 break-words">{formatCurrency(riwayat.potensi_gaji)}</p>
+                            </div>
+                        </div>
+
+                        {/* Desktop Table */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-14">No</TableHead>
+                                        <TableHead>Tanggal</TableHead>
+                                        <TableHead>Pekan</TableHead>
+                                        <TableHead>Jam</TableHead>
+                                        <TableHead>Program / Kelas</TableHead>
+                                        <TableHead>Bahan Ajar</TableHead>
+                                        <TableHead>Lokasi</TableHead>
+                                        <TableHead>Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {riwayat.sessions.map((s, index) => (
+                                        <TableRow key={s.id}>
+                                            <TableCell className="font-semibold text-indigo-500">{index + 1}</TableCell>
+                                            <TableCell>
+                                                <span className="text-sm font-medium text-slate-900 block">{s.tanggal_label}</span>
+                                                <span className="text-xs text-slate-400">{s.hari}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                                    Pekan {s.pekan}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-slate-600 whitespace-nowrap">{s.jam_mulai}–{s.jam_selesai}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(s.program).badge}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                                    {s.program ?? s.mapel}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="max-w-[240px]">
+                                                <span className="text-sm text-slate-600 block truncate" title={s.bahan_ajar ?? ''}>
+                                                    {s.bahan_ajar ?? '-'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="text-sm text-slate-600">{s.lokasi}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={sesiStatusVariant[s.status] ?? 'default'} size="sm">
+                                                    {sesiStatusLabel[s.status] ?? s.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Cards */}
+                        <div className="md:hidden space-y-3">
+                            {riwayat.sessions.map((s) => (
+                                <div key={s.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm space-y-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-slate-900 text-sm">{s.tanggal_label}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5">{s.hari} · {s.jam_mulai}–{s.jam_selesai}</p>
+                                        </div>
+                                        <Badge variant={sesiStatusVariant[s.status] ?? 'default'} size="sm">
+                                            {sesiStatusLabel[s.status] ?? s.status}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${programStyle(s.program).badge}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(s.program).dot}`} />
+                                            {s.program ?? s.mapel}
+                                        </span>
+                                        <span className="text-xs text-slate-500">Pekan {s.pekan}</span>
+                                        <span className="text-xs text-slate-500 truncate">{s.lokasi}</span>
+                                    </div>
+                                    {s.bahan_ajar && <p className="text-xs text-slate-500">{s.bahan_ajar}</p>}
+                                </div>
+                            ))}
+                        </div>
+
+                        <p className="text-xs text-slate-400 mt-4">
+                            Potensi gaji = {riwayat.total_sesi} sesi terjadwal × honor per sesi grade + tunjangan khusus. Angka final mengikuti data presensi yang tervalidasi.
+                        </p>
+                    </>
+                )}
+            </Card>
+
             {/* Table */}
-            <Card>
+            <Card
+                title="Riwayat Pembayaran Honor"
+                description="Riwayat honor per periode beserta slip gaji yang dapat diunduh"
+            >
                 {penggajians.length > 0 ? (
                     <>
                         {/* Desktop Table */}

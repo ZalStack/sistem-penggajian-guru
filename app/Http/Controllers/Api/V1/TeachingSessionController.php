@@ -28,7 +28,7 @@ class TeachingSessionController extends ApiController
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->whereMonth('tanggal', substr($p, 5, 2))->whereYear('tanggal', substr($p, 0, 4)))
             ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
             ->orderBy('tanggal', 'desc')
-            ->orderBy('jam_mulai')
+            ->orderBy('jam_mulai', 'desc')
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
 
@@ -70,6 +70,8 @@ class TeachingSessionController extends ApiController
             'transport_id' => 'required|exists:transports,id',
             'mapel' => 'required|in:IPA,MTK',
             'tanggal' => 'required|date',
+            'pekan' => 'nullable|integer|min:1|max:53',
+            'bahan_ajar' => 'nullable|string|max:1000',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',
@@ -80,6 +82,8 @@ class TeachingSessionController extends ApiController
                 'jam_mulai' => ['The teacher already has a session overlapping this schedule.'],
             ]);
         }
+
+        $validated['pekan'] = $validated['pekan'] ?? 1;
 
         $session = TeachingSession::create($validated);
 
@@ -100,6 +104,8 @@ class TeachingSessionController extends ApiController
             'transport_id' => 'required|exists:transports,id',
             'mapel' => 'required|in:IPA,MTK',
             'tanggal' => 'required|date',
+            'pekan' => 'nullable|integer|min:1|max:53',
+            'bahan_ajar' => 'nullable|string|max:1000',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'jumlah_sesi' => 'required|integer|min:1|max:10',

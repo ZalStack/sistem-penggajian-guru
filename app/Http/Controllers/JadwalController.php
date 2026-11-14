@@ -71,6 +71,8 @@ class JadwalController extends Controller
                     'jam_selesai' => $s->jam_selesai->format('H:i'),
                     'jumlah_sesi' => $s->jumlah_sesi,
                     'mapel' => $s->mapel,
+                    'pekan' => $s->pekan,
+                    'bahan_ajar' => $s->bahan_ajar,
                     'status' => $s->effective_status,
                     'program' => $s->program?->nama,
                     'lokasi' => $s->location?->nama_lokasi ?? '-',

@@ -7,6 +7,7 @@ use App\Http\Resources\LeaveRequestResource;
 use App\Models\Perizinan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class LeaveRequestController extends ApiController
 {
@@ -65,15 +66,29 @@ class LeaveRequestController extends ApiController
         }
 
         $validated = $request->validate([
-            'jenis' => 'required|in:izin,sakit,cuti',
+            'jenis' => 'required|in:izin,sakit',
             'tanggal_mulai' => 'required|date|after_or_equal:today',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'alasan' => 'required|string|max:500',
+            'lampiran_surat_sakit' => 'required_if:jenis,sakit|nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [
+            'lampiran_surat_sakit.required_if' => 'A doctor/clinic certificate must be attached when submitting a sick leave.',
         ]);
+
+        $lampiranPath = null;
+
+        if ($request->hasFile('lampiran_surat_sakit')) {
+            $file = $request->file('lampiran_surat_sakit');
+            $filename = 'surat-sakit-'.$guru->id.'-'.now()->format('YmdHis').'-'.Str::lower(Str::random(6)).'.'.$file->extension();
+            $lampiranPath = $file->storeAs('perizinan/surat-sakit', $filename, 'local');
+        }
+
+        unset($validated['lampiran_surat_sakit']);
 
         $perizinan = Perizinan::create([
             'guru_id' => $guru->id,
             ...$validated,
+            'lampiran_surat_sakit' => $lampiranPath,
         ]);
 
         return $this->createdResponse(

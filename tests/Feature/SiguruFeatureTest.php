@@ -196,6 +196,7 @@ class SiguruFeatureTest extends TestCase
                 'nama' => 'Guru Pelatihan Baru',
                 'grade_id' => $this->grade->id,
                 'mapel' => 'MTK',
+                'bidang_2' => 'IPA',
                 'pelatihan_suprarasional' => '1',
                 'tanggal_bergabung' => '2022-05-10',
                 'email' => 'pelatihan.baru@satugurukpm.id',
@@ -214,6 +215,7 @@ class SiguruFeatureTest extends TestCase
                 'nama' => $guru->nama,
                 'grade_id' => $this->grade->id,
                 'mapel' => 'MTK',
+                'bidang_2' => 'IPA',
                 'pelatihan_suprarasional' => '0',
                 'tanggal_bergabung' => '2022-05-10',
                 'email' => 'pelatihan.baru@satugurukpm.id',
@@ -228,6 +230,7 @@ class SiguruFeatureTest extends TestCase
                 'nama' => $guru->nama,
                 'grade_id' => $this->grade->id,
                 'mapel' => 'MTK',
+                'bidang_2' => 'IPA',
                 'pelatihan_suprarasional' => 'ya-tidak',
                 'tanggal_bergabung' => '2022-05-10',
                 'email' => 'pelatihan.baru@satugurukpm.id',
@@ -572,6 +575,41 @@ class SiguruFeatureTest extends TestCase
     public function test_laporan_pdf_export_succeeds(): void
     {
         $response = $this->actingAs($this->user)->get('/laporan/export-pdf?periode=2026-09');
+
+        $response->assertOk();
+        $this->assertTrue(str_contains($response->headers->get('content-type', ''), 'application/pdf'));
+    }
+
+    public function test_payslip_pdf_download_succeeds(): void
+    {
+        $penggajian = Penggajian::create([
+            'guru_id' => $this->guru->id,
+            'periode' => '2026-09',
+            'jumlah_sesi' => 4,
+            'jumlah_hadir' => 4,
+            'total_jam' => 6.0,
+            'transport_id' => $this->transport->id,
+            'honor' => 240000,
+            'total_transport' => 100000,
+            'tunjangan_khusus' => 50000,
+            'detail' => [
+                [
+                    'program_id' => $this->program->id,
+                    'program' => 'Kelas Khusus',
+                    'transport_id' => $this->transport->id,
+                    'transport' => 'Dalam Kota',
+                    'jumlah_sesi' => 4,
+                    'jumlah_hadir' => 4,
+                    'honor' => 240000,
+                    'transport_biaya' => 100000,
+                    'total' => 340000,
+                ],
+            ],
+            'total' => 390000,
+            'status_bayar' => 'sudah_dibayar',
+        ]);
+
+        $response = $this->actingAs($this->user)->get("/penggajian/{$penggajian->id}/payslip");
 
         $response->assertOk();
         $this->assertTrue(str_contains($response->headers->get('content-type', ''), 'application/pdf'));

@@ -137,6 +137,7 @@ class ProfileTest extends TestCase
                 'name' => 'Guru Baru Nama',
                 'email' => $user->email,
                 'mapel' => 'MTK',
+                'bidang_2' => 'IPA',
                 'program_ids' => [$program->id],
                 'jenjang' => 'SMP',
                 'domisili' => 'Kota Bogor',
@@ -187,6 +188,7 @@ class ProfileTest extends TestCase
             'name' => $user->name,
             'email' => $user->email,
             'mapel' => $guru->mapel,
+            'bidang_2' => 'MTK',
         ];
 
         // TIDAK
@@ -244,6 +246,7 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'mapel' => $guru->mapel,
+                'bidang_2' => 'MTK',
                 'grade_id' => $otherGrade->id,
                 'tunjangan_khusus' => 999999999,
             ]);
@@ -268,6 +271,7 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'mapel' => $guru->mapel,
+                'bidang_2' => 'MTK',
                 'foto' => UploadedFile::fake()->image('foto-profil.jpg'),
             ]);
 
@@ -318,6 +322,7 @@ class ProfileTest extends TestCase
                 'name' => $user->name,
                 'email' => $user->email,
                 'mapel' => $guru->mapel,
+                'bidang_2' => 'MTK',
                 'foto' => UploadedFile::fake()->image('foto-baru.jpg'),
             ]);
 
@@ -392,6 +397,7 @@ class ProfileTest extends TestCase
             'nama' => 'Guru Contoh',
             'grade_id' => $grade->id,
             'mapel' => 'IPA',
+            'bidang_2' => 'MTK',
             'tunjangan_khusus' => 150000,
         ], $guruAttributes));
 

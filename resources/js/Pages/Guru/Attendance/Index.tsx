@@ -8,6 +8,7 @@ import { Head, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { formatCurrency } from '@/lib/utils';
 import { Attendance, Guru } from '@/types';
+import { programStyle } from '@/lib/program-colors';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -85,7 +86,12 @@ function UpcomingSessionCard({ session }: { session: any }) {
                     <div className="min-w-0">
                         <p className="text-sm font-bold text-slate-900 break-words">{session.location?.nama_lokasi}</p>
                         <p className="text-xs text-slate-500 mt-0.5 break-words">
-                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull; {session.program ?? session.mapel} &bull; {session.jumlah_sesi} sesi
+                            {session.jam_mulai?.substring(0, 5)} - {session.jam_selesai?.substring(0, 5)} &bull;{' '}
+                            <span className={`inline-flex items-center gap-1 align-middle rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ${programStyle(session.program).badge}`}>
+                                <span className={`w-1 h-1 rounded-full ${programStyle(session.program).dot}`} />
+                                {session.program ?? session.mapel}
+                            </span>{' '}
+                            &bull; {session.jumlah_sesi} sesi
                         </p>
                         {session.location?.radius != null && (
                             <p className="text-xs text-slate-500 mt-0.5 break-words">Radius absensi: {session.location.radius} m</p>

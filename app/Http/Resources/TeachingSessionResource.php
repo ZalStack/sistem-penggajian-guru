@@ -13,6 +13,8 @@ class TeachingSessionResource extends JsonResource
             'id' => $this->id,
             'mapel' => $this->mapel,
             'tanggal' => $this->tanggal->toDateString(),
+            'pekan' => (int) $this->pekan,
+            'bahan_ajar' => $this->bahan_ajar,
             'jam_mulai' => $this->jam_mulai->format('H:i'),
             'jam_selesai' => $this->jam_selesai->format('H:i'),
             'jumlah_sesi' => (int) $this->jumlah_sesi,

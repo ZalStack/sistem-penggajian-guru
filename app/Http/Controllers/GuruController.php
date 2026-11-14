@@ -42,7 +42,7 @@ class GuruController extends Controller
                 });
             })
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->where('grade_id', $g))
-            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->where('mapel', $m))
+            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->where(fn ($w) => $w->where('mapel', $m)->orWhere('bidang_2', $m)))
             ->when($validated['filter_program'] ?? null, fn ($q, $p) => $q->whereHas('programs', fn ($pq) => $pq->where('programs.id', $p)));
 
         return Inertia::render('Guru/Index', [
@@ -206,7 +206,7 @@ class GuruController extends Controller
                 return $q->where('nama', 'like', "%{$safe}%");
             })
             ->when($request->filter_grade, fn ($q, $g) => $q->where('grade_id', $g))
-            ->when($request->filter_mapel, fn ($q, $m) => $q->where('mapel', $m))
+            ->when($request->filter_mapel, fn ($q, $m) => $q->where(fn ($w) => $w->where('mapel', $m)->orWhere('bidang_2', $m)))
             ->when($request->filter_program, fn ($q, $p) => $q->whereHas('programs', fn ($pq) => $pq->where('programs.id', $p)))
             ->orderBy('nama')
             ->get();
@@ -230,6 +230,8 @@ class GuruController extends Controller
             'nama' => 'required|string|max:255',
             'grade_id' => 'required|exists:grades,id',
             'mapel' => 'required|in:IPA,MTK',
+            'bidang_2' => 'required|in:IPA,MTK|different:mapel',
+            'aktivitas_luar_kpm' => 'nullable|string|max:2000',
             'jenjang' => 'nullable|string|max:100',
             'program_ids' => 'nullable|array',
             'program_ids.*' => 'integer|exists:programs,id',
@@ -261,6 +263,8 @@ class GuruController extends Controller
             'nama' => $validated['nama'],
             'grade_id' => $validated['grade_id'],
             'mapel' => $validated['mapel'],
+            'bidang_2' => $validated['bidang_2'],
+            'aktivitas_luar_kpm' => $validated['aktivitas_luar_kpm'] ?? null,
             'jenjang' => $validated['jenjang'] ?? null,
             'domisili' => $validated['domisili'] ?? null,
             'alamat' => $validated['alamat'] ?? null,

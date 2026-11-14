@@ -9,6 +9,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
 import { formatCurrency } from '@/lib/utils';
+import { programBadgeClasses, programStyle } from '@/lib/program-colors';
 import { Attendance, Guru, Penggajian, TeachingSession } from '@/types';
 
 interface PresensiRecap {
@@ -58,7 +59,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                 setShowResetModal(false);
             },
             onSuccess: () => {
-                router.reload({ preserveScroll: true });
+                router.reload();
             },
         });
     };
@@ -130,7 +131,7 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                         {guru.programs && guru.programs.length > 0 && (
                             <div className="flex items-center justify-center gap-1.5 mt-3 flex-wrap">
                                 {guru.programs.map((p) => (
-                                    <Badge key={p.id} variant="outline" size="sm">{p.nama}</Badge>
+                                    <Badge key={p.id} variant="outline" size="sm" className={programBadgeClasses(p.nama)}>{p.nama}</Badge>
                                 ))}
                             </div>
                         )}
@@ -142,7 +143,12 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs font-medium text-slate-400">Mata Pelajaran</p>
-                                    <p className="text-sm font-semibold text-slate-900">{guru.mapel}</p>
+                                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                        <Badge variant={guru.mapel === 'IPA' ? 'success' : 'info'} size="sm">{guru.mapel}</Badge>
+                                        {guru.bidang_2 && (
+                                            <Badge variant={guru.bidang_2 === 'IPA' ? 'success' : 'info'} size="sm">{guru.bidang_2}</Badge>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -286,7 +292,12 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                         {attendances.map((a) => (
                                             <tr key={a.id}>
                                                 <td className="py-2.5 pr-3 text-slate-700 whitespace-nowrap">{formatDate(a.tanggal)}</td>
-                                                <td className="py-2.5 pr-3 text-slate-600">{a.session?.program?.nama ?? a.session?.mapel ?? '-'}</td>
+                                                <td className="py-2.5 pr-3">
+                                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${programStyle(a.session?.program?.nama ?? a.session?.mapel).badge}`}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full ${programStyle(a.session?.program?.nama ?? a.session?.mapel).dot}`} />
+                                                        {a.session?.program?.nama ?? a.session?.mapel ?? '-'}
+                                                    </span>
+                                                </td>
                                                 <td className="py-2.5 pr-3 text-slate-600">{a.session?.location?.nama_lokasi ?? '-'}</td>
                                                 <td className="py-2.5 pr-3 text-slate-600">{formatTime(a.checkin_time)}</td>
                                                 <td className="py-2.5 pr-3 text-slate-600">{formatTime(a.checkout_time)}</td>
@@ -405,6 +416,16 @@ export default function GuruShow({ guru, periode, presensi, attendances, session
                                     <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Keterangan Mengajar</span>
                                 </div>
                                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.keterangan_mengajar}</p>
+                            </div>
+                        )}
+
+                        {guru.aktivitas_luar_kpm && (
+                            <div className="mt-4 p-4 bg-gradient-to-br from-emerald-50/70 to-teal-50/50 rounded-xl border border-emerald-100">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Icon icon="tabler:run" className="text-emerald-600" />
+                                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Aktivitas di luar KPM</span>
+                                </div>
+                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{guru.aktivitas_luar_kpm}</p>
                             </div>
                         )}
                     </Card>

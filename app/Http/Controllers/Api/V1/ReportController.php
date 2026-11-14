@@ -27,7 +27,7 @@ class ReportController extends ApiController
         return Penggajian::with(['guru.grade', 'transport'])
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
+            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where(fn ($w) => $w->where('mapel', $m)->orWhere('bidang_2', $m))))
             ->when($validated['filter_transport'] ?? null, fn ($q, $t) => $q->where('transport_id', $t));
     }
 
@@ -66,7 +66,7 @@ class ReportController extends ApiController
             'periode' => $periode,
             'grandTotal' => $penggajians->sum('total'),
             'totalSesi' => $penggajians->sum('jumlah_sesi'),
-        ]);
+        ])->setPaper('a4', 'landscape');
 
         return $pdf->download("rekap-penggajian-{$periode}.pdf");
     }

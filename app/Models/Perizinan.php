@@ -21,7 +21,7 @@ class Perizinan extends Model
     protected $table = 'perizinan';
 
     protected $fillable = [
-        'guru_id', 'session_id', 'jenis', 'tanggal_mulai', 'tanggal_selesai', 'alasan', 'status', 'catatan_admin',
+        'guru_id', 'session_id', 'jenis', 'tanggal_mulai', 'tanggal_selesai', 'alasan', 'lampiran_surat_sakit', 'status', 'catatan_admin',
     ];
 
     protected function casts(): array

@@ -190,6 +190,8 @@ class ProfileController extends Controller
     {
         return [
             'mapel' => 'required|in:IPA,MTK',
+            'bidang_2' => 'required|in:IPA,MTK|different:mapel',
+            'aktivitas_luar_kpm' => 'nullable|string|max:2000',
             'program_ids' => 'nullable|array',
             'program_ids.*' => 'integer|exists:programs,id',
             'jenjang' => 'nullable|string|max:100',

@@ -44,6 +44,7 @@ export interface Guru {
     foto?: string | null;
     grade_id: number;
     mapel: 'IPA' | 'MTK';
+    bidang_2: 'IPA' | 'MTK' | null;
     jenjang: string | null;
     domisili: string | null;
     alamat: string | null;
@@ -60,6 +61,7 @@ export interface Guru {
     bank: string | null;
     nomor_rekening: string | null;
     keterangan_mengajar: string | null;
+    aktivitas_luar_kpm: string | null;
     user_id: number | null;
     grade?: Grade;
     programs?: Program[];
@@ -132,6 +134,8 @@ export interface TeachingSession {
     effective_status?: EffectiveSessionStatus;
     catatan: string | null;
     tanggal: string;
+    pekan: number;
+    bahan_ajar: string | null;
     jam_mulai: string;
     jam_selesai: string;
     jumlah_sesi: number;
@@ -174,6 +178,7 @@ export interface Perizinan {
     tanggal_mulai: string;
     tanggal_selesai: string;
     alasan: string;
+    lampiran_surat_sakit: string | null;
     status: 'pending' | 'disetujui' | 'ditolak';
     catatan_admin: string | null;
     jumlah_sesi_terdampak?: number;
@@ -254,3 +259,29 @@ export interface PaginatedData<T> {
         active: boolean;
     }[];
 }
+
+export interface RiwayatSesiMengajar {
+    id: number;
+    tanggal: string;
+    tanggal_label: string;
+    hari: string;
+    pekan: number;
+    jam_mulai: string;
+    jam_selesai: string;
+    jumlah_sesi: number;
+    bahan_ajar: string | null;
+    mapel: 'IPA' | 'MTK';
+    program: string | null;
+    lokasi: string;
+    status: EffectiveSessionStatus;
+}
+
+export interface RiwayatMengajarGuru {
+    sessions: RiwayatSesiMengajar[];
+    total_sesi: number;
+    sesi_khusus: number;
+    sesi_reguler: number;
+    potensi_gaji: number;
+}
+
+export type RiwayatMengajarMap = Record<number, RiwayatMengajarGuru>;

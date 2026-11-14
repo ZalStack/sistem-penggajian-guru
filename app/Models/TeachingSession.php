@@ -27,7 +27,7 @@ class TeachingSession extends Model
 
     protected $fillable = [
         'guru_id', 'location_id', 'transport_id', 'program_id', 'mapel',
-        'tanggal', 'jam_mulai', 'jam_selesai', 'jumlah_sesi', 'status', 'catatan',
+        'tanggal', 'pekan', 'bahan_ajar', 'jam_mulai', 'jam_selesai', 'jumlah_sesi', 'status', 'catatan',
     ];
 
     protected $appends = [
@@ -38,6 +38,7 @@ class TeachingSession extends Model
     {
         return [
             'tanggal' => 'date',
+            'pekan' => 'integer',
             'jam_mulai' => 'datetime:H:i',
             'jam_selesai' => 'datetime:H:i',
             'jumlah_sesi' => 'integer',

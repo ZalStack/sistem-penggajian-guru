@@ -6,6 +6,7 @@ use App\Exports\PenggajianExport;
 use App\Models\Grade;
 use App\Models\Penggajian;
 use App\Models\Program;
+use App\Support\RiwayatMengajar;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,7 +27,7 @@ class LaporanController extends Controller
         return Penggajian::with(['guru.grade', 'guru.programs', 'transport'])
             ->when($validated['periode'] ?? null, fn ($q, $p) => $q->where('periode', $p))
             ->when($validated['filter_grade'] ?? null, fn ($q, $g) => $q->whereHas('guru', fn ($gq) => $gq->where('grade_id', $g)))
-            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where('mapel', $m)))
+            ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->whereHas('guru', fn ($gq) => $gq->where(fn ($w) => $w->where('mapel', $m)->orWhere('bidang_2', $m))))
             ->when($validated['filter_program'] ?? null, function ($q, $p) {
                 // Guard: whereJsonContains hanya dijalankan jika kolom detail ada isinya.
                 try {
@@ -50,6 +51,8 @@ class LaporanController extends Controller
 
         $penggajians = $baseQuery->get();
 
+        $periodeRiwayat = $request->input('periode') ?: now()->format('Y-m');
+
         return Inertia::render('Laporan/Index', [
             'penggajians' => $penggajians,
             'grandTotal' => (float) ($totals->grand_total ?? 0),
@@ -57,6 +60,8 @@ class LaporanController extends Controller
             'grades' => Grade::orderBy('kode_grade')->get(),
             'programs' => Program::orderBy('urutan')->orderBy('nama')->get(),
             'filters' => $request->only(['periode', 'filter_grade', 'filter_mapel', 'filter_program', 'search']),
+            'periodeAktif' => $periodeRiwayat,
+            'riwayatMengajar' => RiwayatMengajar::perPeriode($penggajians->pluck('guru_id'), $periodeRiwayat),
         ]);
     }
 
@@ -70,7 +75,7 @@ class LaporanController extends Controller
             'periode' => $periode,
             'grandTotal' => $penggajians->sum('total'),
             'totalSesi' => $penggajians->sum('jumlah_sesi'),
-        ]);
+        ])->setPaper('a4', 'landscape');
 
         return $pdf->download("rekap-penggajian-{$periode}.pdf");
     }
