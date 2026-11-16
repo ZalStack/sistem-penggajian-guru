@@ -62,6 +62,9 @@ export interface Guru {
     nomor_rekening: string | null;
     keterangan_mengajar: string | null;
     aktivitas_luar_kpm: string | null;
+    is_active_this_week?: boolean;
+    subject?: string;
+    kelas_diajar?: string | null;
     user_id: number | null;
     grade?: Grade;
     programs?: Program[];
@@ -123,23 +126,52 @@ export interface Location {
 export type SessionStatus = 'dijadwalkan' | 'selesai' | 'dibatalkan';
 export type EffectiveSessionStatus = 'dijadwalkan' | 'berlangsung' | 'selesai' | 'dibatalkan';
 
+export interface Material {
+    id: number;
+    title: string;
+    description: string | null;
+    file_path: string;
+    file_name: string;
+    file_type?: string | null;
+    file_size?: number | null;
+    subject?: string | null;
+    pekan?: string | null;
+    kelas?: string | null;
+    level?: string | null;
+    status: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface TeachingSession {
     id: number;
     guru_id: number;
+    teacher_id?: number;
     location_id: number;
     transport_id: number;
     program_id: number | null;
+    kelas?: string | null;
+    level?: string | null;
     mapel: 'IPA' | 'MTK';
+    bidang?: string;
     status: SessionStatus;
     effective_status?: EffectiveSessionStatus;
     catatan: string | null;
     tanggal: string;
+    session_date?: string | null;
     pekan: number;
+    session_time?: string | null;
     bahan_ajar: string | null;
+    material_id?: number | null;
+    material?: Material | null;
+    question?: Material | null;
     jam_mulai: string;
     jam_selesai: string;
     jumlah_sesi: number;
+    is_active?: boolean;
+    is_current_pekan?: boolean;
     guru?: Guru;
+    teacher?: Guru;
     location?: Location;
     transport?: Transport;
     program?: Program | null;

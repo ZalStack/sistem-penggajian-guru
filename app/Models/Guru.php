@@ -34,12 +34,14 @@ class Guru extends Model
         'nomor_rekening',
         'keterangan_mengajar',
         'aktivitas_luar_kpm',
+        'is_active_this_week',
     ];
 
     protected $casts = [
         'tunjangan_khusus' => 'decimal:2',
         'tanggal_bergabung' => 'date:Y-m-d',
         'pelatihan_suprarasional' => 'boolean',
+        'is_active_this_week' => 'boolean',
         'lama_mengajar' => 'integer',
     ];
 

@@ -26,8 +26,9 @@ class TeachingSession extends Model
     ];
 
     protected $fillable = [
-        'guru_id', 'location_id', 'transport_id', 'program_id', 'mapel',
-        'tanggal', 'pekan', 'bahan_ajar', 'jam_mulai', 'jam_selesai', 'jumlah_sesi', 'status', 'catatan',
+        'guru_id', 'location_id', 'transport_id', 'program_id', 'kelas', 'level', 'mapel',
+        'tanggal', 'pekan', 'bahan_ajar', 'material_id', 'jam_mulai', 'jam_selesai', 'session_time',
+        'jumlah_sesi', 'status', 'is_active', 'catatan',
     ];
 
     protected $appends = [
@@ -42,7 +43,26 @@ class TeachingSession extends Model
             'jam_mulai' => 'datetime:H:i',
             'jam_selesai' => 'datetime:H:i',
             'jumlah_sesi' => 'integer',
+            'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (TeachingSession $session) {
+            if (empty($session->jam_mulai) || empty($session->jam_selesai)) {
+                if (! empty($session->session_time) && str_contains($session->session_time, '-')) {
+                    [$s, $e] = explode('-', $session->session_time, 2);
+                    $sClean = trim(preg_replace('/[^0-9:]/', '', $s));
+                    $eClean = trim(preg_replace('/[^0-9:]/', '', $e));
+                    $session->jam_mulai = strlen($sClean) === 5 ? $sClean : ($session->jam_mulai ?: '08:00');
+                    $session->jam_selesai = strlen($eClean) === 5 ? $eClean : ($session->jam_selesai ?: '09:30');
+                } else {
+                    $session->jam_mulai = $session->jam_mulai ?: '08:00';
+                    $session->jam_selesai = $session->jam_selesai ?: '09:30';
+                }
+            }
+        });
     }
 
     /**
@@ -104,6 +124,11 @@ class TeachingSession extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function material(): BelongsTo
+    {
+        return $this->belongsTo(Material::class, 'material_id');
     }
 
     public function attendances(): HasMany

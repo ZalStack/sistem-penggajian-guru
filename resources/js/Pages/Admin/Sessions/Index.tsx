@@ -1,728 +1,2105 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Card } from '@/Components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/Components/ui/table';
-import Input from '@/Components/ui/input';
-import Button from '@/Components/ui/button';
-import Badge from '@/Components/ui/badge';
-import Modal from '@/Components/ui/modal';
-import Select from '@/Components/ui/select';
-import Pagination from '@/Components/ui/pagination';
-import EmptyState from '@/Components/ui/empty-state';
-import { programStyle } from '@/lib/program-colors';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import React, { useState, useMemo } from 'react';
-import { Location, TeachingSession, Guru, Transport, Program, PaginatedData } from '@/types';
+import React, { useState, useMemo, ChangeEvent, FormEvent } from 'react';
+import { Guru, Location, Material, Program, TeachingSession, Transport, PaginatedData } from '@/types';
 
 interface SessionIndexProps {
-    sessions: PaginatedData<TeachingSession>;
-    gurus: (Guru & { grade?: { kode_grade: string } })[];
-    locations: Location[];
-    transports: Transport[];
-    programs: Program[];
-    filters: {
-        periode?: string;
-        filter_guru?: string;
-        filter_program?: string;
-        filter_status?: string;
+    sessions?: PaginatedData<TeachingSession> | TeachingSession[];
+    schedules?: TeachingSession[];
+    gurus?: (Guru & { grade?: { kode_grade: string } })[];
+    teachers?: (Guru & { grade?: { kode_grade: string } })[];
+    materials?: Material[];
+    questions?: Material[];
+    locations?: Location[];
+    transports?: Transport[];
+    programs?: Program[];
+    month?: number;
+    year?: number;
+    currentPekan?: number;
+    filters?: {
+        month?: number;
+        year?: number;
+        kelas?: string;
+        bidang?: string;
+        pekan?: string | number;
+        status?: string;
+        filter_guru?: string | number;
+        teacher_id?: string | number;
+        filter_program?: string | number;
         search?: string;
+        periode?: string;
     };
+    questionUploadText?: string;
 }
 
-const statusVariant: Record<string, 'info' | 'success' | 'danger' | 'warning' | 'default'> = {
-    dijadwalkan: 'info',
-    berlangsung: 'warning',
-    selesai: 'success',
-    dibatalkan: 'danger',
-};
+const KELAS_OPTIONS = [
+    'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
+    'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
+];
 
-const statusLabel: Record<string, string> = {
-    dijadwalkan: 'Dijadwalkan',
-    berlangsung: 'Berlangsung',
-    selesai: 'Selesai',
-    dibatalkan: 'Dibatalkan',
-};
+const MONTH_NAMES = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
 
-export default function SessionIndex({ sessions, gurus, locations, transports, programs, filters }: SessionIndexProps) {
-    const [showForm, setShowForm] = useState(false);
-    const [editId, setEditId] = useState<number | null>(null);
-    const [sessionToDelete, setSessionToDelete] = useState<TeachingSession | null>(null);
-    const [deleting, setDeleting] = useState(false);
+export default function SessionIndex({
+    schedules: initialSchedules = [],
+    teachers: initialTeachers = [],
+    gurus: initialGurus = [],
+    materials: initialMaterials = [],
+    questions: initialQuestions = [],
+    programs = [],
+    month: initialMonth = new Date().getMonth() + 1,
+    year: initialYear = new Date().getFullYear(),
+    currentPekan = 1,
+    filters = {},
+    questionUploadText = 'Admin menyiapkan & mengunggah materi sebelum hari Minggu (maksimal Minggu pukul 23:59 WIB). Guru menerima dan dapat mengakses materi mulai hari Minggu pada pekan berjalan.',
+}: SessionIndexProps) {
+    const page = usePage();
+    const teachersList = initialTeachers.length > 0 ? initialTeachers : initialGurus;
+    const materialsList = initialMaterials.length > 0 ? initialMaterials : initialQuestions;
+    const schedulesList = initialSchedules;
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
-        guru_id: '',
-        location_id: '',
-        transport_id: '',
-        program_id: '',
-        mapel: 'IPA' as 'IPA' | 'MTK',
-        status: 'dijadwalkan',
-        catatan: '',
-        tanggal: '',
-        pekan: 1,
-        bahan_ajar: '',
-        jam_mulai: '',
-        jam_selesai: '',
-        jumlah_sesi: 1,
+    // View mode: 'matrix' (Matriks 4 Pekan) or 'list' (Daftar Sesi Terbaru)
+    const [viewMode, setViewMode] = useState<'matrix' | 'list'>('matrix');
+
+    // Filter states
+    const [teacherSearch, setTeacherSearch] = useState<string>(filters?.search || '');
+    const [filterKelas, setFilterKelas] = useState<string>(filters?.kelas || '');
+    const [filterBidang, setFilterBidang] = useState<string>(filters?.bidang || '');
+    const [filterPekan, setFilterPekan] = useState<string>(filters?.pekan ? String(filters.pekan) : '');
+    const [filterStatus, setFilterStatus] = useState<string>(filters?.status || '');
+    const [selectedMonth, setSelectedMonth] = useState<number>(filters?.month || initialMonth);
+    const [selectedYear, setSelectedYear] = useState<number>(filters?.year || initialYear);
+
+    // Conflict error state & dismissal
+    const [dismissedConflict, setDismissedConflict] = useState(false);
+
+    const pageErrors = (page.props?.errors as Record<string, string>) || {};
+    const pageFlash = (page.props?.flash as Record<string, any>) || {};
+
+    const hasConflictError = useMemo(() => {
+        if (dismissedConflict) return false;
+        return Boolean(
+            pageErrors.conflict ||
+            pageErrors.bentrok ||
+            (pageFlash.error && String(pageFlash.error).toLowerCase().includes('bentrok')) ||
+            (pageErrors.program_id && String(pageErrors.program_id).toLowerCase().includes('bentrok')) ||
+            (pageErrors.jam_mulai && String(pageErrors.jam_mulai).toLowerCase().includes('sama'))
+        );
+    }, [dismissedConflict, pageErrors, pageFlash]);
+
+    const conflictErrorMessage = useMemo(() => {
+        return (
+            pageErrors.conflict ||
+            pageErrors.bentrok ||
+            pageErrors.program_id ||
+            pageErrors.jam_mulai ||
+            pageFlash.error ||
+            'Terdeteksi bentrok jadwal mengajar pada guru, kelas, atau jam yang sama.'
+        );
+    }, [pageErrors, pageFlash]);
+
+    const clearConflictError = () => {
+        setDismissedConflict(true);
+    };
+
+    // Modals state
+    const [showSingleModal, setShowSingleModal] = useState(false);
+    const [showTwoWeeksModal, setShowTwoWeeksModal] = useState(false);
+    const [showCycleModal, setShowCycleModal] = useState(false);
+    const [showUploadPdfModal, setShowUploadPdfModal] = useState(false);
+    const [processing, setProcessing] = useState(false);
+
+    // Direct PDF upload in single modal
+    const [showDirectPdfInput, setShowDirectPdfInput] = useState(false);
+    const [singleDirectPdfFile, setSingleDirectPdfFile] = useState<File | null>(null);
+    const [singleDirectPdfTitle, setSingleDirectPdfTitle] = useState('');
+
+    // Standalone PDF upload form state
+    const [uploadPdfProcessing, setUploadPdfProcessing] = useState(false);
+    const [uploadPdfFileName, setUploadPdfFileName] = useState('');
+    const [uploadPdfForm, setUploadPdfForm] = useState({
+        title: '',
+        file: null as File | null,
+        subject: 'MTK',
+        pekan: '',
+        kelas: '',
+        level: '',
+        description: '',
     });
 
-    const handleEdit = (session: TeachingSession) => {
-        setEditId(session.id);
-        setData('guru_id', String(session.guru_id));
-        setData('location_id', String(session.location_id));
-        setData('transport_id', String(session.transport_id));
-        setData('program_id', session.program_id ? String(session.program_id) : '');
-        setData('mapel', session.mapel);
-        setData('status', session.status);
-        setData('catatan', session.catatan ?? '');
-        setData('tanggal', session.tanggal.substring(0, 10));
-        setData('pekan', session.pekan ?? 1);
-        setData('bahan_ajar', session.bahan_ajar ?? '');
-        setData('jam_mulai', session.jam_mulai.substring(0, 5));
-        setData('jam_selesai', session.jam_selesai.substring(0, 5));
-        setData('jumlah_sesi', session.jumlah_sesi);
-        setShowForm(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Form 1: Single Session Modal state
+    const [singleForm, setSingleForm] = useState({
+        id: null as number | null,
+        teacher_id: '',
+        pekan: currentPekan || 1,
+        kelas: '',
+        level: '',
+        bidang: 'MTK',
+        material_id: '',
+        session_date: '',
+        session_time: '',
+        is_active: true,
+        notes: '',
+    });
+
+    // Form 2: 2 Weeks Cycle Modal state
+    const [twoWeeksForm, setTwoWeeksForm] = useState({
+        teacher_id: '',
+        month: selectedMonth,
+        year: selectedYear,
+        weeks: [
+            { id: null as number | null, pekan: 1, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', session_time: '', is_active: true, notes: '' },
+            { id: null as number | null, pekan: 2, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', session_time: '', is_active: true, notes: '' },
+        ],
+    });
+
+    // Form 3: 4 Weeks Cycle Modal state
+    const [cycleForm, setCycleForm] = useState({
+        teacher_id: '',
+        month: selectedMonth,
+        year: selectedYear,
+        weeks: [1, 2, 3, 4].map((p) => ({
+            id: null as number | null,
+            pekan: p,
+            kelas: '',
+            level: '',
+            bidang: 'MTK',
+            material_id: '',
+            session_date: '',
+            session_time: '',
+            is_active: true,
+            notes: '',
+        })),
+    });
+
+    // Check if any filter is active
+    const hasActiveFilter = useMemo(() => {
+        return Boolean(teacherSearch || filterKelas || filterBidang || filterPekan || filterStatus);
+    }, [teacherSearch, filterKelas, filterBidang, filterPekan, filterStatus]);
+
+    const isTeacherActive = (t: Guru) => {
+        return t.is_active_this_week !== false;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (editId) {
-            put(route('session.update', editId), {
+    const formatDate = (d: string | null | undefined) => {
+        if (!d) return '-';
+        try {
+            return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch {
+            return d;
+        }
+    };
+
+    // Filtered teachers for matrix view
+    const filteredTeachers = useMemo(() => {
+        return teachersList.filter((t) => {
+            const kw = teacherSearch.trim().toLowerCase();
+            if (kw) {
+                const name = (t.nama || t.user?.name || '').toLowerCase();
+                const subject = (t.mapel || t.subject || '').toLowerCase();
+                if (!name.includes(kw) && !subject.includes(kw)) return false;
+            }
+
+            if (filterStatus) {
+                const active = isTeacherActive(t);
+                if (filterStatus === 'aktif' && !active) return false;
+                if (filterStatus === 'nonaktif' && active) return false;
+            }
+
+            if (filterBidang) {
+                const b = (t.mapel || t.subject || '').toUpperCase();
+                const b2 = (t.bidang_2 || '').toUpperCase();
+                const target = filterBidang.toUpperCase();
+                if (!b.includes(target) && !b2.includes(target)) return false;
+            }
+
+            if (filterKelas) {
+                const teacherSchedules = schedulesList.filter((s) => Number(s.guru_id ?? s.teacher_id) === Number(t.id));
+                const hasClassInSchedule = teacherSchedules.some((s) => s.kelas === filterKelas || s.program?.nama === filterKelas);
+                const hasClassInTeacher = (t.program_names || []).includes(filterKelas) || (t.programs || []).some(p => p.nama === filterKelas);
+                if (!hasClassInSchedule && !hasClassInTeacher) return false;
+            }
+
+            if (filterPekan) {
+                const teacherSchedules = schedulesList.filter((s) => Number(s.guru_id ?? s.teacher_id) === Number(t.id));
+                const hasPekan = teacherSchedules.some((s) => Number(s.pekan) === Number(filterPekan));
+                if (!hasPekan) return false;
+            }
+
+            return true;
+        });
+    }, [teachersList, schedulesList, teacherSearch, filterStatus, filterBidang, filterKelas, filterPekan]);
+
+    // Filtered schedules for descending list view
+    const filteredSchedules = useMemo(() => {
+        return schedulesList.filter((s) => {
+            if (teacherSearch) {
+                const kw = teacherSearch.trim().toLowerCase();
+                const tName = (s.guru?.nama || s.guru?.user?.name || s.teacher?.nama || '').toLowerCase();
+                if (!tName.includes(kw)) return false;
+            }
+            if (filterKelas && s.kelas !== filterKelas && s.program?.nama !== filterKelas) return false;
+            if (filterBidang && (s.mapel || s.bidang) !== filterBidang) return false;
+            if (filterPekan && Number(s.pekan) !== Number(filterPekan)) return false;
+            if (filterStatus && s.guru) {
+                const active = isTeacherActive(s.guru);
+                if (filterStatus === 'aktif' && !active) return false;
+                if (filterStatus === 'nonaktif' && active) return false;
+            }
+            return true;
+        });
+    }, [schedulesList, teacherSearch, filterKelas, filterBidang, filterPekan, filterStatus]);
+
+    const getSchedulesFor = (teacherId: number, pekan: number) => {
+        return schedulesList.filter((s) => {
+            if (Number(s.guru_id ?? s.teacher_id) !== Number(teacherId) || Number(s.pekan) !== Number(pekan)) return false;
+            if (filterKelas && s.kelas !== filterKelas && s.program?.nama !== filterKelas) return false;
+            if (filterBidang && (s.mapel || s.bidang) !== filterBidang) return false;
+            return true;
+        });
+    };
+
+    const applyFilter = () => {
+        router.get('/session', {
+            month: selectedMonth,
+            year: selectedYear,
+            kelas: filterKelas || undefined,
+            bidang: filterBidang || undefined,
+            pekan: filterPekan || undefined,
+            status: filterStatus || undefined,
+            search: teacherSearch || undefined,
+        }, { preserveState: true });
+    };
+
+    const resetFilter = () => {
+        setTeacherSearch('');
+        setFilterKelas('');
+        setFilterBidang('');
+        setFilterPekan('');
+        setFilterStatus('');
+        router.get('/session', {
+            month: selectedMonth,
+            year: selectedYear,
+        }, { preserveState: true });
+    };
+
+    const changeTeacherStatus = (teacher: Guru, value: string) => {
+        const isActive = value === 'aktif';
+        teacher.is_active_this_week = isActive;
+        router.post(`/session/teachers/${teacher.id}/toggle-active`, {
+            status: value,
+            is_active_this_week: isActive,
+        }, {
+            preserveScroll: true,
+        });
+    };
+
+    const deletePlot = (schedule: TeachingSession) => {
+        if (confirm(`Hapus sesi mengajar Pekan ${schedule.pekan} (${schedule.kelas || schedule.program?.nama || 'Sesi'})?`)) {
+            router.delete(`/session/${schedule.id}`, {
                 preserveScroll: true,
-                onSuccess: () => {
-                    resetForm();
-                    router.reload();
-                },
+            });
+        }
+    };
+
+    // Open Single Modal
+    const openSingleModal = (teacher: Guru | null = null, pekan: number | null = null, item: TeachingSession | null = null) => {
+        setDismissedConflict(false);
+        setShowDirectPdfInput(false);
+        setSingleDirectPdfFile(null);
+        setSingleDirectPdfTitle('');
+
+        const targetTeacherId = item?.guru_id || item?.teacher_id || teacher?.id || (teachersList[0]?.id || '');
+        const targetTeacher = teachersList.find(t => t.id === Number(targetTeacherId));
+
+        setSingleForm({
+            id: item?.id || null,
+            teacher_id: String(targetTeacherId),
+            pekan: item?.pekan || pekan || currentPekan || 1,
+            kelas: item?.kelas || item?.program?.nama || '',
+            level: item?.level || '',
+            bidang: (item?.mapel || item?.bidang || targetTeacher?.mapel || 'MTK') as 'IPA' | 'MTK',
+            material_id: item?.material_id ? String(item.material_id) : (item?.material?.id ? String(item.material.id) : ''),
+            session_date: item?.tanggal ? String(item.tanggal).slice(0, 10) : (item?.session_date ? String(item.session_date).slice(0, 10) : ''),
+            session_time: item?.session_time || (item?.jam_mulai && item?.jam_selesai ? `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}` : ''),
+            is_active: item ? Boolean(item.is_active ?? true) : true,
+            notes: item?.notes || item?.catatan || '',
+        });
+        setShowSingleModal(true);
+    };
+
+    const toggleDirectPdfUpload = () => {
+        setShowDirectPdfInput(!showDirectPdfInput);
+        if (showDirectPdfInput) {
+            setSingleDirectPdfFile(null);
+            setSingleDirectPdfTitle('');
+        }
+    };
+
+    const onSingleDirectPdfSelect = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSingleDirectPdfFile(file);
+            if (!singleDirectPdfTitle) {
+                setSingleDirectPdfTitle(file.name.replace(/\.[^/.]+$/, ''));
+            }
+        }
+    };
+
+    const submitSingle = (e: FormEvent) => {
+        e.preventDefault();
+        if (!singleForm.teacher_id) return;
+        setDismissedConflict(false);
+        setProcessing(true);
+
+        if (showDirectPdfInput && singleDirectPdfFile) {
+            const formData = new FormData();
+            if (singleForm.id) formData.append('id', String(singleForm.id));
+            formData.append('guru_id', singleForm.teacher_id);
+            formData.append('teacher_id', singleForm.teacher_id);
+            formData.append('month', String(selectedMonth));
+            formData.append('year', String(selectedYear));
+            formData.append('pekan', String(singleForm.pekan));
+            if (singleForm.kelas) formData.append('kelas', singleForm.kelas);
+            if (singleForm.level) formData.append('level', singleForm.level);
+            if (singleForm.bidang) formData.append('bidang', singleForm.bidang);
+            if (singleForm.bidang) formData.append('mapel', singleForm.bidang);
+            if (singleForm.session_date) {
+                formData.append('session_date', singleForm.session_date);
+                formData.append('tanggal', singleForm.session_date);
+            }
+            if (singleForm.session_time) formData.append('session_time', singleForm.session_time);
+            formData.append('is_active', singleForm.is_active ? '1' : '0');
+            if (singleForm.notes) formData.append('notes', singleForm.notes);
+            formData.append('material_pdf', singleDirectPdfFile);
+            formData.append('material_pdf_title', singleDirectPdfTitle || '');
+
+            const endpoint = singleForm.id ? `/session/${singleForm.id}` : '/session';
+            if (singleForm.id) {
+                formData.append('_method', 'PUT');
+            }
+
+            router.post(endpoint, formData, {
+                preserveScroll: true,
+                onSuccess: () => setShowSingleModal(false),
+                onFinish: () => setProcessing(false),
+            });
+            return;
+        }
+
+        const payload: Record<string, any> = {
+            id: singleForm.id,
+            guru_id: singleForm.teacher_id,
+            teacher_id: singleForm.teacher_id,
+            month: selectedMonth,
+            year: selectedYear,
+            pekan: singleForm.pekan,
+            kelas: singleForm.kelas || null,
+            level: singleForm.level || null,
+            bidang: singleForm.bidang,
+            mapel: singleForm.bidang,
+            material_id: singleForm.material_id || null,
+            question_id: singleForm.material_id || null,
+            session_date: singleForm.session_date || null,
+            tanggal: singleForm.session_date || null,
+            session_time: singleForm.session_time || null,
+            is_active: singleForm.is_active,
+            notes: singleForm.notes || null,
+            catatan: singleForm.notes || null,
+        };
+
+        if (singleForm.id) {
+            router.put(`/session/${singleForm.id}`, payload, {
+                preserveScroll: true,
+                onSuccess: () => setShowSingleModal(false),
+                onFinish: () => setProcessing(false),
             });
         } else {
-            post(route('session.store'), {
+            router.post('/session', payload, {
                 preserveScroll: true,
-                onSuccess: () => {
-                    resetForm();
-                    router.reload();
-                },
+                onSuccess: () => setShowSingleModal(false),
+                onFinish: () => setProcessing(false),
             });
         }
     };
 
-    const resetForm = () => {
-        setEditId(null);
-        reset();
-        setShowForm(false);
-    };
+    // Open Two Weeks Modal
+    const openTwoWeeksModal = (teacher: Guru | null = null) => {
+        setDismissedConflict(false);
+        const tId = teacher ? teacher.id : (teachersList[0]?.id || '');
+        const targetTeacher = teachersList.find(t => t.id === Number(tId));
+        const defaultBidang = targetTeacher?.mapel === 'IPA' ? 'IPA' : 'MTK';
 
-    const openDeleteModal = (session: TeachingSession) => {
-        setSessionToDelete(session);
-    };
-
-    const handleDelete = () => {
-        if (sessionToDelete) {
-            setDeleting(true);
-            router.delete(route('session.destroy', sessionToDelete.id), {
-                preserveScroll: true,
-                onFinish: () => setDeleting(false),
-                onSuccess: () => {
-                    setSessionToDelete(null);
-                    router.reload();
-                },
-            });
-        }
-    };
-
-    const applyFilters = (patch: Record<string, string | undefined>) => {
-        router.get(
-            route('session.index'),
-            { ...filters, ...patch },
-            { preserveState: true, preserveScroll: true, replace: true }
-        );
-    };
-
-    const resetFilters = () => {
-        router.get(route('session.index'), {}, { preserveState: true, preserveScroll: true, replace: true });
-    };
-
-    const hasActiveFilters = Boolean(filters.periode || filters.filter_guru || filters.filter_program || filters.filter_status || filters.search);
-
-    const guruOptions = gurus.map((g) => ({
-        value: g.id,
-        label: `${g.nama}${g.grade ? ` (Grade ${g.grade.kode_grade})` : ''}`,
-    }));
-
-    const locationOptions = locations.map((l) => ({
-        value: l.id,
-        label: l.nama_lokasi,
-    }));
-
-    const transportOptions = transports.map((t) => ({
-        value: t.id,
-        label: t.jenis,
-    }));
-
-    const programOptions = programs.map((p) => ({
-        value: p.id,
-        label: p.nama,
-    }));
-
-    const formatDate = (dateStr: string) => {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-    };
-
-    const formatTime = (timeStr: string) => timeStr.substring(0, 5);
-
-    const groupedSessions = useMemo(() => {
-        const map = new Map<string, { date: string; dateLabel: string; dayName: string; isToday: boolean; items: TeachingSession[] }>();
-        const todayStr = new Date().toISOString().substring(0, 10);
-        sessions.data.forEach((s) => {
-            const rawDate = s.tanggal ? s.tanggal.substring(0, 10) : '';
-            if (!map.has(rawDate)) {
-                const d = new Date(rawDate + 'T00:00:00');
-                const dayName = isNaN(d.getTime()) ? '' : d.toLocaleDateString('id-ID', { weekday: 'long' });
-                const dateLabel = isNaN(d.getTime()) ? rawDate : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                map.set(rawDate, {
-                    date: rawDate,
-                    dateLabel,
-                    dayName,
-                    isToday: rawDate === todayStr,
-                    items: [],
-                });
-            }
-            map.get(rawDate)!.items.push(s);
+        setTwoWeeksForm({
+            teacher_id: String(tId),
+            month: selectedMonth,
+            year: selectedYear,
+            weeks: [1, 2].map((p) => {
+                const existing = getSchedulesFor(Number(tId), p)[0];
+                return {
+                    id: existing?.id || null,
+                    pekan: p,
+                    kelas: existing?.kelas || existing?.program?.nama || '',
+                    level: existing?.level || '',
+                    bidang: (existing?.mapel || existing?.bidang || defaultBidang) as string,
+                    material_id: existing?.material_id ? String(existing.material_id) : (existing?.material?.id ? String(existing.material.id) : ''),
+                    session_date: existing?.tanggal ? String(existing.tanggal).slice(0, 10) : (existing?.session_date ? String(existing.session_date).slice(0, 10) : ''),
+                    session_time: existing?.session_time || (existing?.jam_mulai && existing?.jam_selesai ? `${String(existing.jam_mulai).slice(0, 5)} - ${String(existing.jam_selesai).slice(0, 5)}` : ''),
+                    is_active: existing ? Boolean(existing.is_active ?? true) : true,
+                    notes: existing?.notes || existing?.catatan || '',
+                };
+            }),
         });
-        return Array.from(map.values());
-    }, [sessions.data]);
+        setShowTwoWeeksModal(true);
+    };
+
+    const setTwoWeeksPreset = (p1: number, p2: number) => {
+        setTwoWeeksForm((prev) => ({
+            ...prev,
+            weeks: [
+                { ...prev.weeks[0], pekan: p1 },
+                { ...prev.weeks[1], pekan: p2 },
+            ],
+        }));
+    };
+
+    const submitTwoWeeks = (e: FormEvent) => {
+        e.preventDefault();
+        if (!twoWeeksForm.teacher_id) return;
+        setDismissedConflict(false);
+        setProcessing(true);
+
+        router.post('/session', {
+            guru_id: twoWeeksForm.teacher_id,
+            teacher_id: twoWeeksForm.teacher_id,
+            month: twoWeeksForm.month,
+            year: twoWeeksForm.year,
+            weeks: twoWeeksForm.weeks,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setShowTwoWeeksModal(false),
+            onFinish: () => setProcessing(false),
+        });
+    };
+
+    // Open Cycle 4 Weeks Modal
+    const populateCycleWeeks = (teacherId: number | string) => {
+        const targetTeacher = teachersList.find(t => t.id === Number(teacherId));
+        const defaultBidang = targetTeacher?.mapel === 'IPA' ? 'IPA' : 'MTK';
+
+        return [1, 2, 3, 4].map((p) => {
+            const existing = getSchedulesFor(Number(teacherId), p)[0];
+            return {
+                id: existing?.id || null,
+                pekan: p,
+                kelas: existing?.kelas || existing?.program?.nama || '',
+                level: existing?.level || '',
+                bidang: (existing?.mapel || existing?.bidang || defaultBidang) as string,
+                material_id: existing?.material_id ? String(existing.material_id) : (existing?.material?.id ? String(existing.material.id) : ''),
+                session_date: existing?.tanggal ? String(existing.tanggal).slice(0, 10) : (existing?.session_date ? String(existing.session_date).slice(0, 10) : ''),
+                session_time: existing?.session_time || (existing?.jam_mulai && existing?.jam_selesai ? `${String(existing.jam_mulai).slice(0, 5)} - ${String(existing.jam_selesai).slice(0, 5)}` : ''),
+                is_active: existing ? Boolean(existing.is_active ?? true) : true,
+                notes: existing?.notes || existing?.catatan || '',
+            };
+        });
+    };
+
+    const openCycleModal = (teacher: Guru | null = null) => {
+        setDismissedConflict(false);
+        const tId = teacher ? teacher.id : (teachersList[0]?.id || '');
+        setCycleForm({
+            teacher_id: String(tId),
+            month: selectedMonth,
+            year: selectedYear,
+            weeks: populateCycleWeeks(tId),
+        });
+        setShowCycleModal(true);
+    };
+
+    const onCycleTeacherChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const newId = e.target.value;
+        setCycleForm((prev) => ({
+            ...prev,
+            teacher_id: newId,
+            weeks: populateCycleWeeks(newId),
+        }));
+    };
+
+    const submitCycle = (e: FormEvent) => {
+        e.preventDefault();
+        if (!cycleForm.teacher_id) return;
+        setDismissedConflict(false);
+        setProcessing(true);
+
+        router.post('/session', {
+            guru_id: cycleForm.teacher_id,
+            teacher_id: cycleForm.teacher_id,
+            month: cycleForm.month,
+            year: cycleForm.year,
+            weeks: cycleForm.weeks,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setShowCycleModal(false),
+            onFinish: () => setProcessing(false),
+        });
+    };
+
+    // Open Standalone Upload PDF Modal
+    const openUploadPdfModal = (defaultBidang = 'MTK', defaultPekan = '', defaultKelas = '') => {
+        setUploadPdfForm({
+            title: '',
+            file: null,
+            subject: defaultBidang || 'MTK',
+            pekan: defaultPekan ? `Pekan ${defaultPekan}` : '',
+            kelas: defaultKelas || '',
+            level: '',
+            description: '',
+        });
+        setUploadPdfFileName('');
+        setShowUploadPdfModal(true);
+    };
+
+    const onPdfFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setUploadPdfForm((prev) => ({
+                ...prev,
+                file: file,
+                title: prev.title || file.name.replace(/\.[^/.]+$/, ''),
+            }));
+            setUploadPdfFileName(file.name);
+        }
+    };
+
+    const submitUploadPdf = (e: FormEvent) => {
+        e.preventDefault();
+        if (!uploadPdfForm.file || !uploadPdfForm.title) return;
+        setUploadPdfProcessing(true);
+
+        const formData = new FormData();
+        formData.append('title', uploadPdfForm.title);
+        formData.append('file', uploadPdfForm.file);
+        if (uploadPdfForm.subject) formData.append('subject', uploadPdfForm.subject);
+        if (uploadPdfForm.pekan) formData.append('pekan', uploadPdfForm.pekan);
+        if (uploadPdfForm.kelas) formData.append('kelas', uploadPdfForm.kelas);
+        if (uploadPdfForm.description) formData.append('description', uploadPdfForm.description);
+
+        router.post('/session/upload-material', formData, {
+            preserveScroll: true,
+            onSuccess: (pageResp: any) => {
+                setShowUploadPdfModal(false);
+                setUploadPdfProcessing(false);
+                const uploadedId = pageResp.props?.flash?.uploaded_material_id || pageResp.props?.flash?.uploaded_question_id;
+                if (uploadedId && showSingleModal) {
+                    setSingleForm((prev) => ({ ...prev, material_id: String(uploadedId) }));
+                }
+            },
+            onError: () => {
+                setUploadPdfProcessing(false);
+            },
+        });
+    };
 
     return (
         <AuthenticatedLayout>
-            <Head title="Ploting Guru" />
+            <Head title="Ploting Guru (Sesi Mengajar)" />
 
-            {/* Page Header */}
-            <div className="page-header animate-fade-in flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-900/40">
-                            <Icon icon="tabler:calendar-event" className="text-[18px]" />
-                        </div>
-                        <h1 className="page-title">Ploting Guru</h1>
+            <div className="space-y-5">
+                {/* Header Title & Subtitle + View Mode Switcher */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h1 className="text-xl font-extrabold text-slate-800 tracking-tight">Ploting Guru (Sesi Mengajar)</h1>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            Kelola penugasan guru, tambah sesi per pekan, upload materi PDF langsung, anti-bentrok, dan status aktif akun guru
+                        </p>
                     </div>
-                    <p className="page-subtitle">
-                        Plotingan sesi mengajar guru: kelas/program, tanggal & pekan, jam, hingga bahan ajar.
-                    </p>
-                </div>
-                <Button
-                    onClick={() => {
-                        resetForm();
-                        setShowForm(!showForm);
-                    }}
-                    className="shrink-0"
-                >
-                    <Icon icon={showForm ? 'tabler:x' : 'tabler:plus'} className="text-[18px]" />
-                    {showForm ? 'Tutup Formulir' : 'Tambah Ploting Baru'}
-                </Button>
-            </div>
-
-            <div className="space-y-8">
-                {/* Add/Edit Form */}
-                {showForm && (
-                    <Card
-                        title={editId ? 'Edit Ploting Guru' : 'Tambah Ploting Guru Baru'}
-                        description="Lengkapi data plotingan: kelas/program, tanggal & pekan, jam, bahan ajar, dan lokasi"
-                    >
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Select
-                                    label="Guru"
-                                    value={data.guru_id}
-                                    onChange={(e) => setData('guru_id', e.target.value)}
-                                    options={guruOptions}
-                                    placeholder="Pilih Guru"
-                                    error={errors.guru_id}
-                                    required
-                                />
-                                <Select
-                                    label="Kelas / Program"
-                                    value={data.program_id}
-                                    onChange={(e) => setData('program_id', e.target.value)}
-                                    options={programOptions}
-                                    placeholder="Pilih kelas plotingan"
-                                    error={errors.program_id}
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Select
-                                    label="Bidang / Mata Pelajaran"
-                                    value={data.mapel}
-                                    onChange={(e) => setData('mapel', e.target.value as 'IPA' | 'MTK')}
-                                    options={[
-                                        { value: 'IPA', label: 'IPA' },
-                                        { value: 'MTK', label: 'MTK' },
-                                    ]}
-                                    placeholder="Pilih Mapel"
-                                    error={errors.mapel}
-                                    required
-                                />
-                                <Select
-                                    label="Status Sesi"
-                                    value={data.status}
-                                    onChange={(e) => setData('status', e.target.value)}
-                                    options={[
-                                        { value: 'dijadwalkan', label: 'Dijadwalkan' },
-                                        { value: 'selesai', label: 'Selesai' },
-                                        { value: 'dibatalkan', label: 'Dibatalkan' },
-                                    ]}
-                                    error={errors.status}
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <Input
-                                    label="Tanggal"
-                                    type="date"
-                                    value={data.tanggal}
-                                    onChange={(e) => setData('tanggal', e.target.value)}
-                                    error={errors.tanggal}
-                                    required
-                                />
-                                <Input
-                                    label="Pekan (2-mingguan)"
-                                    type="number"
-                                    value={data.pekan}
-                                    onChange={(e) => setData('pekan', Number(e.target.value))}
-                                    error={errors.pekan}
-                                    min={1}
-                                    max={53}
-                                    hint="Siklus 14 hari, mis. 1 = pekan pertama"
-                                />
-                                <Input
-                                    label="Jam Mulai"
-                                    type="time"
-                                    value={data.jam_mulai}
-                                    onChange={(e) => setData('jam_mulai', e.target.value)}
-                                    error={errors.jam_mulai}
-                                    required
-                                />
-                                <Input
-                                    label="Jam Selesai"
-                                    type="time"
-                                    value={data.jam_selesai}
-                                    onChange={(e) => setData('jam_selesai', e.target.value)}
-                                    error={errors.jam_selesai}
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <Input
-                                    label="Jumlah Sesi"
-                                    type="number"
-                                    value={data.jumlah_sesi}
-                                    onChange={(e) => setData('jumlah_sesi', Number(e.target.value))}
-                                    error={errors.jumlah_sesi}
-                                    min={1}
-                                    required
-                                />
-                                <Select
-                                    label="Lokasi"
-                                    value={data.location_id}
-                                    onChange={(e) => setData('location_id', e.target.value)}
-                                    options={locationOptions}
-                                    placeholder="Pilih Lokasi"
-                                    error={errors.location_id}
-                                    required
-                                />
-                                <Select
-                                    label="Transport"
-                                    value={data.transport_id}
-                                    onChange={(e) => setData('transport_id', e.target.value)}
-                                    options={transportOptions}
-                                    placeholder="Pilih Transport"
-                                    error={errors.transport_id}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="bahan_ajar" className="block text-sm font-semibold text-slate-700 mb-1.5">
-                                    Bahan Ajar / Materi
-                                    <span className="text-rose-500 ml-0.5">*</span>
-                                </label>
-                                <textarea
-                                    id="bahan_ajar"
-                                    rows={3}
-                                    value={data.bahan_ajar}
-                                    onChange={(e) => setData('bahan_ajar', e.target.value)}
-                                    placeholder="Materi / bahan ajar yang diajarkan pada sesi ini"
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
-                                />
-                                {errors.bahan_ajar && <p className="mt-1.5 text-xs font-medium text-rose-600">{errors.bahan_ajar}</p>}
-                            </div>
-                            <div>
-                                <label htmlFor="catatan" className="block text-sm font-semibold text-slate-700 mb-1.5">
-                                    Catatan
-                                </label>
-                                <textarea
-                                    id="catatan"
-                                    rows={2}
-                                    value={data.catatan}
-                                    onChange={(e) => setData('catatan', e.target.value)}
-                                    placeholder="Opsional: alasan pembatalan / catatan admin"
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-colors"
-                                />
-                                {errors.catatan && <p className="mt-1.5 text-xs font-medium text-rose-600">{errors.catatan}</p>}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 pt-2">
-                                <Button type="submit" processing={processing}>
-                                    <Icon icon="tabler:device-floppy" className="text-[18px]" /> {editId ? 'Simpan Perubahan' : 'Tambah Ploting'}
-                                </Button>
-                                <Button variant="secondary" onClick={resetForm}>
-                                    Batal
-                                </Button>
-                            </div>
-                        </form>
-                    </Card>
-                )}
-
-                {/* Sessions List Card */}
-                <Card>
-                    {/* Filter Bar */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <Input
-                            label="Cari"
-                            value={filters.search || ''}
-                            onChange={(e) => applyFilters({ search: e.target.value || undefined })}
-                            placeholder="Nama guru / lokasi"
-                        />
-                        <Input
-                            label="Periode"
-                            type="month"
-                            value={filters.periode || ''}
-                            onChange={(e) => applyFilters({ periode: e.target.value || undefined })}
-                        />
-                        <Select
-                            label="Filter Guru"
-                            value={filters.filter_guru || ''}
-                            onChange={(e) => applyFilters({ filter_guru: e.target.value || undefined })}
-                            options={guruOptions}
-                            placeholder="Semua Guru"
-                        />
-                        <Select
-                            label="Program"
-                            value={filters.filter_program || ''}
-                            onChange={(e) => applyFilters({ filter_program: e.target.value || undefined })}
-                            options={programOptions}
-                            placeholder="Semua Program"
-                        />
-                        <Select
-                            label="Status Presensi"
-                            value={filters.filter_status || ''}
-                            onChange={(e) => applyFilters({ filter_status: e.target.value || undefined })}
-                            options={[
-                                { value: 'dijadwalkan', label: 'Dijadwalkan' },
-                                { value: 'berlangsung', label: 'Berlangsung' },
-                                { value: 'selesai', label: 'Selesai' },
-                                { value: 'dibatalkan', label: 'Dibatalkan' },
-                            ]}
-                            placeholder="Semua Status"
-                        />
-                    </div>
-                    {hasActiveFilters && (
-                        <div className="flex justify-end -mt-6 mb-6">
+                    <div className="flex items-center gap-2">
+                        {/* Toggle View Mode */}
+                        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs">
                             <button
                                 type="button"
-                                onClick={resetFilters}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors whitespace-nowrap"
+                                onClick={() => setViewMode('matrix')}
+                                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                                    viewMode === 'matrix' ? 'bg-white text-slate-800 font-bold shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
                             >
-                                <Icon icon="tabler:refresh" className="text-[14px]" /> Reset Filter
+                                <Icon icon="tabler:layout-grid" className="w-4 h-4" />
+                                <span>Matriks 4 Pekan</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                                    viewMode === 'list' ? 'bg-white text-slate-800 font-bold shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                            >
+                                <Icon icon="tabler:list-details" className="w-4 h-4" />
+                                <span>Daftar Sesi (Terbaru)</span>
                             </button>
                         </div>
-                    )}
+                    </div>
+                </div>
 
-                    {sessions.data.length > 0 ? (
-                        <>
-                            {/* Desktop & Tablet Table - Dikelompokkan per tanggal */}
-                            <div className="hidden md:block">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-16">No</TableHead>
-                                            <TableHead>Guru</TableHead>
-                                            <TableHead>Program</TableHead>
-                                            <TableHead>Status Presensi</TableHead>
-                                            <TableHead>Tanggal</TableHead>
-                                            <TableHead>Jam</TableHead>
-                                            <TableHead>Sesi</TableHead>
-                                            <TableHead>Lokasi</TableHead>
-                                            <TableHead className="text-right">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {groupedSessions.map((group) => (
-                                            <React.Fragment key={group.date}>
-                                                <TableRow className="bg-slate-50/90 hover:bg-slate-100/80 border-t-2 border-slate-200">
-                                                    <TableCell colSpan={9} className="py-2.5 px-4">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2.5">
-                                                                <span className={`w-2.5 h-2.5 rounded-full ${group.isToday ? 'bg-indigo-600 animate-pulse' : 'bg-slate-400'}`} />
-                                                                <span className="text-slate-900 text-sm font-extrabold tracking-tight">
-                                                                    {group.dayName}, {group.dateLabel}
-                                                                </span>
-                                                                {group.isToday && (
-                                                                    <span className="px-2 py-0.5 text-xs font-extrabold uppercase tracking-wide bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">
-                                                                        Hari Ini
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <span className="text-xs font-semibold text-slate-500">
-                                                                {group.items.length} sesi mengajar
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                                {group.items.map((session) => {
-                                                    const displayStatus = session.effective_status ?? session.status;
-                                                    const rowNumber = (sessions.current_page - 1) * sessions.per_page + sessions.data.indexOf(session) + 1;
+                {/* Alarm Anti-Bentrok Jadwal Alert Box */}
+                {hasConflictError && (
+                    <div className="bg-red-50 border-2 border-red-400 rounded-2xl p-4 flex items-start gap-3 shadow-md animate-pulse">
+                        <div className="w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <Icon icon="tabler:alert-triangle" className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div className="text-xs text-red-900 flex-1">
+                            <p className="font-bold text-sm uppercase tracking-wider text-red-700">🚨 Peringatan Sistem Alarm Anti-Bentrok Jadwal!</p>
+                            <p className="mt-1 leading-relaxed font-semibold">{conflictErrorMessage}</p>
+                            <p className="text-[11px] text-red-700 mt-1">
+                                Sistem mencegah jadwal ganda pada guru/kelas di jam yang sama. Harap sesuaikan jam sesi atau batalkan sesi lama terlebih dahulu.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={clearConflictError}
+                            className="text-red-400 hover:text-red-600 text-base font-bold cursor-pointer"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                )}
+
+                {/* Informasi Siklus & Jadwal Materi */}
+                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
+                    <Icon icon="tabler:clock" className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-700 leading-relaxed">
+                        <p className="font-bold text-slate-900 mb-0.5">
+                            Pekan Berjalan: Pekan {currentPekan} ({MONTH_NAMES[selectedMonth - 1]} {selectedYear})
+                        </p>
+                        <p>{questionUploadText}</p>
+                    </div>
+                </div>
+
+                {/* Filter Bar & Action Buttons */}
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                        {/* Cari Guru */}
+                        <div className="w-full sm:w-52">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={teacherSearch}
+                                    onChange={(e) => setTeacherSearch(e.target.value)}
+                                    placeholder="Cari guru..."
+                                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all"
+                                />
+                                <Icon icon="tabler:search" className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {/* Filter Kelas */}
+                        <div className="w-32">
+                            <select
+                                value={filterKelas}
+                                onChange={(e) => setFilterKelas(e.target.value)}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">Semua Kelas</option>
+                                {KELAS_OPTIONS.map((k) => (
+                                    <option key={k} value={k}>{k}</option>
+                                ))}
+                                {programs.map((p) => (
+                                    <option key={p.id} value={p.nama}>{p.nama}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Filter Bidang / Mapel */}
+                        <div className="w-28">
+                            <select
+                                value={filterBidang}
+                                onChange={(e) => setFilterBidang(e.target.value)}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">Semua Mapel</option>
+                                <option value="MTK">MTK</option>
+                                <option value="IPA">IPA</option>
+                            </select>
+                        </div>
+
+                        {/* Filter Pekan */}
+                        <div className="w-28">
+                            <select
+                                value={filterPekan}
+                                onChange={(e) => setFilterPekan(e.target.value)}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">Semua Pekan</option>
+                                <option value="1">Pekan 1</option>
+                                <option value="2">Pekan 2</option>
+                                <option value="3">Pekan 3</option>
+                                <option value="4">Pekan 4</option>
+                            </select>
+                        </div>
+
+                        {/* Filter Status Guru */}
+                        <div className="w-32">
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">Semua Status</option>
+                                <option value="aktif">Aktif</option>
+                                <option value="nonaktif">Nonaktif</option>
+                            </select>
+                        </div>
+
+                        {/* Bulan & Tahun */}
+                        <div className="w-32">
+                            <select
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                {MONTH_NAMES.map((m, idx) => (
+                                    <option key={idx + 1} value={idx + 1}>{m}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="w-24">
+                            <select
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                {[2025, 2026, 2027, 2028].map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Filter Actions */}
+                        <button
+                            type="button"
+                            onClick={applyFilter}
+                            className="px-3.5 py-2 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                        >
+                            <Icon icon="tabler:filter" className="w-3.5 h-3.5" />
+                            <span>Terapkan</span>
+                        </button>
+
+                        {hasActiveFilter && (
+                            <button
+                                type="button"
+                                onClick={resetFilter}
+                                className="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-medium rounded-xl hover:bg-slate-200 transition-colors cursor-pointer"
+                            >
+                                Reset
+                            </button>
+                        )}
+
+                        <div className="flex-1"></div>
+
+                        {/* Action Buttons: Upload PDF & Tambah Sesi */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => openUploadPdfModal()}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl hover:bg-rose-700 transition-all shadow-2xs cursor-pointer"
+                                title="Upload file PDF materi bahan ajar langsung"
+                            >
+                                <Icon icon="tabler:upload" className="w-3.5 h-3.5" />
+                                <span>+ Upload Materi PDF</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => openSingleModal(null, currentPekan)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all shadow-2xs cursor-pointer"
+                            >
+                                <Icon icon="tabler:plus" className="w-3.5 h-3.5" />
+                                <span>+ Tambah Sesi</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => openTwoWeeksModal()}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 transition-all shadow-2xs cursor-pointer"
+                            >
+                                <span>Siklus 2 Pekan</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => openCycleModal()}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl hover:bg-slate-200 transition-all cursor-pointer border border-slate-200"
+                            >
+                                <span>Siklus 4 Pekan</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* TAMPILAN 1: Matriks Ploting 4 Pekan (Mendukung Multi-Sesi Per Pekan) */}
+                {viewMode === 'matrix' ? (
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500">
+                                        <th className="py-3.5 px-4 font-semibold min-w-[200px]">Guru Pengajar</th>
+                                        <th className="py-3.5 px-3 font-semibold text-center w-36">Status Pekan Ini</th>
+                                        {[1, 2, 3, 4].map((p) => (
+                                            <th
+                                                key={p}
+                                                className={`py-3.5 px-3.5 font-semibold min-w-[230px] ${
+                                                    p === currentPekan ? 'bg-sky-50/70 text-slate-900 border-x border-sky-100' : ''
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span>Pekan {p}</span>
+                                                    {p === currentPekan && (
+                                                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold uppercase tracking-wider">
+                                                            Berjalan
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </th>
+                                        ))}
+                                        <th className="py-3.5 px-3 font-semibold text-center w-32">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-xs">
+                                    {filteredTeachers.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="py-10 text-center text-slate-400">
+                                                Tidak ada data guru ditemukan sesuai filter.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredTeachers.map((t) => (
+                                            <tr key={t.id} className="hover:bg-slate-50/70 align-top transition-colors">
+                                                <td className="py-3.5 px-4">
+                                                    <p className="font-bold text-slate-800 truncate max-w-[190px]">
+                                                        {t.nama || t.user?.name || `Guru #${t.id}`}
+                                                    </p>
+                                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                                        Bidang: {t.mapel || t.subject || '-'}{t.bidang_2 ? ` / ${t.bidang_2}` : ''}
+                                                    </p>
+                                                    {(t.program_names?.length || t.programs?.length) ? (
+                                                        <p className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[190px]">
+                                                            Program: {t.program_names?.join(', ') || t.programs?.map(p => p.nama).join(', ')}
+                                                        </p>
+                                                    ) : null}
+                                                </td>
+
+                                                {/* Status Pekan Ini: Dropdown Selector Aktif / Nonaktif */}
+                                                <td className="py-3.5 px-3 text-center">
+                                                    <select
+                                                        value={isTeacherActive(t) ? 'aktif' : 'nonaktif'}
+                                                        onChange={(e) => changeTeacherStatus(t, e.target.value)}
+                                                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border outline-none cursor-pointer transition-all shadow-2xs ${
+                                                            isTeacherActive(t)
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                                                                : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
+                                                        }`}
+                                                        title="Ubah status akun guru (Aktif / Nonaktif)"
+                                                    >
+                                                        <option value="aktif">Aktif</option>
+                                                        <option value="nonaktif">Nonaktif</option>
+                                                    </select>
+                                                </td>
+
+                                                {/* Kolom Pekan 1 s/d 4: Menampilkan Kartu Sesi */}
+                                                {[1, 2, 3, 4].map((p) => {
+                                                    const sessionsForWeek = getSchedulesFor(t.id, p);
                                                     return (
-                                                        <TableRow key={session.id} className="hover:bg-slate-50/60 transition-colors">
-                                                            <TableCell className="font-medium text-slate-400 text-sm">
-                                                                {rowNumber}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-lg shadow-indigo-900/40">
-                                                                        {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
-                                                                    </div>
-                                                                    <div className="min-w-0">
-                                                                        <span className="font-semibold text-slate-900 text-sm block truncate">
-                                                                            {session.guru?.nama ?? '-'}
-                                                                        </span>
-                                                                        <span className="text-xs text-slate-400">
-                                                                            Grade {session.guru?.grade?.kode_grade ?? '-'} · {session.mapel}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="min-w-0 space-y-1">
-                                                                    {session.program?.nama ? (
-                                                                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(session.program.nama).badge}`}>
-                                                                            <span className={`w-1.5 h-1.5 rounded-full ${programStyle(session.program.nama).dot}`} />
-                                                                            {session.program.nama}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-slate-400 text-sm">-</span>
-                                                                    )}
-                                                                    {(session.pekan ?? 1) > 0 && (
-                                                                        <span className="block text-xs text-slate-400">Pekan {session.pekan ?? 1}</span>
-                                                                    )}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Badge variant={statusVariant[displayStatus] ?? 'default'} size="sm">
-                                                                    {statusLabel[displayStatus] ?? displayStatus}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:calendar-event" className="text-sm text-slate-400 flex-shrink-0" />
-                                                                    <span className="text-slate-600 text-sm">{formatDate(session.tanggal)}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:clock" className="text-sm text-slate-400 flex-shrink-0" />
-                                                                    <span className="text-slate-600 text-sm font-medium">
-                                                                        {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
-                                                                    </span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Icon icon="tabler:map-pin" className="text-sm text-slate-400 flex-shrink-0" />
-                                                                    <span className="text-slate-600 text-sm">{session.location?.nama_lokasi ?? '-'}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="text-right">
-                                                                <div className="flex items-center justify-end gap-1">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleEdit(session)}
-                                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                                                        title="Edit Sesi"
-                                                                        aria-label={`Edit sesi ${session.guru?.nama}`}
+                                                        <td
+                                                            key={p}
+                                                            className={`py-3 px-3 ${
+                                                                p === currentPekan ? 'bg-sky-50/30 border-x border-sky-100/50' : ''
+                                                            }`}
+                                                        >
+                                                            <div className="space-y-2">
+                                                                {sessionsForWeek.map((item, sIdx) => (
+                                                                    <div
+                                                                        key={item.id}
+                                                                        className="p-2.5 rounded-xl border border-slate-200 bg-white space-y-1.5 shadow-2xs hover:border-teal-500/60 transition-all"
                                                                     >
-                                                                        <Icon icon="tabler:edit" className="text-lg" />
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => openDeleteModal(session)}
-                                                                        className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                                                        title="Hapus Sesi"
-                                                                        aria-label={`Hapus sesi ${session.guru?.nama}`}
-                                                                    >
-                                                                        <Icon icon="tabler:trash" className="text-lg" />
-                                                                    </button>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
+                                                                        <div className="flex items-center justify-between gap-1">
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-blue-100 text-blue-700 border border-blue-200">
+                                                                                    Sesi {sIdx + 1}
+                                                                                </span>
+                                                                                <span className="text-[11px] font-bold text-slate-800">
+                                                                                    {item.kelas || item.program?.nama || 'Semua Kelas'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-1">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => openSingleModal(t, p, item)}
+                                                                                    className="text-[10px] text-blue-600 hover:underline cursor-pointer font-medium"
+                                                                                >
+                                                                                    Ubah
+                                                                                </button>
+                                                                                <span className="text-slate-300">|</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => deletePlot(item)}
+                                                                                    className="text-[10px] text-red-500 hover:underline cursor-pointer font-medium"
+                                                                                >
+                                                                                    Hapus
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                                                                            <span>
+                                                                                Mapel: <strong className="text-slate-700">{item.mapel || item.bidang || t.mapel || '-'}</strong>
+                                                                            </span>
+                                                                            {item.level && <span className="text-slate-400">{item.level}</span>}
+                                                                        </div>
+
+                                                                        {/* Bahan Ajar / Materi PDF */}
+                                                                        <div className="pt-0.5">
+                                                                            {(item.material || item.question) ? (
+                                                                                <p
+                                                                                    className="text-[10px] text-slate-700 truncate font-medium flex items-center gap-1"
+                                                                                    title={(item.material || item.question)?.title}
+                                                                                >
+                                                                                    <span className="text-rose-600 font-bold shrink-0">PDF:</span>
+                                                                                    <span className="truncate">{(item.material || item.question)?.title}</span>
+                                                                                </p>
+                                                                            ) : item.bahan_ajar ? (
+                                                                                <p className="text-[10px] text-slate-600 truncate">
+                                                                                    <span className="text-slate-400">Materi:</span> {item.bahan_ajar}
+                                                                                </p>
+                                                                            ) : (
+                                                                                <p className="text-[10px] text-slate-400 italic">Belum ada bahan ajar</p>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Tanggal & Jam Sesi */}
+                                                                        <div className="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-100">
+                                                                            {(item.tanggal || item.session_date) && (
+                                                                                <span>📅 {formatDate(item.tanggal || item.session_date)}</span>
+                                                                            )}
+                                                                            {(item.session_time || (item.jam_mulai && item.jam_selesai)) && (
+                                                                                <span className="font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                                                                                    ⏰ {item.session_time || `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}`}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                                {/* Tombol Tambah Sesi di Pekan Ini */}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => openSingleModal(t, p)}
+                                                                    className="w-full py-1.5 px-2 rounded-lg border border-dashed border-slate-300 text-[10px] font-semibold text-slate-500 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50/30 transition-all cursor-pointer flex items-center justify-center gap-1"
+                                                                    title="Tambah sesi baru untuk pekan ini"
+                                                                >
+                                                                    <Icon icon="tabler:plus" className="w-3 h-3" />
+                                                                    <span>+ Tambah Sesi Pekan {p}</span>
+                                                                </button>
+                                                            </div>
+                                                        </td>
                                                     );
                                                 })}
-                                            </React.Fragment>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+
+                                                {/* Kolom Aksi */}
+                                                <td className="py-3.5 px-3 text-center">
+                                                    <div className="flex flex-col gap-1.5 items-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openSingleModal(t, currentPekan)}
+                                                            className="w-full px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-bold transition-colors cursor-pointer"
+                                                        >
+                                                            + Tambah Sesi
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openTwoWeeksModal(t)}
+                                                            className="w-full px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 text-[10px] font-semibold transition-colors cursor-pointer"
+                                                        >
+                                                            Plot 2 Pekan
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openCycleModal(t)}
+                                                            className="w-full px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-medium transition-colors cursor-pointer"
+                                                        >
+                                                            Atur 4 Pekan
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ) : (
+                    /* TAMPILAN 2: Daftar Sesi Mengajar (Urutan Terbaru / Descending) */
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                        <div className="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-800">Daftar Sesi Mengajar (Urutan Terbaru / Descending)</h3>
+                                <p className="text-[11px] text-slate-400 mt-0.5">Data sesi diurutkan otomatis berdasarkan tanggal sesi terbaru dan pekan terkini</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                    Total {filteredSchedules.length} Sesi Terjadwal
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => openSingleModal(null, currentPekan)}
+                                    className="px-3 py-1 bg-teal-600 text-white text-xs font-semibold rounded-lg hover:bg-teal-700 transition-all cursor-pointer"
+                                >
+                                    + Tambah Sesi Baru
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500">
+                                        <th className="py-3 px-4 font-semibold">Tanggal & Jam Sesi</th>
+                                        <th className="py-3 px-3 font-semibold text-center">Pekan</th>
+                                        <th className="py-3 px-3.5 font-semibold">Guru Pengajar</th>
+                                        <th className="py-3 px-3 font-semibold">Kelas & Level</th>
+                                        <th className="py-3 px-3 font-semibold">Bidang</th>
+                                        <th className="py-3 px-3.5 font-semibold">Bahan Ajar (Materi)</th>
+                                        <th className="py-3 px-3 font-semibold text-center">Status Guru</th>
+                                        <th className="py-3 px-3 font-semibold text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-xs">
+                                    {filteredSchedules.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="py-10 text-center text-slate-400">
+                                                Tidak ada data sesi mengajar ditemukan.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredSchedules.map((s) => (
+                                            <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                                                <td className="py-3 px-4 font-medium text-slate-800">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold">
+                                                            {formatDate(s.tanggal || s.session_date)}
+                                                        </span>
+                                                        <span className="text-[11px] text-slate-500">
+                                                            {s.session_time || (s.jam_mulai && s.jam_selesai ? `${String(s.jam_mulai).slice(0, 5)} - ${String(s.jam_selesai).slice(0, 5)}` : 'Waktu fleksibel')}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-3 text-center">
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                            s.pekan === currentPekan ? 'bg-sky-100 text-blue-700' : 'bg-slate-100 text-slate-700'
+                                                        }`}
+                                                    >
+                                                        Pekan {s.pekan}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-3.5">
+                                                    <p className="font-bold text-slate-800">
+                                                        {s.guru?.nama || s.guru?.user?.name || s.teacher?.nama || `Guru #${s.guru_id}`}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400">
+                                                        {s.guru?.mapel || s.teacher?.mapel || '-'}
+                                                    </p>
+                                                </td>
+                                                <td className="py-3 px-3">
+                                                    <p className="font-semibold text-slate-800">
+                                                        {s.kelas || s.program?.nama || 'Semua Kelas'}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400">
+                                                        {s.level || 'Semua Level'}
+                                                    </p>
+                                                </td>
+                                                <td className="py-3 px-3 font-semibold">
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-md text-[10px] ${
+                                                            (s.mapel || s.bidang) === 'IPA'
+                                                                ? 'bg-emerald-50 text-emerald-700'
+                                                                : 'bg-blue-50 text-blue-700'
+                                                        }`}
+                                                    >
+                                                        {s.mapel || s.bidang || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-3.5 max-w-[220px]">
+                                                    {(s.material || s.question) ? (
+                                                        <p
+                                                            className="truncate font-medium text-slate-800 flex items-center gap-1"
+                                                            title={(s.material || s.question)?.title}
+                                                        >
+                                                            <span className="text-rose-500 font-bold shrink-0">PDF:</span>
+                                                            <span className="truncate">{(s.material || s.question)?.title}</span>
+                                                        </p>
+                                                    ) : s.bahan_ajar ? (
+                                                        <p className="text-slate-600 truncate text-[11px]">{s.bahan_ajar}</p>
+                                                    ) : (
+                                                        <p className="text-slate-400 italic text-[11px]">Belum ada bahan ajar</p>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-3 text-center">
+                                                    {s.guru ? (
+                                                        <select
+                                                            value={isTeacherActive(s.guru) ? 'aktif' : 'nonaktif'}
+                                                            onChange={(e) => changeTeacherStatus(s.guru!, e.target.value)}
+                                                            className={`px-2 py-1 rounded-lg text-[10px] font-bold border outline-none cursor-pointer transition-all shadow-2xs ${
+                                                                isTeacherActive(s.guru)
+                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                                                    : 'bg-red-50 text-red-700 border-red-300'
+                                                            }`}
+                                                        >
+                                                            <option value="aktif">Aktif</option>
+                                                            <option value="nonaktif">Nonaktif</option>
+                                                        </select>
+                                                    ) : (
+                                                        <span className="text-slate-400">-</span>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-3 text-center">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openSingleModal(s.guru || null, s.pekan, s)}
+                                                            className="text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+                                                        >
+                                                            Ubah
+                                                        </button>
+                                                        <span className="text-slate-300">•</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deletePlot(s)}
+                                                            className="text-red-500 hover:text-red-700 font-semibold cursor-pointer"
+                                                        >
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* MODAL 1: Upload Materi PDF Langsung */}
+            {showUploadPdfModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowUploadPdfModal(false);
+                    }}
+                >
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xs">
+                                    PDF
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-800">Upload Materi PDF Langsung</h3>
+                                    <p className="text-xs text-slate-400 mt-0.5">Unggah bahan ajar format PDF langsung ke database</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowUploadPdfModal(false)}
+                                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-lg font-bold cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={submitUploadPdf} className="space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Judul Materi Bahan Ajar *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={uploadPdfForm.title}
+                                    onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, title: e.target.value })}
+                                    placeholder="Contoh: Modul Matematika Sesi 1 - Pekan 1"
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
+                                />
                             </div>
 
-                            {/* Mobile Cards View - Dikelompokkan per tanggal */}
-                            <div className="md:hidden space-y-6">
-                                {groupedSessions.map((group) => (
-                                    <div key={group.date} className="space-y-3">
-                                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-100 rounded-xl border border-slate-200/80">
+                            <div>
+                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Pilih Berkas PDF * (Maks. 10 MB)</label>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    required
+                                    onChange={onPdfFileSelect}
+                                    className="w-full px-3 py-2 rounded-xl border border-dashed border-rose-300 bg-rose-50/40 text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer outline-none"
+                                />
+                                {uploadPdfFileName && (
+                                    <p className="text-[11px] text-rose-600 font-semibold mt-1">
+                                        ✓ File terpilih: {uploadPdfFileName}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bidang / Mapel</label>
+                                    <select
+                                        value={uploadPdfForm.subject}
+                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, subject: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="MTK">MTK</option>
+                                        <option value="IPA">IPA</option>
+                                        <option value="Umum">Umum</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Pekan</label>
+                                    <select
+                                        value={uploadPdfForm.pekan}
+                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, pekan: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">Semua Pekan</option>
+                                        <option value="Pekan 1">Pekan 1</option>
+                                        <option value="Pekan 2">Pekan 2</option>
+                                        <option value="Pekan 3">Pekan 3</option>
+                                        <option value="Pekan 4">Pekan 4</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Kelas</label>
+                                    <select
+                                        value={uploadPdfForm.kelas}
+                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, kelas: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">Semua Kelas</option>
+                                        {KELAS_OPTIONS.map((k) => (
+                                            <option key={k} value={k}>{k}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Keterangan / Catatan Materi</label>
+                                <textarea
+                                    rows={2}
+                                    value={uploadPdfForm.description}
+                                    onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, description: e.target.value })}
+                                    placeholder="Petunjuk penggunaan bahan ajar untuk guru..."
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUploadPdfModal(false)}
+                                    className="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={uploadPdfProcessing}
+                                    className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                    {uploadPdfProcessing ? (
+                                        <>
+                                            <Icon icon="tabler:loader-2" className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Mengunggah...</span>
+                                        </>
+                                    ) : (
+                                        <span>Unggah PDF Sekarang</span>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 2: Tambah / Ubah Sesi Mengajar (Single Session) */}
+            {showSingleModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowSingleModal(false);
+                    }}
+                >
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">
+                                    {singleForm.id ? 'Ubah Sesi Mengajar' : 'Tambah Sesi Mengajar Baru'}
+                                </h3>
+                                <p className="text-xs text-slate-400 mt-0.5">
+                                    Guru dapat mengajar di lebih dari satu sesi pada pekan yang sama
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowSingleModal(false)}
+                                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-lg font-bold cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={submitSingle} className="space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Guru Pengajar *</label>
+                                <select
+                                    required
+                                    value={singleForm.teacher_id}
+                                    onChange={(e) => {
+                                        const tId = e.target.value;
+                                        const tg = teachersList.find(t => t.id === Number(tId));
+                                        setSingleForm({
+                                            ...singleForm,
+                                            teacher_id: tId,
+                                            bidang: tg?.mapel === 'IPA' ? 'IPA' : 'MTK',
+                                        });
+                                    }}
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                >
+                                    <option value="">-- Pilih Guru --</option>
+                                    {teachersList.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.nama || t.user?.name || `Guru #${t.id}`} ({t.mapel || t.subject || 'Umum'})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Pekan *</label>
+                                    <select
+                                        required
+                                        value={singleForm.pekan}
+                                        onChange={(e) => setSingleForm({ ...singleForm, pekan: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value={1}>Pekan 1</option>
+                                        <option value={2}>Pekan 2</option>
+                                        <option value={3}>Pekan 3</option>
+                                        <option value={4}>Pekan 4</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Kelas</label>
+                                    <select
+                                        value={singleForm.kelas}
+                                        onChange={(e) => setSingleForm({ ...singleForm, kelas: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">Semua Kelas</option>
+                                        {KELAS_OPTIONS.map((k) => (
+                                            <option key={k} value={k}>{k}</option>
+                                        ))}
+                                        {programs.map((p) => (
+                                            <option key={p.id} value={p.nama}>{p.nama}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Level</label>
+                                    <select
+                                        value={singleForm.level}
+                                        onChange={(e) => setSingleForm({ ...singleForm, level: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">Semua Level</option>
+                                        <option value="Level 1">Level 1</option>
+                                        <option value="Level 2">Level 2</option>
+                                        <option value="Level 3">Level 3</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bidang / Mapel</label>
+                                    <select
+                                        value={singleForm.bidang}
+                                        onChange={(e) => setSingleForm({ ...singleForm, bidang: e.target.value as 'IPA' | 'MTK' })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="MTK">MTK</option>
+                                        <option value="IPA">IPA</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Tanggal Sesi</label>
+                                    <input
+                                        type="date"
+                                        value={singleForm.session_date}
+                                        onChange={(e) => setSingleForm({ ...singleForm, session_date: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Jam Sesi</label>
+                                    <input
+                                        type="text"
+                                        value={singleForm.session_time}
+                                        onChange={(e) => setSingleForm({ ...singleForm, session_time: e.target.value })}
+                                        placeholder="08:00 - 09:30"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Bagian Bahan Ajar (Pilih dari daftar atau Langsung Upload PDF Baru) */}
+                            <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">
+                                        Bahan Ajar (Materi Sesi)
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={toggleDirectPdfUpload}
+                                        className="text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer flex items-center gap-1"
+                                    >
+                                        <span>{showDirectPdfInput ? '← Pilih dari Daftar Materi' : '+ Langsung Upload PDF Baru'}</span>
+                                    </button>
+                                </div>
+
+                                {!showDirectPdfInput ? (
+                                    <div>
+                                        <select
+                                            value={singleForm.material_id}
+                                            onChange={(e) => setSingleForm({ ...singleForm, material_id: e.target.value })}
+                                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                        >
+                                            <option value="">-- Pilih Materi Bahan Ajar --</option>
+                                            {materialsList.map((m) => (
+                                                <option key={m.id} value={m.id}>
+                                                    {m.title} ({m.subject || 'Umum'} - {m.pekan || 'Semua Pekan'})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2 bg-white p-3 rounded-xl border border-rose-200">
+                                        <div>
+                                            <label className="block text-[10px] font-medium text-slate-500 uppercase mb-0.5">Judul Materi PDF Baru</label>
+                                            <input
+                                                type="text"
+                                                value={singleDirectPdfTitle}
+                                                onChange={(e) => setSingleDirectPdfTitle(e.target.value)}
+                                                placeholder="Judul materi PDF..."
+                                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-medium text-slate-500 uppercase mb-0.5">Pilih Berkas PDF</label>
+                                            <input
+                                                type="file"
+                                                accept=".pdf"
+                                                onChange={onSingleDirectPdfSelect}
+                                                className="w-full text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Catatan Sesi</label>
+                                <input
+                                    type="text"
+                                    value={singleForm.notes}
+                                    onChange={(e) => setSingleForm({ ...singleForm, notes: e.target.value })}
+                                    placeholder="Catatan tambahan sesi mengajar..."
+                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSingleModal(false)}
+                                    className="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                                >
+                                    {processing ? 'Menyimpan...' : (singleForm.id ? 'Perbarui Sesi' : 'Simpan Sesi Ini')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 3: Ploting Sesi Mengajar 2 Pekan */}
+            {showTwoWeeksModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowTwoWeeksModal(false);
+                    }}
+                >
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">Ploting Sesi Mengajar 2 Pekan</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">Atur jadwal sesi per 2 pekan (pekan, tanggal, jam sesi, kelas, bahan ajar)</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowTwoWeeksModal(false)}
+                                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-lg font-bold cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={submitTwoWeeks} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Guru Pengajar *</label>
+                                    <select
+                                        required
+                                        value={twoWeeksForm.teacher_id}
+                                        onChange={(e) => setTwoWeeksForm({ ...twoWeeksForm, teacher_id: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">-- Pilih Guru --</option>
+                                        {teachersList.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.nama || t.user?.name || `Guru #${t.id}`} ({t.mapel || t.subject || 'Umum'})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bulan</label>
+                                    <select
+                                        value={twoWeeksForm.month}
+                                        onChange={(e) => setTwoWeeksForm({ ...twoWeeksForm, month: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        {MONTH_NAMES.map((m, idx) => (
+                                            <option key={idx + 1} value={idx + 1}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Tahun</label>
+                                    <select
+                                        value={twoWeeksForm.year}
+                                        onChange={(e) => setTwoWeeksForm({ ...twoWeeksForm, year: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        {[2025, 2026, 2027, 2028].map((y) => (
+                                            <option key={y} value={y}>{y}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Preset Siklus 2 Pekan */}
+                            <div className="flex items-center gap-2 pt-1 pb-1">
+                                <span className="text-xs text-slate-500 font-semibold">Pilihan Siklus:</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setTwoWeeksPreset(1, 2)}
+                                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium cursor-pointer transition-all ${
+                                        twoWeeksForm.weeks[0].pekan === 1 && twoWeeksForm.weeks[1].pekan === 2
+                                            ? 'bg-teal-600 text-white border-teal-600 font-bold'
+                                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-teal-500'
+                                    }`}
+                                >
+                                    Pekan 1 & 2
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTwoWeeksPreset(3, 4)}
+                                    className={`px-2.5 py-1 text-xs rounded-lg border font-medium cursor-pointer transition-all ${
+                                        twoWeeksForm.weeks[0].pekan === 3 && twoWeeksForm.weeks[1].pekan === 4
+                                            ? 'bg-teal-600 text-white border-teal-600 font-bold'
+                                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-teal-500'
+                                    }`}
+                                >
+                                    Pekan 3 & 4
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {twoWeeksForm.weeks.map((w, idx) => (
+                                    <div key={idx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
+                                        <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className={`w-2 h-2 rounded-full ${group.isToday ? 'bg-indigo-600 animate-pulse' : 'bg-slate-400'}`} />
-                                                <span className="font-extrabold text-xs text-slate-900">{group.dayName}, {group.dateLabel}</span>
-                                                {group.isToday && (
-                                                    <span className="px-1.5 py-0.5 text-xs font-bold uppercase bg-indigo-100 text-indigo-700 rounded-full">
-                                                        Hari Ini
-                                                    </span>
-                                                )}
+                                                <span className="text-xs font-bold text-slate-800">Sesi ke-{idx + 1}:</span>
+                                                <select
+                                                    value={w.pekan}
+                                                    onChange={(e) => {
+                                                        const val = Number(e.target.value);
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], pekan: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="px-2 py-1 rounded-lg border border-slate-300 text-xs font-bold bg-white outline-none"
+                                                >
+                                                    <option value={1}>Pekan 1</option>
+                                                    <option value={2}>Pekan 2</option>
+                                                    <option value={3}>Pekan 3</option>
+                                                    <option value={4}>Pekan 4</option>
+                                                </select>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-500">{group.items.length} sesi</span>
+                                            <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={w.is_active}
+                                                    onChange={(e) => {
+                                                        const val = e.target.checked;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], is_active: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="rounded border-slate-300"
+                                                />
+                                                <span>Aktif</span>
+                                            </label>
                                         </div>
 
-                                        {group.items.map((session) => {
-                                            const displayStatus = session.effective_status ?? session.status;
-                                            return (
-                                                <div
-                                                    key={session.id}
-                                                    className="p-4 bg-white rounded-2xl border border-slate-200/70 hover:border-indigo-200 shadow-sm transition-colors space-y-3"
+                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Tanggal Sesi</label>
+                                                <input
+                                                    type="date"
+                                                    value={w.session_date}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], session_date: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Sesi</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="08:00 - 09:30"
+                                                    value={w.session_time}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], session_time: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Kelas</label>
+                                                <select
+                                                    value={w.kelas}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], kelas: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
                                                 >
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-lg shadow-indigo-900/40">
-                                                                {session.guru?.nama?.substring(0, 2).toUpperCase() ?? '??'}
-                                                            </div>
-                                                            <div>
-                                                                <p className="font-bold text-slate-900 text-sm">{session.guru?.nama ?? '-'}</p>
-                                                                <p className="text-xs text-slate-500">{session.location?.nama_lokasi ?? '-'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <Badge variant={statusVariant[displayStatus] ?? 'default'} size="sm">
-                                                            {statusLabel[displayStatus] ?? displayStatus}
-                                                        </Badge>
-                                                    </div>
+                                                    <option value="">Semua Kelas</option>
+                                                    {KELAS_OPTIONS.map((k) => (
+                                                        <option key={k} value={k}>{k}</option>
+                                                    ))}
+                                                    {programs.map((p) => (
+                                                        <option key={p.id} value={p.nama}>{p.nama}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Bidang</label>
+                                                <select
+                                                    value={w.bidang}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], bidang: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="MTK">MTK</option>
+                                                    <option value="IPA">IPA</option>
+                                                </select>
+                                            </div>
+                                        </div>
 
-                                                    <div className="grid grid-cols-2 gap-3 text-xs">
-                                                        <div>
-                                                            <span className="text-slate-500">Tanggal</span>
-                                                            <p className="font-medium text-slate-700">{formatDate(session.tanggal)}</p>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-slate-500">Jam</span>
-                                                            <p className="font-medium text-slate-700">
-                                                                {formatTime(session.jam_mulai)} - {formatTime(session.jam_selesai)}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        {session.program?.nama ? (
-                                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ${programStyle(session.program.nama).badge}`}>
-                                                                <span className={`w-1.5 h-1.5 rounded-full ${programStyle(session.program.nama).dot}`} />
-                                                                {session.program.nama}
-                                                            </span>
-                                                        ) : (
-                                                            <Badge variant="info">{session.mapel}</Badge>
-                                                        )}
-                                                        <Badge variant="default">Pekan {session.pekan ?? 1}</Badge>
-                                                        <Badge variant="default">{session.jumlah_sesi} sesi</Badge>
-                                                        <Badge variant="default">Grade {session.guru?.grade?.kode_grade ?? '-'}</Badge>
-                                                    </div>
-
-                                                    {session.bahan_ajar && (
-                                                        <p className="text-xs text-slate-500 leading-relaxed">
-                                                            <span className="font-semibold text-slate-600">Bahan ajar:</span> {session.bahan_ajar}
-                                                        </p>
-                                                    )}
-
-                                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleEdit(session)}
-                                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-colors inline-flex items-center gap-1.5"
-                                                        >
-                                                            <Icon icon="tabler:edit" className="text-[14px]" /> Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openDeleteModal(session)}
-                                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors inline-flex items-center gap-1.5"
-                                                        >
-                                                            <Icon icon="tabler:trash" className="text-[14px]" /> Hapus
-                                                        </button>
-                                                    </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                            <div>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <label className="text-[10px] font-medium text-slate-500 uppercase">Bahan Ajar (Materi)</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openUploadPdfModal(w.bidang, String(w.pekan), w.kelas)}
+                                                        className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
+                                                    >
+                                                        + Upload PDF
+                                                    </button>
                                                 </div>
-                                            );
-                                        })}
+                                                <select
+                                                    value={w.material_id}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], material_id: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="">-- Pilih Bahan Ajar --</option>
+                                                    {materialsList.map((m) => (
+                                                        <option key={m.id} value={m.id}>
+                                                            {m.title} ({m.subject || 'Umum'} - {m.pekan || 'Semua Pekan'})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Catatan</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Catatan sesi..."
+                                                    value={w.notes}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], notes: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <Pagination links={sessions.links} from={sessions.from} to={sessions.to} total={sessions.total} />
-                        </>
-                    ) : (
-                        <div className="py-8">
-                            <EmptyState
-                                icon="tabler:calendar-off"
-                                title={hasActiveFilters ? 'Tidak ada sesi yang sesuai' : 'Belum ada data sesi mengajar'}
-                                description={hasActiveFilters
-                                    ? 'Coba ubah atau reset filter yang dipilih.'
-                                    : 'Mulai dengan menambahkan plotingan sesi mengajar baru untuk memulai penjadwalan.'}
-                            >
-                                {hasActiveFilters ? (
-                                    <Button variant="secondary" onClick={resetFilters}>
-                                        <Icon icon="tabler:refresh" className="text-[18px]" /> Reset Semua Filter
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        onClick={() => {
-                                            resetForm();
-                                            setShowForm(true);
-                                        }}
-                                    >
-                                        <Icon icon="tabler:plus" className="text-[18px]" /> Tambah Ploting Sekarang
-                                    </Button>
-                                )}
-                            </EmptyState>
-                        </div>
-                    )}
-                </Card>
-            </div>
-
-            {/* Modal Konfirmasi Hapus */}
-            <Modal show={sessionToDelete !== null} onClose={() => setSessionToDelete(null)}>
-                <div className="p-6 text-center">
-                    <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-100">
-                        <Icon icon="tabler:alert-triangle" className="text-[28px]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">Hapus Sesi Mengajar?</h3>
-                    <p className="text-sm text-slate-500 mb-6">
-                        Apakah Anda yakin ingin menghapus sesi mengajar{' '}
-                        <strong className="text-slate-800">{sessionToDelete?.guru?.nama ?? ''}</strong>{' '}
-                        pada tanggal {sessionToDelete ? formatDate(sessionToDelete.tanggal) : ''}?
-                        Data presensi terkait juga akan ikut terhapus.
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                        <Button variant="secondary" onClick={() => setSessionToDelete(null)}>
-                            Batal
-                        </Button>
-                        <Button variant="danger" processing={deleting} onClick={handleDelete}>
-                            Ya, Hapus
-                        </Button>
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTwoWeeksModal(false)}
+                                    className="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                                >
+                                    {processing ? 'Menyimpan...' : 'Simpan Ploting 2 Pekan'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </Modal>
+            )}
+
+            {/* MODAL 4: Ploting Siklus 4 Pekan */}
+            {showCycleModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowCycleModal(false);
+                    }}
+                >
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800">Ploting Jadwal Mengajar Siklus 4 Pekan</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">Atur jadwal mengajar dan bahan ajar Pekan 1 s/d Pekan 4 sekaligus</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowCycleModal(false)}
+                                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-lg font-bold cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        <form onSubmit={submitCycle} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Guru Pengajar *</label>
+                                    <select
+                                        required
+                                        value={cycleForm.teacher_id}
+                                        onChange={onCycleTeacherChange}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        <option value="">-- Pilih Guru --</option>
+                                        {teachersList.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.nama || t.user?.name || `Guru #${t.id}`} ({t.mapel || t.subject || 'Umum'})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bulan</label>
+                                    <select
+                                        value={cycleForm.month}
+                                        onChange={(e) => setCycleForm({ ...cycleForm, month: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        {MONTH_NAMES.map((m, idx) => (
+                                            <option key={idx + 1} value={idx + 1}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Tahun</label>
+                                    <select
+                                        value={cycleForm.year}
+                                        onChange={(e) => setCycleForm({ ...cycleForm, year: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                    >
+                                        {[2025, 2026, 2027, 2028].map((y) => (
+                                            <option key={y} value={y}>{y}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                {cycleForm.weeks.map((w, idx) => (
+                                    <div key={w.pekan} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-slate-800">Pekan {w.pekan}</span>
+                                            <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={w.is_active}
+                                                    onChange={(e) => {
+                                                        const val = e.target.checked;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], is_active: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="rounded border-slate-300"
+                                                />
+                                                <span>Aktif Mengajar di Pekan {w.pekan}</span>
+                                            </label>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Kelas</label>
+                                                <select
+                                                    value={w.kelas}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], kelas: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="">Semua Kelas</option>
+                                                    {KELAS_OPTIONS.map((k) => (
+                                                        <option key={k} value={k}>{k}</option>
+                                                    ))}
+                                                    {programs.map((p) => (
+                                                        <option key={p.id} value={p.nama}>{p.nama}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Level</label>
+                                                <select
+                                                    value={w.level}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], level: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="">Semua Level</option>
+                                                    <option value="Level 1">Level 1</option>
+                                                    <option value="Level 2">Level 2</option>
+                                                    <option value="Level 3">Level 3</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Bidang</label>
+                                                <select
+                                                    value={w.bidang}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], bidang: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="MTK">MTK</option>
+                                                    <option value="IPA">IPA</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Tanggal Sesi</label>
+                                                <input
+                                                    type="date"
+                                                    value={w.session_date}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], session_date: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Sesi</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="08:00 - 09:30"
+                                                    value={w.session_time}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], session_time: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <label className="text-[10px] font-medium text-slate-500 uppercase">Bahan Ajar (Materi Pekan {w.pekan})</label>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openUploadPdfModal(w.bidang, String(w.pekan), w.kelas)}
+                                                        className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
+                                                    >
+                                                        + Upload PDF
+                                                    </button>
+                                                </div>
+                                                <select
+                                                    value={w.material_id}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], material_id: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="">-- Otomatis / Pilih Bahan Ajar --</option>
+                                                    {materialsList.map((m) => (
+                                                        <option key={m.id} value={m.id}>
+                                                            {m.title} ({m.subject || 'Umum'} - {m.pekan || 'Semua Pekan'})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Catatan Ploting</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Catatan sesi mengajar..."
+                                                    value={w.notes}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], notes: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCycleModal(false)}
+                                    className="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                                >
+                                    {processing ? 'Menyimpan...' : 'Simpan Siklus 4 Pekan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

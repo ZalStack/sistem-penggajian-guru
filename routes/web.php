@@ -79,6 +79,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('session', [TeachingSessionController::class, 'store'])->name('session.store');
         Route::put('session/{session}', [TeachingSessionController::class, 'update'])->name('session.update');
         Route::delete('session/{session}', [TeachingSessionController::class, 'destroy'])->name('session.destroy');
+        Route::post('session/upload-material', [TeachingSessionController::class, 'uploadMaterial'])->name('session.upload-material');
+        Route::post('session/teachers/{guru}/toggle-active', [TeachingSessionController::class, 'toggleTeacherActive'])->name('session.toggle-active');
+
+        // Alias teaching-schedules routes (persis KPM Student Smart)
+        Route::get('teaching-schedules', [TeachingSessionController::class, 'index'])->name('teaching-schedules.index');
+        Route::post('teaching-schedules', [TeachingSessionController::class, 'store'])->name('teaching-schedules.store');
+        Route::put('teaching-schedules/{session}', [TeachingSessionController::class, 'update'])->name('teaching-schedules.update');
+        Route::delete('teaching-schedules/{session}', [TeachingSessionController::class, 'destroy'])->name('teaching-schedules.destroy');
+        Route::post('teaching-schedules/upload-material', [TeachingSessionController::class, 'uploadMaterial'])->name('teaching-schedules.upload-material');
+        Route::post('teaching-schedules/teachers/{guru}/toggle-active', [TeachingSessionController::class, 'toggleTeacherActive'])->name('teaching-schedules.toggle-active');
+        Route::get('administrator/teaching-schedules', [TeachingSessionController::class, 'index']);
+        Route::post('administrator/teaching-schedules', [TeachingSessionController::class, 'store']);
+        Route::delete('administrator/teaching-schedules/{session}', [TeachingSessionController::class, 'destroy']);
+        Route::post('administrator/teaching-schedules/upload-material', [TeachingSessionController::class, 'uploadMaterial']);
+        Route::post('administrator/teaching-schedules/teachers/{guru}/toggle-active', [TeachingSessionController::class, 'toggleTeacherActive']);
 
         Route::get('attendance', [AttendanceController::class, 'adminRecap'])->name('attendance.index');
 
