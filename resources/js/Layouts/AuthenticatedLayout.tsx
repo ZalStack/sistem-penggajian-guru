@@ -43,55 +43,55 @@ function UserAvatar({ src, initials, className }: { src?: string | null; initial
     );
 }
 
-const adminNavGroups = [
+const adminNavGroups: { title: string; items: NavItem[] }[] = [
     {
         title: 'Utama',
         items: [
-            { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard', desc: 'Ringkasan data' },
-            { href: 'guru.index', pattern: 'guru.*', label: 'Data Guru', icon: 'tabler:users', desc: 'Profil & program' },
+            { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard' },
+            { href: 'guru.index', pattern: 'guru.*', label: 'Data Guru', icon: 'tabler:users' },
         ],
     },
     {
         title: 'Operasional',
         items: [
-            { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Tampilan mingguan' },
-            { href: 'session.index', pattern: 'session.*', label: 'Ploting Guru', icon: 'tabler:calendar-event', desc: 'Tugas & status' },
-            { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'tabler:clipboard-check', desc: 'Kehadiran guru' },
-            { href: 'sunnah-guru.index', pattern: 'sunnah-guru.*', label: '7SPS Guru', icon: 'tabler:moon-stars', desc: 'Amalan & approval' },
-            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'tabler:shield-check', desc: 'Izin & sakit' },
+            { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week' },
+            { href: 'session.index', pattern: 'session.*', label: 'Ploting Guru', icon: 'tabler:calendar-event' },
+            { href: 'attendance.index', pattern: 'attendance.*', label: 'Rekap Absensi', icon: 'tabler:clipboard-check' },
+            { href: 'sunnah-guru.index', pattern: 'sunnah-guru.*', label: '7SPS Guru', icon: 'tabler:moon-stars' },
+            { href: 'perizinan.index', pattern: 'perizinan.*', label: 'Perizinan Guru', icon: 'tabler:shield-check' },
         ],
     },
     {
         title: 'Keuangan',
         items: [
-            { href: 'penggajian.index', pattern: 'penggajian.*', label: 'Penggajian', icon: 'tabler:wallet', desc: 'Honor & pembayaran' },
-            { href: 'laporan.index', pattern: 'laporan.*', label: 'Laporan', icon: 'tabler:chart-bar', desc: 'Rekap & ekspor' },
+            { href: 'penggajian.index', pattern: 'penggajian.*', label: 'Penggajian', icon: 'tabler:wallet' },
+            { href: 'laporan.index', pattern: 'laporan.*', label: 'Laporan', icon: 'tabler:chart-bar' },
         ],
     },
     {
         title: 'Pengaturan',
         items: [
-            { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'tabler:award', desc: 'Tarif per sesi' },
-            { href: 'location.index', pattern: 'location.*', label: 'Lokasi Mengajar', icon: 'tabler:map-pin', desc: 'Titik & radius GPS' },
-            { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'tabler:car', desc: 'Biaya transport' },
+            { href: 'grade.index', pattern: 'grade.*', label: 'Grade & Honor', icon: 'tabler:award' },
+            { href: 'location.index', pattern: 'location.*', label: 'Lokasi Mengajar', icon: 'tabler:map-pin' },
+            { href: 'transport.index', pattern: 'transport.*', label: 'Transport', icon: 'tabler:car' },
         ],
     },
     {
         title: 'Sistem',
         items: [
-            { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell', desc: 'Pemberitahuan' },
+            { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell' },
         ],
     },
 ];
 
-const guruNavItems = [
-    { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard', desc: 'Ringkasan hari ini' },
-    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Riwayat Kehadiran', icon: 'tabler:clipboard-check', desc: 'Riwayat presensi dari SI ADIK-KK' },
-    { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week', desc: 'Agenda mingguan' },
-    { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'tabler:moon-stars', desc: 'Checklist & poin' },
-    { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'tabler:shield-check', desc: 'Ajukan izin' },
-    { href: 'my-salary', pattern: 'my-salary.*', label: 'Riwayat Mengajar', icon: 'tabler:cash', desc: 'Riwayat & potensi' },
-    { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell', desc: 'Pemberitahuan' },
+const guruNavItems: NavItem[] = [
+    { href: 'dashboard', pattern: 'dashboard', label: 'Dashboard', icon: 'tabler:layout-dashboard' },
+    { href: 'my-attendance', pattern: 'my-attendance.*', label: 'Riwayat Kehadiran', icon: 'tabler:clipboard-check' },
+    { href: 'jadwal.index', pattern: 'jadwal.*', label: 'Jadwal Mengajar', icon: 'tabler:calendar-week' },
+    { href: 'my-sunnah.index', pattern: 'my-sunnah.*', label: 'Amalan 7SPS', icon: 'tabler:moon-stars' },
+    { href: 'my-perizinan', pattern: 'my-perizinan.*', label: 'Perizinan', icon: 'tabler:shield-check' },
+    { href: 'my-salary', pattern: 'my-salary.*', label: 'Riwayat Mengajar', icon: 'tabler:cash' },
+    { href: 'notifications.index', pattern: 'notifications.*', label: 'Notifikasi', icon: 'tabler:bell' },
 ];
 
 const guruBottomNav = [
@@ -103,8 +103,16 @@ const guruBottomNav = [
 ];
 
 /* Nav item renderer — dark sidebar */
+type NavItem = {
+    href: string;
+    pattern: string;
+    label: string;
+    icon: string;
+    desc?: string;
+};
+
 function NavList({ items, collapsed, onNavigate }: {
-    items: typeof adminNavGroups[number]['items'];
+    items: NavItem[];
     collapsed?: boolean;
     onNavigate?: () => void;
 }) {
@@ -166,7 +174,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
     const isAdmin = user?.role === 'admin';
     const flatAdminItems = adminNavGroups.flatMap(g => g.items);
-    const navItems = isAdmin ? flatAdminItems : guruNavItems;
+    const navItems: NavItem[] = isAdmin ? flatAdminItems : guruNavItems;
     const activeItem = navItems.find((item) => route().current(item.pattern));
     const isProfile = route().current('profile.*');
     const headerTitle = isProfile ? 'Profil Pengguna' : (activeItem?.label || 'Dashboard');
@@ -226,20 +234,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 )}
             </div>
 
-            {/* Bottom: collapse button + user */}
-            <div className="p-3 border-t border-white/5 space-y-2 shrink-0">
-                {!forMobile && (
-                    <button
-                        type="button"
-                        onClick={() => setCollapsed(!isCollapsed)}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-colors text-xs font-medium"
-                        title={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-                        aria-label={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-                    >
-                        <Icon icon={isCollapsed ? 'tabler:layout-sidebar-right-expand' : 'tabler:layout-sidebar-left-collapse'} className="text-[18px]" />
-                        {!isCollapsed && <span>Ciutkan</span>}
-                    </button>
-                )}
+            {/* Bottom: user */}
+            <div className="p-3 border-t border-white/5 shrink-0">
                 <Link
                     href={route('profile.edit')}
                     className={`flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/8 transition-all group ${isCollapsed ? 'justify-center' : ''}`}
@@ -250,15 +246,6 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                         initials={initials}
                         className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/30 text-indigo-300 font-extrabold text-xs ring-1 ring-white/10"
                     />
-                    {!isCollapsed && (
-                        <>
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-xs font-semibold text-white truncate leading-tight">{user.name}</span>
-                                <span className="block text-xs text-slate-400 truncate leading-none mt-0.5">{isAdmin ? 'Administrator' : 'Guru'}</span>
-                            </span>
-                            <Icon icon="tabler:chevron-right" className="text-slate-400 group-hover:text-slate-200 text-sm shrink-0" />
-                        </>
-                    )}
                 </Link>
             </div>
         </>
