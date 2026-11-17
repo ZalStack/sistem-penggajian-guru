@@ -282,9 +282,9 @@ export default function SunnahGuruIndex({
                     const serverPoin = Number(data.data?.total_poin ?? 0);
                     checkMilestones(serverPoin, totalPoin);
                     setTotalPoin(serverPoin);
-                    setStatusApproval(data.data?.status_approval ?? 'pending');
+                    setStatusApproval('approved');
                     reconcileMilestone(serverPoin);
-                    showToast('success', data.message ?? 'Checklist 7SPS berhasil disimpan.');
+                    showToast('success', data.message ?? 'Checklist 7SPS berhasil disimpan dan terekap.');
                 } else {
                     rollback(rollbackKey, rollbackValue);
                     showToast('error', data?.message ?? 'Gagal menyimpan checklist 7SPS.');
@@ -322,7 +322,7 @@ export default function SunnahGuruIndex({
     };
 
     const toggleItem = (key: string) => {
-        if (isApproved || !guru) {
+        if (!guru) {
             return;
         }
 
@@ -337,7 +337,7 @@ export default function SunnahGuruIndex({
 
         fieldsRef.current = nextFields;
         setFields(nextFields);
-        setStatusApproval('pending');
+        setStatusApproval('approved');
 
         const localPoin = hitungPoinLokal(nextFields, poinConfig, sholatWajibKeys);
         setTotalPoin(localPoin);
@@ -421,18 +421,14 @@ export default function SunnahGuruIndex({
                         </div>
 
                         <div className="flex items-center gap-3 sm:flex-col sm:items-end">
-                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold shadow-sm ${statusInfo.className}`}>
-                                <Icon icon={statusInfo.icon} className="text-sm" />
-                                {statusInfo.label}
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100 px-3.5 py-1.5 text-xs font-bold text-emerald-800 shadow-sm">
+                                <Icon icon={totalPoin > 0 ? 'mdi:check-decagram' : 'mdi:progress-clock'} className="text-sm" />
+                                {totalPoin > 0 ? 'Terekap Otomatis' : 'Belum Mengisi'}
                             </span>
                             <div className="text-right text-xs font-medium text-emerald-100/90">
-                                {isPending
-                                    ? 'Checklist menunggu ditinjau admin'
-                                    : isApproved
-                                      ? 'Checklist sudah dikunci admin'
-                                      : isRejected
-                                        ? 'Silakan perbaiki checklist Anda'
-                                        : 'Belum ada checklist hari ini'}
+                                {totalPoin > 0
+                                    ? 'Checklist otomatis terekap ke sistem'
+                                    : 'Silakan pilih amalan 7SPS hari ini / kemarin'}
                             </div>
                         </div>
                     </div>
@@ -533,10 +529,8 @@ export default function SunnahGuruIndex({
                                 </div>
 
                                 <div className="self-start sm:self-center">
-                                    {isApproved ? (
-                                        <StatusPill icon="mdi:check-circle" className="border-emerald-200 bg-emerald-100 text-emerald-800" label="Disetujui" />
-                                    ) : totalPoin > 0 ? (
-                                        <StatusPill icon="mdi:check-bold" className="border-emerald-200 bg-emerald-100 text-emerald-700" label="Sudah Mengisi" />
+                                    {totalPoin > 0 ? (
+                                        <StatusPill icon="mdi:check-circle" className="border-emerald-200 bg-emerald-100 text-emerald-800" label="Terekap Otomatis" />
                                     ) : (
                                         <StatusPill icon="mdi:progress-clock" className="border-amber-200/80 bg-amber-100/90 text-amber-700" label="Belum Mengisi" />
                                     )}
@@ -614,20 +608,12 @@ export default function SunnahGuruIndex({
                                 </div>
                             </div>
 
-                            <ChecklistGrid config={poinConfig} state={fields} disabled={isApproved} onToggle={toggleItem} />
+                            <ChecklistGrid config={poinConfig} state={fields} disabled={false} onToggle={toggleItem} />
 
-                            {isApproved && (
-                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                                    <Icon icon="mdi:lock" className="text-sm" />
-                                    Checklist sudah disetujui admin dan terkunci. Hubungi admin bila perlu perubahan.
-                                </p>
-                            )}
-                            {isRejected && (
-                                <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-rose-200/70 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
-                                    <Icon icon="mdi:alert-circle" className="text-sm" />
-                                    Checklist ditolak admin. Perbaiki lalu simpan kembali untuk diajukan ulang.
-                                </p>
-                            )}
+                            <p className="mt-3 flex items-center gap-1.5 rounded-lg border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                                <Icon icon="mdi:check-circle" className="text-sm" />
+                                Setiap pilihan amalan langsung tersimpan dan otomatis masuk ke rekap poin tanpa perlu menunggu persetujuan admin.
+                            </p>
                         </div>
 
                         {/* Status approval & catatan admin */}

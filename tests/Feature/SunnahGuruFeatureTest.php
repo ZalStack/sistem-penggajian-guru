@@ -123,7 +123,7 @@ class SunnahGuruFeatureTest extends TestCase
             ->assertJsonPath('data.poin_sholat_wajib', 20)
             ->assertJsonPath('data.jumlah_sholat_dikerjakan', 5)
             ->assertJsonPath('data.jumlah_sholat_berjamaah', 1)
-            ->assertJsonPath('data.status_approval', SunnahGuru::STATUS_PENDING);
+            ->assertJsonPath('data.status_approval', SunnahGuru::STATUS_APPROVED);
 
         $record = SunnahGuru::where('guru_id', $this->guru->id)
             ->whereDate('tanggal', today())
@@ -167,7 +167,7 @@ class SunnahGuruFeatureTest extends TestCase
         ])->assertOk();
     }
 
-    public function test_approved_record_is_locked_for_guru(): void
+    public function test_guru_can_update_recorded_sunnah_without_admin_lock(): void
     {
         SunnahGuru::create([
             'guru_id' => $this->guru->id,
@@ -175,18 +175,17 @@ class SunnahGuruFeatureTest extends TestCase
             'sholat_subuh' => true,
             'total_poin' => 1,
             'status_approval' => SunnahGuru::STATUS_APPROVED,
-            'approved_by' => $this->admin->id,
             'approved_at' => now(),
         ]);
 
         $this->actingAs($this->guruUser)->postJson('/my-sunnah', [
             'tanggal' => today()->toDateString(),
             'fields' => ['sholat_tahajud' => true],
-        ])->assertStatus(403);
+        ])->assertOk();
 
         $this->assertDatabaseHas('sunnah_gurus', [
             'guru_id' => $this->guru->id,
-            'total_poin' => 1,
+            'sholat_tahajud' => true,
             'status_approval' => SunnahGuru::STATUS_APPROVED,
         ]);
     }
@@ -347,7 +346,7 @@ class SunnahGuruFeatureTest extends TestCase
         $this->actingAs($this->guruUser)->postJson('/my-sunnah', [
             'tanggal' => today()->toDateString(),
             'fields' => ['sholat_tahajud' => true],
-        ])->assertOk()->assertJsonPath('data.status_approval', SunnahGuru::STATUS_PENDING);
+        ])->assertOk()->assertJsonPath('data.status_approval', SunnahGuru::STATUS_APPROVED);
 
         $this->assertDatabaseHas('notifications', [
             'user_id' => $this->admin->id,

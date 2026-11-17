@@ -449,6 +449,9 @@ class TeachingSessionController extends Controller
                 $bidang = $weekData['bidang'] ?? ($weekData['mapel'] ?? ($validated['bidang'] ?? 'MTK'));
 
                 [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $weekData['jam_mulai'] ?? null, $weekData['jam_selesai'] ?? null);
+                if ($jamMulai && $jamSelesai) {
+                    $sessionTime = "{$jamMulai} - {$jamSelesai}";
+                }
 
                 $level = $weekData['level'] ?? ($validated['level'] ?? null);
                 $program = null;
@@ -535,6 +538,9 @@ class TeachingSessionController extends Controller
         $tanggal = $validated['session_date'] ?? ($validated['tanggal'] ?? today()->toDateString());
         $sessionTime = $validated['session_time'] ?? null;
         [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $validated['jam_mulai'] ?? null, $validated['jam_selesai'] ?? null);
+        if ($jamMulai && $jamSelesai) {
+            $sessionTime = "{$jamMulai} - {$jamSelesai}";
+        }
 
         $materialId = ! empty($validated['material_id']) ? (int) $validated['material_id'] : (! empty($validated['question_id']) ? (int) $validated['question_id'] : null);
 
@@ -635,6 +641,9 @@ class TeachingSessionController extends Controller
         $tanggal = $request->input('session_date', $request->input('tanggal', $session->tanggal?->format('Y-m-d')));
         $sessionTime = $request->input('session_time', $session->session_time);
         [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $request->input('jam_mulai', $session->jam_mulai?->format('H:i')), $request->input('jam_selesai', $session->jam_selesai?->format('H:i')));
+        if ($jamMulai && $jamSelesai) {
+            $sessionTime = "{$jamMulai} - {$jamSelesai}";
+        }
 
         $kelas = $request->input('kelas', $session->kelas);
         $level = $request->input('level', $session->level);

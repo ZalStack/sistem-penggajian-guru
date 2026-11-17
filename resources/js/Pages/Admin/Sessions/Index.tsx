@@ -134,6 +134,8 @@ export default function SessionIndex({
         bidang: 'MTK',
         material_id: '',
         session_date: '',
+        jam_mulai: '',
+        jam_selesai: '',
         session_time: '',
         is_active: true,
         notes: '',
@@ -147,8 +149,8 @@ export default function SessionIndex({
         month: selectedMonth,
         year: selectedYear,
         weeks: [
-            { id: null as number | null, pekan: 1, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', session_time: '', is_active: true, notes: '' },
-            { id: null as number | null, pekan: 2, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', session_time: '', is_active: true, notes: '' },
+            { id: null as number | null, pekan: 1, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', jam_mulai: '', jam_selesai: '', session_time: '', is_active: true, notes: '' },
+            { id: null as number | null, pekan: 2, kelas: '', level: '', bidang: 'MTK', material_id: '', session_date: '', jam_mulai: '', jam_selesai: '', session_time: '', is_active: true, notes: '' },
         ],
     });
 
@@ -165,6 +167,8 @@ export default function SessionIndex({
             bidang: 'MTK',
             material_id: '',
             session_date: '',
+            jam_mulai: '',
+            jam_selesai: '',
             session_time: '',
             is_active: true,
             notes: '',
@@ -323,6 +327,10 @@ export default function SessionIndex({
         const itemLevel = item?.level || (LEVEL_OPTIONS.includes(item?.program?.nama || '') ? (item?.program?.nama || '') : '');
         const itemKelas = KELAS_OPTIONS.includes(item?.kelas || '') ? item?.kelas : (LEVEL_OPTIONS.includes(item?.kelas || '') ? '' : (item?.kelas || ''));
 
+        const rawMulai = item?.jam_mulai ? String(item.jam_mulai).slice(0, 5) : (item?.session_time?.split('-')[0]?.trim() || '');
+        const rawSelesai = item?.jam_selesai ? String(item.jam_selesai).slice(0, 5) : (item?.session_time?.split('-')[1]?.trim() || '');
+        const sTime = rawMulai && rawSelesai ? `${rawMulai} - ${rawSelesai}` : (item?.session_time || '');
+
         setSingleForm({
             id: item?.id || null,
             teacher_id: String(targetTeacherId),
@@ -332,7 +340,9 @@ export default function SessionIndex({
             bidang: (item?.mapel || item?.bidang || targetTeacher?.mapel || 'MTK') as 'IPA' | 'MTK',
             material_id: item?.material_id ? String(item.material_id) : (item?.material?.id ? String(item.material.id) : ''),
             session_date: item?.tanggal ? String(item.tanggal).slice(0, 10) : (item?.session_date ? String(item.session_date).slice(0, 10) : ''),
-            session_time: item?.session_time || (item?.jam_mulai && item?.jam_selesai ? `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}` : ''),
+            jam_mulai: rawMulai,
+            jam_selesai: rawSelesai,
+            session_time: sTime,
             is_active: item ? Boolean(item.is_active ?? true) : true,
             notes: item?.notes || item?.catatan || '',
             existing_material_title: item?.material?.title || item?.material?.file_name || '',
@@ -357,6 +367,10 @@ export default function SessionIndex({
         setDismissedConflict(false);
         setProcessing(true);
 
+        const computedSessionTime = singleForm.jam_mulai && singleForm.jam_selesai
+            ? `${singleForm.jam_mulai} - ${singleForm.jam_selesai}`
+            : (singleForm.session_time || '');
+
         if (singlePdfFile) {
             const formData = new FormData();
             if (singleForm.id) formData.append('id', String(singleForm.id));
@@ -375,7 +389,9 @@ export default function SessionIndex({
                 formData.append('session_date', singleForm.session_date);
                 formData.append('tanggal', singleForm.session_date);
             }
-            if (singleForm.session_time) formData.append('session_time', singleForm.session_time);
+            if (singleForm.jam_mulai) formData.append('jam_mulai', singleForm.jam_mulai);
+            if (singleForm.jam_selesai) formData.append('jam_selesai', singleForm.jam_selesai);
+            if (computedSessionTime) formData.append('session_time', computedSessionTime);
             formData.append('is_active', singleForm.is_active ? '1' : '0');
             if (singleForm.notes) {
                 formData.append('notes', singleForm.notes);
@@ -412,7 +428,9 @@ export default function SessionIndex({
             question_id: singleForm.material_id || null,
             session_date: singleForm.session_date || null,
             tanggal: singleForm.session_date || null,
-            session_time: singleForm.session_time || null,
+            jam_mulai: singleForm.jam_mulai || null,
+            jam_selesai: singleForm.jam_selesai || null,
+            session_time: computedSessionTime || null,
             is_active: singleForm.is_active,
             notes: singleForm.notes || null,
             catatan: singleForm.notes || null,
@@ -446,6 +464,9 @@ export default function SessionIndex({
             year: selectedYear,
             weeks: [1, 2].map((p) => {
                 const existing = getSchedulesFor(Number(tId), p)[0];
+                const jMulai = existing?.jam_mulai ? String(existing.jam_mulai).slice(0, 5) : (existing?.session_time?.split('-')[0]?.trim() || '');
+                const jSelesai = existing?.jam_selesai ? String(existing.jam_selesai).slice(0, 5) : (existing?.session_time?.split('-')[1]?.trim() || '');
+                const sTime = jMulai && jSelesai ? `${jMulai} - ${jSelesai}` : (existing?.session_time || '');
                 return {
                     id: existing?.id || null,
                     pekan: p,
@@ -454,7 +475,9 @@ export default function SessionIndex({
                     bidang: (existing?.mapel || existing?.bidang || defaultBidang) as string,
                     material_id: existing?.material_id ? String(existing.material_id) : (existing?.material?.id ? String(existing.material.id) : ''),
                     session_date: existing?.tanggal ? String(existing.tanggal).slice(0, 10) : (existing?.session_date ? String(existing.session_date).slice(0, 10) : ''),
-                    session_time: existing?.session_time || (existing?.jam_mulai && existing?.jam_selesai ? `${String(existing.jam_mulai).slice(0, 5)} - ${String(existing.jam_selesai).slice(0, 5)}` : ''),
+                    jam_mulai: jMulai,
+                    jam_selesai: jSelesai,
+                    session_time: sTime,
                     is_active: existing ? Boolean(existing.is_active ?? true) : true,
                     notes: existing?.notes || existing?.catatan || '',
                 };
@@ -499,6 +522,9 @@ export default function SessionIndex({
 
         return [1, 2, 3, 4].map((p) => {
             const existing = getSchedulesFor(Number(teacherId), p)[0];
+            const jMulai = existing?.jam_mulai ? String(existing.jam_mulai).slice(0, 5) : (existing?.session_time?.split('-')[0]?.trim() || '');
+            const jSelesai = existing?.jam_selesai ? String(existing.jam_selesai).slice(0, 5) : (existing?.session_time?.split('-')[1]?.trim() || '');
+            const sTime = jMulai && jSelesai ? `${jMulai} - ${jSelesai}` : (existing?.session_time || '');
             return {
                 id: existing?.id || null,
                 pekan: p,
@@ -507,7 +533,9 @@ export default function SessionIndex({
                 bidang: (existing?.mapel || existing?.bidang || defaultBidang) as string,
                 material_id: existing?.material_id ? String(existing.material_id) : (existing?.material?.id ? String(existing.material.id) : ''),
                 session_date: existing?.tanggal ? String(existing.tanggal).slice(0, 10) : (existing?.session_date ? String(existing.session_date).slice(0, 10) : ''),
-                session_time: existing?.session_time || (existing?.jam_mulai && existing?.jam_selesai ? `${String(existing.jam_mulai).slice(0, 5)} - ${String(existing.jam_selesai).slice(0, 5)}` : ''),
+                jam_mulai: jMulai,
+                jam_selesai: jSelesai,
+                session_time: sTime,
                 is_active: existing ? Boolean(existing.is_active ?? true) : true,
                 notes: existing?.notes || existing?.catatan || '',
             };
@@ -1245,7 +1273,7 @@ export default function SessionIndex({
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div>
                                     <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bidang / Mapel</label>
                                     <select
@@ -1267,12 +1295,34 @@ export default function SessionIndex({
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Jam Sesi</label>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Jam Mulai</label>
                                     <input
-                                        type="text"
-                                        value={singleForm.session_time}
-                                        onChange={(e) => setSingleForm({ ...singleForm, session_time: e.target.value })}
-                                        placeholder="08:00 - 09:30"
+                                        type="time"
+                                        value={singleForm.jam_mulai}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setSingleForm(prev => ({
+                                                ...prev,
+                                                jam_mulai: val,
+                                                session_time: val && prev.jam_selesai ? `${val} - ${prev.jam_selesai}` : (val || prev.session_time),
+                                            }));
+                                        }}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Jam Selesai</label>
+                                    <input
+                                        type="time"
+                                        value={singleForm.jam_selesai}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setSingleForm(prev => ({
+                                                ...prev,
+                                                jam_selesai: val,
+                                                session_time: prev.jam_mulai && val ? `${prev.jam_mulai} - ${val}` : (val || prev.session_time),
+                                            }));
+                                        }}
                                         className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     />
                                 </div>
@@ -1520,7 +1570,7 @@ export default function SessionIndex({
                                             </label>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
                                             <div>
                                                 <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Tanggal Sesi</label>
                                                 <input
@@ -1538,16 +1588,41 @@ export default function SessionIndex({
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Sesi</label>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Mulai</label>
                                                 <input
-                                                    type="text"
-                                                    placeholder="08:00 - 09:30"
-                                                    value={w.session_time}
+                                                    type="time"
+                                                    value={w.jam_mulai}
                                                     onChange={(e) => {
                                                         const val = e.target.value;
                                                         setTwoWeeksForm((prev) => {
                                                             const copy = [...prev.weeks];
-                                                            copy[idx] = { ...copy[idx], session_time: val };
+                                                            const jSelesai = copy[idx].jam_selesai;
+                                                            copy[idx] = {
+                                                                ...copy[idx],
+                                                                jam_mulai: val,
+                                                                session_time: val && jSelesai ? `${val} - ${jSelesai}` : (val || copy[idx].session_time),
+                                                            };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Selesai</label>
+                                                <input
+                                                    type="time"
+                                                    value={w.jam_selesai}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            const jMulai = copy[idx].jam_mulai;
+                                                            copy[idx] = {
+                                                                ...copy[idx],
+                                                                jam_selesai: val,
+                                                                session_time: jMulai && val ? `${jMulai} - ${val}` : (val || copy[idx].session_time),
+                                                            };
                                                             return { ...prev, weeks: copy };
                                                         });
                                                     }}
@@ -1770,7 +1845,7 @@ export default function SessionIndex({
                                             </label>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
                                             <div>
                                                 <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Kelas</label>
                                                 <select
@@ -1846,16 +1921,41 @@ export default function SessionIndex({
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Sesi</label>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Mulai</label>
                                                 <input
-                                                    type="text"
-                                                    placeholder="08:00 - 09:30"
-                                                    value={w.session_time}
+                                                    type="time"
+                                                    value={w.jam_mulai}
                                                     onChange={(e) => {
                                                         const val = e.target.value;
                                                         setCycleForm((prev) => {
                                                             const copy = [...prev.weeks];
-                                                            copy[idx] = { ...copy[idx], session_time: val };
+                                                            const jSelesai = copy[idx].jam_selesai;
+                                                            copy[idx] = {
+                                                                ...copy[idx],
+                                                                jam_mulai: val,
+                                                                session_time: val && jSelesai ? `${val} - ${jSelesai}` : (val || copy[idx].session_time),
+                                                            };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Jam Selesai</label>
+                                                <input
+                                                    type="time"
+                                                    value={w.jam_selesai}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setCycleForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            const jMulai = copy[idx].jam_mulai;
+                                                            copy[idx] = {
+                                                                ...copy[idx],
+                                                                jam_selesai: val,
+                                                                session_time: jMulai && val ? `${jMulai} - ${val}` : (val || copy[idx].session_time),
+                                                            };
                                                             return { ...prev, weeks: copy };
                                                         });
                                                     }}

@@ -175,13 +175,6 @@ class SunnahGuruController extends Controller
         $isNew = ! $record->exists;
         $wasRejected = $record->exists && $record->status_approval === SunnahGuru::STATUS_REJECTED;
 
-        if ($record->exists && $record->isApproved()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Checklist tanggal ini sudah disetujui admin dan tidak dapat diubah lagi.',
-            ], 403);
-        }
-
         $config = SunnahGuru::getPoinConfig();
         $validFields = array_merge(array_keys($config), SunnahGuru::getJamaahFields());
 
@@ -201,9 +194,9 @@ class SunnahGuruController extends Controller
         }
 
         $record->total_poin = SunnahGuru::calculateTotalPoin($currentData);
-        $record->status_approval = SunnahGuru::STATUS_PENDING;
+        $record->status_approval = SunnahGuru::STATUS_APPROVED;
         $record->approved_by = null;
-        $record->approved_at = null;
+        $record->approved_at = now();
         $record->save();
 
         if ($isNew || $wasRejected) {
@@ -212,7 +205,7 @@ class SunnahGuruController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Checklist 7SPS berhasil disimpan.',
+            'message' => 'Checklist 7SPS berhasil disimpan dan langsung terekap.',
             'data' => [
                 'total_poin' => $record->total_poin,
                 'poin_sholat_wajib' => $record->poin_sholat_wajib,
@@ -485,7 +478,7 @@ class SunnahGuruController extends Controller
             $prefix,
             ($guru->nama ?? 'Seorang guru').' mengisi 7SPS tanggal '
                 .Tanggal::format($record->tanggal, 'd F Y')
-                .' dengan '.$record->total_poin.' poin. Menunggu approval.',
+                .' dengan '.$record->total_poin.' poin (terekap otomatis).',
             'info',
             'sunnah'
         );
