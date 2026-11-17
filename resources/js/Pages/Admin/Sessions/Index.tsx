@@ -831,15 +831,16 @@ export default function SessionIndex({
                                         {[1, 2, 3, 4].map((p) => (
                                             <th
                                                 key={p}
-                                                className={`py-3.5 px-3.5 font-semibold min-w-[230px] ${
-                                                    p === currentPekan ? 'bg-sky-50/70 text-slate-900 border-x border-sky-100' : ''
+                                                className={`py-3 px-3 font-bold text-center transition-colors w-[230px] min-w-[230px] max-w-[230px] ${
+                                                    p === currentPekan ? 'bg-blue-100/90 text-blue-900 font-black border-x-2 border-blue-300' : ''
                                                 }`}
                                             >
-                                                <div className="flex items-center justify-between">
+                                                <div className="inline-flex items-center justify-center gap-1.5">
                                                     <span>Pekan {p}</span>
                                                     {p === currentPekan && (
-                                                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 font-bold uppercase tracking-wider">
-                                                            Berjalan
+                                                        <span className="relative flex h-2 w-2" title="Pekan Berjalan Aktif">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                                                         </span>
                                                     )}
                                                 </div>
@@ -889,85 +890,93 @@ export default function SessionIndex({
                                                     </select>
                                                 </td>
 
-                                                {/* Kolom Pekan 1 s/d 4: Menampilkan Kartu Sesi */}
+                                                {/* Kolom Pekan 1 s/d 4: Menampilkan Kartu Sesi (Lebar Paten & Stabilo Pekan Berjalan) */}
                                                 {[1, 2, 3, 4].map((p) => {
                                                     const sessionsForWeek = getSchedulesFor(t.id, p);
                                                     return (
                                                         <td
                                                             key={p}
-                                                            className={`py-3 px-3 ${
-                                                                p === currentPekan ? 'bg-sky-50/30 border-x border-sky-100/50' : ''
+                                                            className={`py-2 px-2.5 transition-colors w-[230px] min-w-[230px] max-w-[230px] ${
+                                                                p === currentPekan ? 'bg-blue-50/90 border-x-2 border-blue-200/90' : ''
                                                             }`}
                                                         >
-                                                            <div className="space-y-2">
+                                                            <div className="space-y-1.5">
                                                                 {sessionsForWeek.map((item, sIdx) => (
                                                                     <div
                                                                         key={item.id}
-                                                                        className="p-2.5 rounded-xl border border-slate-200 bg-white space-y-1.5 shadow-2xs hover:border-teal-500/60 transition-all"
+                                                                        className={`p-2 rounded-xl border space-y-1 shadow-2xs transition-all ${
+                                                                            p === currentPekan
+                                                                                ? 'border-blue-200 bg-white ring-1 ring-blue-100/80 shadow-2xs hover:border-blue-400'
+                                                                                : 'border-slate-200 bg-white hover:border-teal-500/60'
+                                                                        }`}
                                                                     >
                                                                         <div className="flex items-center justify-between gap-1">
-                                                                            <div className="flex items-center gap-1.5">
-                                                                                <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-blue-100 text-blue-700 border border-blue-200">
+                                                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                                                <span
+                                                                                    className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold shrink-0 ${
+                                                                                        p === currentPekan
+                                                                                            ? 'bg-blue-100 text-blue-700'
+                                                                                            : 'bg-teal-50 text-teal-700 border border-teal-200/60'
+                                                                                    }`}
+                                                                                >
                                                                                     Sesi {sIdx + 1}
                                                                                 </span>
-                                                                                <span className="text-[11px] font-bold text-slate-800">
+                                                                                <span className="text-[10px] font-bold text-slate-800 truncate" title={item.kelas || item.program?.nama}>
                                                                                     {item.kelas || item.program?.nama || 'Semua Kelas'}
                                                                                 </span>
                                                                             </div>
-                                                                            <div className="flex items-center gap-1">
+                                                                            <div className="flex items-center gap-1 shrink-0">
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => openSingleModal(t, p, item)}
-                                                                                    className="text-[10px] text-blue-600 hover:underline cursor-pointer font-medium"
+                                                                                    className="text-[9px] text-blue-600 hover:underline cursor-pointer font-medium"
                                                                                 >
                                                                                     Ubah
                                                                                 </button>
-                                                                                <span className="text-slate-300">|</span>
+                                                                                <span className="text-slate-300 text-[9px]">|</span>
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => deletePlot(item)}
-                                                                                    className="text-[10px] text-red-500 hover:underline cursor-pointer font-medium"
+                                                                                    className="text-[9px] text-red-500 hover:underline cursor-pointer font-medium"
                                                                                 >
                                                                                     Hapus
                                                                                 </button>
                                                                             </div>
                                                                         </div>
 
-                                                                        <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                                                                        <div className="text-[9px] text-slate-500 flex items-center justify-between">
                                                                             <span>
                                                                                 Mapel: <strong className="text-slate-700">{item.mapel || item.bidang || t.mapel || '-'}</strong>
                                                                             </span>
-                                                                            {item.level && <span className="text-slate-400">{item.level}</span>}
+                                                                            {(item.session_time || (item.jam_mulai && item.jam_selesai)) && (
+                                                                                <span className="font-bold text-slate-700 bg-slate-100 px-1 py-0.5 rounded text-[9px]">
+                                                                                    ⏰ {item.session_time || `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}`}
+                                                                                </span>
+                                                                            )}
                                                                         </div>
+
+                                                                        {(item.tanggal || item.session_date) && (
+                                                                            <div className="text-[9px] text-slate-500 flex items-center gap-1">
+                                                                                <span>📅 {formatDate(item.tanggal || item.session_date)}</span>
+                                                                            </div>
+                                                                        )}
 
                                                                         {/* Bahan Ajar / Materi PDF */}
                                                                         <div className="pt-0.5">
                                                                             {(item.material || item.question) ? (
                                                                                 <p
-                                                                                    className="text-[10px] text-slate-700 truncate font-medium flex items-center gap-1"
+                                                                                    className="text-[9px] text-slate-700 truncate font-medium flex items-center gap-1"
                                                                                     title={(item.material || item.question)?.title}
                                                                                 >
                                                                                     <span className="text-rose-600 font-bold shrink-0">PDF:</span>
                                                                                     <span className="truncate">{(item.material || item.question)?.title}</span>
                                                                                 </p>
                                                                             ) : item.bahan_ajar ? (
-                                                                                <p className="text-[10px] text-slate-600 truncate">
+                                                                                <p className="text-[9px] text-slate-600 truncate">
                                                                                     <span className="text-slate-400">Materi:</span> {item.bahan_ajar}
                                                                                 </p>
                                                                             ) : (
-                                                                                <p className="text-[10px] text-slate-400 italic">Belum ada bahan ajar</p>
-                                                                            )}
-                                                                        </div>
-
-                                                                        {/* Tanggal & Jam Sesi */}
-                                                                        <div className="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-100">
-                                                                            {(item.tanggal || item.session_date) && (
-                                                                                <span>📅 {formatDate(item.tanggal || item.session_date)}</span>
-                                                                            )}
-                                                                            {(item.session_time || (item.jam_mulai && item.jam_selesai)) && (
-                                                                                <span className="font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
-                                                                                    ⏰ {item.session_time || `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}`}
-                                                                                </span>
+                                                                                <p className="text-[9px] text-slate-400 italic">Belum ada bahan ajar</p>
                                                                             )}
                                                                         </div>
                                                                     </div>
@@ -977,11 +986,14 @@ export default function SessionIndex({
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => openSingleModal(t, p)}
-                                                                    className="w-full py-1.5 px-2 rounded-lg border border-dashed border-slate-300 text-[10px] font-semibold text-slate-500 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50/30 transition-all cursor-pointer flex items-center justify-center gap-1"
+                                                                    className={`w-full py-1 px-1.5 rounded-lg border border-dashed text-[9px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
+                                                                        p === currentPekan
+                                                                            ? 'border-blue-300 text-blue-700 hover:bg-blue-100/50 hover:border-blue-400 font-bold'
+                                                                            : 'border-slate-300 text-gray-500 hover:border-teal-500 hover:text-teal-600'
+                                                                    }`}
                                                                     title="Tambah sesi baru untuk pekan ini"
                                                                 >
-                                                                    <Icon icon="tabler:plus" className="w-3 h-3" />
-                                                                    <span>+ Tambah Sesi Pekan {p}</span>
+                                                                    + Sesi Pekan {p}
                                                                 </button>
                                                             </div>
                                                         </td>
