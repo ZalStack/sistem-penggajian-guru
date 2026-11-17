@@ -37,6 +37,7 @@ class TeachingSessionController extends Controller
         }
 
         $kelasFilter = $request->input('kelas');
+        $levelFilter = $request->input('level', $request->input('filter_level'));
         $bidangFilter = $request->input('bidang', $request->input('mapel'));
         $pekanFilter = $request->input('pekan');
         $statusFilter = $request->input('status', $request->input('filter_status'));
@@ -65,6 +66,13 @@ class TeachingSessionController extends Controller
             $query->where(function ($q) use ($kelasFilter) {
                 $q->where('kelas', $kelasFilter)
                     ->orWhereHas('program', fn ($pq) => $pq->where('nama', $kelasFilter));
+            });
+        }
+
+        if (! empty($levelFilter)) {
+            $query->where(function ($q) use ($levelFilter) {
+                $q->where('level', $levelFilter)
+                    ->orWhereHas('program', fn ($pq) => $pq->where('nama', $levelFilter));
             });
         }
 
@@ -147,6 +155,7 @@ class TeachingSessionController extends Controller
                 'month' => $month,
                 'year' => $year,
                 'kelas' => $kelasFilter,
+                'level' => $levelFilter,
                 'bidang' => $bidangFilter,
                 'pekan' => $pekanFilter,
                 'status' => $statusFilter,
@@ -441,7 +450,14 @@ class TeachingSessionController extends Controller
 
                 [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $weekData['jam_mulai'] ?? null, $weekData['jam_selesai'] ?? null);
 
-                $program = Program::where('nama', $kelas)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $kelas)))->first();
+                $level = $weekData['level'] ?? ($validated['level'] ?? null);
+                $program = null;
+                if ($level) {
+                    $program = Program::where('nama', $level)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $level)))->first();
+                }
+                if (! $program && $kelas) {
+                    $program = Program::where('nama', $kelas)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $kelas)))->first();
+                }
                 $programId = $program?->id ?? $weekData['program_id'] ?? Program::first()?->id;
 
                 $dataPayload = [
@@ -450,7 +466,7 @@ class TeachingSessionController extends Controller
                     'transport_id' => $weekData['transport_id'] ?? $defaultTransId,
                     'program_id' => $programId,
                     'kelas' => $kelas,
-                    'level' => $weekData['level'] ?? ($validated['level'] ?? null),
+                    'level' => $level,
                     'mapel' => in_array($bidang, ['IPA', 'MTK']) ? $bidang : 'MTK',
                     'tanggal' => $sessionDate,
                     'pekan' => $pekan,
@@ -545,7 +561,12 @@ class TeachingSessionController extends Controller
         }
 
         $kelas = $validated['kelas'] ?? null;
+        $level = $validated['level'] ?? null;
         $programId = $validated['program_id'] ?? null;
+        if (! $programId && $level) {
+            $prog = Program::where('nama', $level)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $level)))->first();
+            $programId = $prog?->id;
+        }
         if (! $programId && $kelas) {
             $prog = Program::where('nama', $kelas)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $kelas)))->first();
             $programId = $prog?->id;
@@ -616,7 +637,14 @@ class TeachingSessionController extends Controller
         [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $request->input('jam_mulai', $session->jam_mulai?->format('H:i')), $request->input('jam_selesai', $session->jam_selesai?->format('H:i')));
 
         $kelas = $request->input('kelas', $session->kelas);
+        $level = $request->input('level', $session->level);
         $programId = $request->input('program_id', $session->program_id);
+        if (! $request->input('program_id') && $level) {
+            $prog = Program::where('nama', $level)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $level)))->first();
+            if ($prog) {
+                $programId = $prog->id;
+            }
+        }
 
         $conflict = $this->checkScheduleConflict(
             (int) $guruId,

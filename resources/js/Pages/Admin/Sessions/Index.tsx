@@ -21,6 +21,7 @@ interface SessionIndexProps {
         month?: number;
         year?: number;
         kelas?: string;
+        level?: string;
         bidang?: string;
         pekan?: string | number;
         status?: string;
@@ -36,6 +37,13 @@ interface SessionIndexProps {
 const KELAS_OPTIONS = [
     'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
     'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
+];
+
+const LEVEL_OPTIONS = [
+    'Kelas Khusus',
+    'Reguler Bogor',
+    'Reguler Lainnya',
+    'Kelas Online',
 ];
 
 const MONTH_NAMES = [
@@ -67,6 +75,7 @@ export default function SessionIndex({
     // Filter states
     const [teacherSearch, setTeacherSearch] = useState<string>(filters?.search || '');
     const [filterKelas, setFilterKelas] = useState<string>(filters?.kelas || '');
+    const [filterLevel, setFilterLevel] = useState<string>(filters?.level || '');
     const [filterBidang, setFilterBidang] = useState<string>(filters?.bidang || '');
     const [filterPekan, setFilterPekan] = useState<string>(filters?.pekan ? String(filters.pekan) : '');
     const [filterStatus, setFilterStatus] = useState<string>(filters?.status || '');
@@ -109,26 +118,11 @@ export default function SessionIndex({
     const [showSingleModal, setShowSingleModal] = useState(false);
     const [showTwoWeeksModal, setShowTwoWeeksModal] = useState(false);
     const [showCycleModal, setShowCycleModal] = useState(false);
-    const [showUploadPdfModal, setShowUploadPdfModal] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     // Direct PDF upload in single modal
-    const [showDirectPdfInput, setShowDirectPdfInput] = useState(false);
-    const [singleDirectPdfFile, setSingleDirectPdfFile] = useState<File | null>(null);
-    const [singleDirectPdfTitle, setSingleDirectPdfTitle] = useState('');
-
-    // Standalone PDF upload form state
-    const [uploadPdfProcessing, setUploadPdfProcessing] = useState(false);
-    const [uploadPdfFileName, setUploadPdfFileName] = useState('');
-    const [uploadPdfForm, setUploadPdfForm] = useState({
-        title: '',
-        file: null as File | null,
-        subject: 'MTK',
-        pekan: '',
-        kelas: '',
-        level: '',
-        description: '',
-    });
+    const [singlePdfFile, setSinglePdfFile] = useState<File | null>(null);
+    const [singlePdfTitle, setSinglePdfTitle] = useState('');
 
     // Form 1: Single Session Modal state
     const [singleForm, setSingleForm] = useState({
@@ -143,6 +137,8 @@ export default function SessionIndex({
         session_time: '',
         is_active: true,
         notes: '',
+        existing_material_title: '',
+        existing_material_file: '',
     });
 
     // Form 2: 2 Weeks Cycle Modal state
@@ -177,8 +173,8 @@ export default function SessionIndex({
 
     // Check if any filter is active
     const hasActiveFilter = useMemo(() => {
-        return Boolean(teacherSearch || filterKelas || filterBidang || filterPekan || filterStatus);
-    }, [teacherSearch, filterKelas, filterBidang, filterPekan, filterStatus]);
+        return Boolean(teacherSearch || filterKelas || filterLevel || filterBidang || filterPekan || filterStatus);
+    }, [teacherSearch, filterKelas, filterLevel, filterBidang, filterPekan, filterStatus]);
 
     const isTeacherActive = (t: Guru) => {
         return t.is_active_this_week !== false;
@@ -218,9 +214,15 @@ export default function SessionIndex({
 
             if (filterKelas) {
                 const teacherSchedules = schedulesList.filter((s) => Number(s.guru_id ?? s.teacher_id) === Number(t.id));
-                const hasClassInSchedule = teacherSchedules.some((s) => s.kelas === filterKelas || s.program?.nama === filterKelas);
-                const hasClassInTeacher = (t.program_names || []).includes(filterKelas) || (t.programs || []).some(p => p.nama === filterKelas);
-                if (!hasClassInSchedule && !hasClassInTeacher) return false;
+                const hasClassInSchedule = teacherSchedules.some((s) => s.kelas === filterKelas);
+                if (!hasClassInSchedule) return false;
+            }
+
+            if (filterLevel) {
+                const teacherSchedules = schedulesList.filter((s) => Number(s.guru_id ?? s.teacher_id) === Number(t.id));
+                const hasLevelInSchedule = teacherSchedules.some((s) => s.level === filterLevel || s.program?.nama === filterLevel);
+                const hasLevelInTeacher = (t.program_names || []).includes(filterLevel) || (t.programs || []).some(p => p.nama === filterLevel);
+                if (!hasLevelInSchedule && !hasLevelInTeacher) return false;
             }
 
             if (filterPekan) {
@@ -231,7 +233,7 @@ export default function SessionIndex({
 
             return true;
         });
-    }, [teachersList, schedulesList, teacherSearch, filterStatus, filterBidang, filterKelas, filterPekan]);
+    }, [teachersList, schedulesList, teacherSearch, filterStatus, filterBidang, filterKelas, filterLevel, filterPekan]);
 
     // Filtered schedules for descending list view
     const filteredSchedules = useMemo(() => {
@@ -241,7 +243,8 @@ export default function SessionIndex({
                 const tName = (s.guru?.nama || s.guru?.user?.name || s.teacher?.nama || '').toLowerCase();
                 if (!tName.includes(kw)) return false;
             }
-            if (filterKelas && s.kelas !== filterKelas && s.program?.nama !== filterKelas) return false;
+            if (filterKelas && s.kelas !== filterKelas) return false;
+            if (filterLevel && s.level !== filterLevel && s.program?.nama !== filterLevel) return false;
             if (filterBidang && (s.mapel || s.bidang) !== filterBidang) return false;
             if (filterPekan && Number(s.pekan) !== Number(filterPekan)) return false;
             if (filterStatus && s.guru) {
@@ -251,12 +254,13 @@ export default function SessionIndex({
             }
             return true;
         });
-    }, [schedulesList, teacherSearch, filterKelas, filterBidang, filterPekan, filterStatus]);
+    }, [schedulesList, teacherSearch, filterKelas, filterLevel, filterBidang, filterPekan, filterStatus]);
 
     const getSchedulesFor = (teacherId: number, pekan: number) => {
         return schedulesList.filter((s) => {
             if (Number(s.guru_id ?? s.teacher_id) !== Number(teacherId) || Number(s.pekan) !== Number(pekan)) return false;
-            if (filterKelas && s.kelas !== filterKelas && s.program?.nama !== filterKelas) return false;
+            if (filterKelas && s.kelas !== filterKelas) return false;
+            if (filterLevel && s.level !== filterLevel && s.program?.nama !== filterLevel) return false;
             if (filterBidang && (s.mapel || s.bidang) !== filterBidang) return false;
             return true;
         });
@@ -267,6 +271,7 @@ export default function SessionIndex({
             month: selectedMonth,
             year: selectedYear,
             kelas: filterKelas || undefined,
+            level: filterLevel || undefined,
             bidang: filterBidang || undefined,
             pekan: filterPekan || undefined,
             status: filterStatus || undefined,
@@ -277,6 +282,7 @@ export default function SessionIndex({
     const resetFilter = () => {
         setTeacherSearch('');
         setFilterKelas('');
+        setFilterLevel('');
         setFilterBidang('');
         setFilterPekan('');
         setFilterStatus('');
@@ -308,43 +314,39 @@ export default function SessionIndex({
     // Open Single Modal
     const openSingleModal = (teacher: Guru | null = null, pekan: number | null = null, item: TeachingSession | null = null) => {
         setDismissedConflict(false);
-        setShowDirectPdfInput(false);
-        setSingleDirectPdfFile(null);
-        setSingleDirectPdfTitle('');
+        setSinglePdfFile(null);
+        setSinglePdfTitle('');
 
         const targetTeacherId = item?.guru_id || item?.teacher_id || teacher?.id || (teachersList[0]?.id || '');
         const targetTeacher = teachersList.find(t => t.id === Number(targetTeacherId));
+
+        const itemLevel = item?.level || (LEVEL_OPTIONS.includes(item?.program?.nama || '') ? (item?.program?.nama || '') : '');
+        const itemKelas = KELAS_OPTIONS.includes(item?.kelas || '') ? item?.kelas : (LEVEL_OPTIONS.includes(item?.kelas || '') ? '' : (item?.kelas || ''));
 
         setSingleForm({
             id: item?.id || null,
             teacher_id: String(targetTeacherId),
             pekan: item?.pekan || pekan || currentPekan || 1,
-            kelas: item?.kelas || item?.program?.nama || '',
-            level: item?.level || '',
+            kelas: itemKelas || '',
+            level: itemLevel || '',
             bidang: (item?.mapel || item?.bidang || targetTeacher?.mapel || 'MTK') as 'IPA' | 'MTK',
             material_id: item?.material_id ? String(item.material_id) : (item?.material?.id ? String(item.material.id) : ''),
             session_date: item?.tanggal ? String(item.tanggal).slice(0, 10) : (item?.session_date ? String(item.session_date).slice(0, 10) : ''),
             session_time: item?.session_time || (item?.jam_mulai && item?.jam_selesai ? `${String(item.jam_mulai).slice(0, 5)} - ${String(item.jam_selesai).slice(0, 5)}` : ''),
             is_active: item ? Boolean(item.is_active ?? true) : true,
             notes: item?.notes || item?.catatan || '',
+            existing_material_title: item?.material?.title || item?.material?.file_name || '',
+            existing_material_file: item?.material?.file_path || '',
         });
         setShowSingleModal(true);
     };
 
-    const toggleDirectPdfUpload = () => {
-        setShowDirectPdfInput(!showDirectPdfInput);
-        if (showDirectPdfInput) {
-            setSingleDirectPdfFile(null);
-            setSingleDirectPdfTitle('');
-        }
-    };
-
-    const onSingleDirectPdfSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const onSinglePdfChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setSingleDirectPdfFile(file);
-            if (!singleDirectPdfTitle) {
-                setSingleDirectPdfTitle(file.name.replace(/\.[^/.]+$/, ''));
+            setSinglePdfFile(file);
+            if (!singlePdfTitle) {
+                setSinglePdfTitle(file.name.replace(/\.[^/.]+$/, ''));
             }
         }
     };
@@ -355,7 +357,7 @@ export default function SessionIndex({
         setDismissedConflict(false);
         setProcessing(true);
 
-        if (showDirectPdfInput && singleDirectPdfFile) {
+        if (singlePdfFile) {
             const formData = new FormData();
             if (singleForm.id) formData.append('id', String(singleForm.id));
             formData.append('guru_id', singleForm.teacher_id);
@@ -365,17 +367,22 @@ export default function SessionIndex({
             formData.append('pekan', String(singleForm.pekan));
             if (singleForm.kelas) formData.append('kelas', singleForm.kelas);
             if (singleForm.level) formData.append('level', singleForm.level);
-            if (singleForm.bidang) formData.append('bidang', singleForm.bidang);
-            if (singleForm.bidang) formData.append('mapel', singleForm.bidang);
+            if (singleForm.bidang) {
+                formData.append('bidang', singleForm.bidang);
+                formData.append('mapel', singleForm.bidang);
+            }
             if (singleForm.session_date) {
                 formData.append('session_date', singleForm.session_date);
                 formData.append('tanggal', singleForm.session_date);
             }
             if (singleForm.session_time) formData.append('session_time', singleForm.session_time);
             formData.append('is_active', singleForm.is_active ? '1' : '0');
-            if (singleForm.notes) formData.append('notes', singleForm.notes);
-            formData.append('material_pdf', singleDirectPdfFile);
-            formData.append('material_pdf_title', singleDirectPdfTitle || '');
+            if (singleForm.notes) {
+                formData.append('notes', singleForm.notes);
+                formData.append('catatan', singleForm.notes);
+            }
+            formData.append('material_pdf', singlePdfFile);
+            formData.append('material_pdf_title', singlePdfTitle || '');
 
             const endpoint = singleForm.id ? `/session/${singleForm.id}` : '/session';
             if (singleForm.id) {
@@ -547,62 +554,6 @@ export default function SessionIndex({
         });
     };
 
-    // Open Standalone Upload PDF Modal
-    const openUploadPdfModal = (defaultBidang = 'MTK', defaultPekan = '', defaultKelas = '') => {
-        setUploadPdfForm({
-            title: '',
-            file: null,
-            subject: defaultBidang || 'MTK',
-            pekan: defaultPekan ? `Pekan ${defaultPekan}` : '',
-            kelas: defaultKelas || '',
-            level: '',
-            description: '',
-        });
-        setUploadPdfFileName('');
-        setShowUploadPdfModal(true);
-    };
-
-    const onPdfFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setUploadPdfForm((prev) => ({
-                ...prev,
-                file: file,
-                title: prev.title || file.name.replace(/\.[^/.]+$/, ''),
-            }));
-            setUploadPdfFileName(file.name);
-        }
-    };
-
-    const submitUploadPdf = (e: FormEvent) => {
-        e.preventDefault();
-        if (!uploadPdfForm.file || !uploadPdfForm.title) return;
-        setUploadPdfProcessing(true);
-
-        const formData = new FormData();
-        formData.append('title', uploadPdfForm.title);
-        formData.append('file', uploadPdfForm.file);
-        if (uploadPdfForm.subject) formData.append('subject', uploadPdfForm.subject);
-        if (uploadPdfForm.pekan) formData.append('pekan', uploadPdfForm.pekan);
-        if (uploadPdfForm.kelas) formData.append('kelas', uploadPdfForm.kelas);
-        if (uploadPdfForm.description) formData.append('description', uploadPdfForm.description);
-
-        router.post('/session/upload-material', formData, {
-            preserveScroll: true,
-            onSuccess: (pageResp: any) => {
-                setShowUploadPdfModal(false);
-                setUploadPdfProcessing(false);
-                const uploadedId = pageResp.props?.flash?.uploaded_material_id || pageResp.props?.flash?.uploaded_question_id;
-                if (uploadedId && showSingleModal) {
-                    setSingleForm((prev) => ({ ...prev, material_id: String(uploadedId) }));
-                }
-            },
-            onError: () => {
-                setUploadPdfProcessing(false);
-            },
-        });
-    };
-
     return (
         <AuthenticatedLayout>
             <Head title="Ploting Guru (Sesi Mengajar)" />
@@ -705,8 +656,19 @@ export default function SessionIndex({
                                 {KELAS_OPTIONS.map((k) => (
                                     <option key={k} value={k}>{k}</option>
                                 ))}
-                                {programs.map((p) => (
-                                    <option key={p.id} value={p.nama}>{p.nama}</option>
+                            </select>
+                        </div>
+
+                        {/* Filter Level / Program */}
+                        <div className="w-36">
+                            <select
+                                value={filterLevel}
+                                onChange={(e) => setFilterLevel(e.target.value)}
+                                className="w-full px-2.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none transition-all cursor-pointer"
+                            >
+                                <option value="">Semua Level</option>
+                                {LEVEL_OPTIONS.map((lvl) => (
+                                    <option key={lvl} value={lvl}>{lvl}</option>
                                 ))}
                             </select>
                         </div>
@@ -798,17 +760,8 @@ export default function SessionIndex({
 
                         <div className="flex-1"></div>
 
-                        {/* Action Buttons: Upload PDF & Tambah Sesi */}
+                        {/* Action Buttons: Tambah Sesi & Siklus */}
                         <div className="flex flex-wrap items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => openUploadPdfModal()}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl hover:bg-rose-700 transition-all shadow-2xs cursor-pointer"
-                                title="Upload file PDF materi bahan ajar langsung"
-                            >
-                                <Icon icon="tabler:upload" className="w-3.5 h-3.5" />
-                                <span>+ Upload Materi PDF</span>
-                            </button>
 
                             <button
                                 type="button"
@@ -1194,143 +1147,7 @@ export default function SessionIndex({
                 )}
             </div>
 
-            {/* MODAL 1: Upload Materi PDF Langsung */}
-            {showUploadPdfModal && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) setShowUploadPdfModal(false);
-                    }}
-                >
-                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3.5 mb-4">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-xs">
-                                    PDF
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-bold text-slate-800">Upload Materi PDF Langsung</h3>
-                                    <p className="text-xs text-slate-400 mt-0.5">Unggah bahan ajar format PDF langsung ke database</p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowUploadPdfModal(false)}
-                                className="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center text-lg font-bold cursor-pointer"
-                            >
-                                &times;
-                            </button>
-                        </div>
 
-                        <form onSubmit={submitUploadPdf} className="space-y-4">
-                            <div>
-                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Judul Materi Bahan Ajar *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={uploadPdfForm.title}
-                                    onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, title: e.target.value })}
-                                    placeholder="Contoh: Modul Matematika Sesi 1 - Pekan 1"
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Pilih Berkas PDF * (Maks. 10 MB)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    required
-                                    onChange={onPdfFileSelect}
-                                    className="w-full px-3 py-2 rounded-xl border border-dashed border-rose-300 bg-rose-50/40 text-xs text-slate-700 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer outline-none"
-                                />
-                                {uploadPdfFileName && (
-                                    <p className="text-[11px] text-rose-600 font-semibold mt-1">
-                                        ✓ File terpilih: {uploadPdfFileName}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Bidang / Mapel</label>
-                                    <select
-                                        value={uploadPdfForm.subject}
-                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, subject: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
-                                    >
-                                        <option value="MTK">MTK</option>
-                                        <option value="IPA">IPA</option>
-                                        <option value="Umum">Umum</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Pekan</label>
-                                    <select
-                                        value={uploadPdfForm.pekan}
-                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, pekan: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
-                                    >
-                                        <option value="">Semua Pekan</option>
-                                        <option value="Pekan 1">Pekan 1</option>
-                                        <option value="Pekan 2">Pekan 2</option>
-                                        <option value="Pekan 3">Pekan 3</option>
-                                        <option value="Pekan 4">Pekan 4</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Kelas</label>
-                                    <select
-                                        value={uploadPdfForm.kelas}
-                                        onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, kelas: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
-                                    >
-                                        <option value="">Semua Kelas</option>
-                                        {KELAS_OPTIONS.map((k) => (
-                                            <option key={k} value={k}>{k}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Keterangan / Catatan Materi</label>
-                                <textarea
-                                    rows={2}
-                                    value={uploadPdfForm.description}
-                                    onChange={(e) => setUploadPdfForm({ ...uploadPdfForm, description: e.target.value })}
-                                    placeholder="Petunjuk penggunaan bahan ajar untuk guru..."
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowUploadPdfModal(false)}
-                                    className="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={uploadPdfProcessing}
-                                    className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
-                                >
-                                    {uploadPdfProcessing ? (
-                                        <>
-                                            <Icon icon="tabler:loader-2" className="w-3.5 h-3.5 animate-spin" />
-                                            <span>Mengunggah...</span>
-                                        </>
-                                    ) : (
-                                        <span>Unggah PDF Sekarang</span>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* MODAL 2: Tambah / Ubah Sesi Mengajar (Single Session) */}
             {showSingleModal && (
@@ -1405,28 +1222,25 @@ export default function SessionIndex({
                                     <select
                                         value={singleForm.kelas}
                                         onChange={(e) => setSingleForm({ ...singleForm, kelas: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     >
                                         <option value="">Semua Kelas</option>
                                         {KELAS_OPTIONS.map((k) => (
                                             <option key={k} value={k}>{k}</option>
                                         ))}
-                                        {programs.map((p) => (
-                                            <option key={p.id} value={p.nama}>{p.nama}</option>
-                                        ))}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Level</label>
+                                    <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-1">Level *</label>
                                     <select
                                         value={singleForm.level}
                                         onChange={(e) => setSingleForm({ ...singleForm, level: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     >
                                         <option value="">Semua Level</option>
-                                        <option value="Level 1">Level 1</option>
-                                        <option value="Level 2">Level 2</option>
-                                        <option value="Level 3">Level 3</option>
+                                        {LEVEL_OPTIONS.map((lvl) => (
+                                            <option key={lvl} value={lvl}>{lvl}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -1437,7 +1251,7 @@ export default function SessionIndex({
                                     <select
                                         value={singleForm.bidang}
                                         onChange={(e) => setSingleForm({ ...singleForm, bidang: e.target.value as 'IPA' | 'MTK' })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     >
                                         <option value="MTK">MTK</option>
                                         <option value="IPA">IPA</option>
@@ -1449,7 +1263,7 @@ export default function SessionIndex({
                                         type="date"
                                         value={singleForm.session_date}
                                         onChange={(e) => setSingleForm({ ...singleForm, session_date: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     />
                                 </div>
                                 <div>
@@ -1459,64 +1273,83 @@ export default function SessionIndex({
                                         value={singleForm.session_time}
                                         onChange={(e) => setSingleForm({ ...singleForm, session_time: e.target.value })}
                                         placeholder="08:00 - 09:30"
-                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none"
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 outline-none focus:bg-white focus:border-teal-500"
                                     />
                                 </div>
                             </div>
 
-                            {/* Bagian Bahan Ajar (Pilih dari daftar atau Langsung Upload PDF Baru) */}
-                            <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2.5">
+                            {/* Bagian Bahan Ajar: Langsung Upload Materi PDF di Modal Tambah Sesi */}
+                            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">
-                                        Bahan Ajar (Materi Sesi)
+                                    <label className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                                        <Icon icon="tabler:file-type-pdf" className="w-4 h-4 text-rose-600" />
+                                        <span>Bahan Ajar / Materi PDF</span>
                                     </label>
-                                    <button
-                                        type="button"
-                                        onClick={toggleDirectPdfUpload}
-                                        className="text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer flex items-center gap-1"
-                                    >
-                                        <span>{showDirectPdfInput ? '← Pilih dari Daftar Materi' : '+ Langsung Upload PDF Baru'}</span>
-                                    </button>
+                                    <span className="text-[10px] text-slate-400">Format .pdf (Maks. 10 MB)</span>
                                 </div>
 
-                                {!showDirectPdfInput ? (
-                                    <div>
-                                        <select
-                                            value={singleForm.material_id}
-                                            onChange={(e) => setSingleForm({ ...singleForm, material_id: e.target.value })}
-                                            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
-                                        >
-                                            <option value="">-- Pilih Materi Bahan Ajar --</option>
-                                            {materialsList.map((m) => (
-                                                <option key={m.id} value={m.id}>
-                                                    {m.title} ({m.subject || 'Umum'} - {m.pekan || 'Semua Pekan'})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2 bg-white p-3 rounded-xl border border-rose-200">
-                                        <div>
-                                            <label className="block text-[10px] font-medium text-slate-500 uppercase mb-0.5">Judul Materi PDF Baru</label>
-                                            <input
-                                                type="text"
-                                                value={singleDirectPdfTitle}
-                                                onChange={(e) => setSingleDirectPdfTitle(e.target.value)}
-                                                placeholder="Judul materi PDF..."
-                                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 outline-none"
-                                            />
+                                {/* Jika sesi sudah memiliki materi terpasang */}
+                                {singleForm.existing_material_title && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-xs shadow-2xs">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <span className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                                                <Icon icon="tabler:file-check" className="w-4 h-4" />
+                                            </span>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-slate-800 truncate text-xs">
+                                                    {singleForm.existing_material_title}
+                                                </p>
+                                                <p className="text-[10px] text-emerald-600 font-medium">
+                                                    ✓ Materi saat ini terpasang pada sesi ini
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-[10px] font-medium text-slate-500 uppercase mb-0.5">Pilih Berkas PDF</label>
-                                            <input
-                                                type="file"
-                                                accept=".pdf"
-                                                onChange={onSingleDirectPdfSelect}
-                                                className="w-full text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer"
-                                            />
-                                        </div>
+                                        {singleForm.existing_material_file && (
+                                            <a
+                                                href={`/storage/${singleForm.existing_material_file}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[11px] text-teal-600 hover:text-teal-700 font-bold shrink-0 ml-2 hover:underline inline-flex items-center gap-1"
+                                            >
+                                                <Icon icon="tabler:external-link" className="w-3.5 h-3.5" />
+                                                <span>Lihat PDF</span>
+                                            </a>
+                                        )}
                                     </div>
                                 )}
+
+                                {/* File Input */}
+                                <div>
+                                    <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">
+                                        {singleForm.existing_material_title ? 'Ganti File PDF Materi (Opsional)' : 'Unggah File PDF Materi (Opsional)'}
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        onChange={onSinglePdfChange}
+                                        className="w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer border border-dashed border-rose-300 rounded-xl bg-white p-2"
+                                    />
+                                    {singlePdfFile && (
+                                        <p className="text-[11px] text-emerald-600 font-semibold mt-1.5 flex items-center gap-1">
+                                            <Icon icon="tabler:check" className="w-3.5 h-3.5" />
+                                            <span>File terpilih: {singlePdfFile.name} ({(singlePdfFile.size / 1024).toFixed(0)} KB)</span>
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Judul Materi Input */}
+                                <div>
+                                    <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">
+                                        Judul Materi (Bahan Ajar)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={singlePdfTitle}
+                                        onChange={(e) => setSinglePdfTitle(e.target.value)}
+                                        placeholder={singleForm.existing_material_title || "Contoh: Modul Matematika Sesi 1"}
+                                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none focus:border-teal-500"
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -1687,7 +1520,7 @@ export default function SessionIndex({
                                             </label>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
                                             <div>
                                                 <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Tanggal Sesi</label>
                                                 <input
@@ -1739,8 +1572,25 @@ export default function SessionIndex({
                                                     {KELAS_OPTIONS.map((k) => (
                                                         <option key={k} value={k}>{k}</option>
                                                     ))}
-                                                    {programs.map((p) => (
-                                                        <option key={p.id} value={p.nama}>{p.nama}</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Level</label>
+                                                <select
+                                                    value={w.level}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setTwoWeeksForm((prev) => {
+                                                            const copy = [...prev.weeks];
+                                                            copy[idx] = { ...copy[idx], level: val };
+                                                            return { ...prev, weeks: copy };
+                                                        });
+                                                    }}
+                                                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
+                                                >
+                                                    <option value="">Semua Level</option>
+                                                    {LEVEL_OPTIONS.map((lvl) => (
+                                                        <option key={lvl} value={lvl}>{lvl}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -1766,16 +1616,7 @@ export default function SessionIndex({
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                             <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <label className="text-[10px] font-medium text-slate-500 uppercase">Bahan Ajar (Materi)</label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openUploadPdfModal(w.bidang, String(w.pekan), w.kelas)}
-                                                        className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
-                                                    >
-                                                        + Upload PDF
-                                                    </button>
-                                                </div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Bahan Ajar (Materi)</label>
                                                 <select
                                                     value={w.material_id}
                                                     onChange={(e) => {
@@ -1948,9 +1789,6 @@ export default function SessionIndex({
                                                     {KELAS_OPTIONS.map((k) => (
                                                         <option key={k} value={k}>{k}</option>
                                                     ))}
-                                                    {programs.map((p) => (
-                                                        <option key={p.id} value={p.nama}>{p.nama}</option>
-                                                    ))}
                                                 </select>
                                             </div>
                                             <div>
@@ -1968,9 +1806,9 @@ export default function SessionIndex({
                                                     className="w-full px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none"
                                                 >
                                                     <option value="">Semua Level</option>
-                                                    <option value="Level 1">Level 1</option>
-                                                    <option value="Level 2">Level 2</option>
-                                                    <option value="Level 3">Level 3</option>
+                                                    {LEVEL_OPTIONS.map((lvl) => (
+                                                        <option key={lvl} value={lvl}>{lvl}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                             <div>
@@ -2028,16 +1866,7 @@ export default function SessionIndex({
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             <div>
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <label className="text-[10px] font-medium text-slate-500 uppercase">Bahan Ajar (Materi Pekan {w.pekan})</label>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openUploadPdfModal(w.bidang, String(w.pekan), w.kelas)}
-                                                        className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
-                                                    >
-                                                        + Upload PDF
-                                                    </button>
-                                                </div>
+                                                <label className="block text-[10px] font-medium text-slate-500 uppercase mb-1">Bahan Ajar (Materi Pekan {w.pekan})</label>
                                                 <select
                                                     value={w.material_id}
                                                     onChange={(e) => {
