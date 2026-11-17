@@ -12,6 +12,7 @@ use App\Models\Transport;
 use App\Support\Tanggal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
 class TeachingSessionController extends Controller
@@ -45,13 +46,18 @@ class TeachingSessionController extends Controller
         $currentPekan = min(4, (int) ceil(now()->day / 7));
 
         $teachers = Guru::with(['grade', 'programs', 'user'])->orderBy('nama')->get();
-        $materials = Material::latest()->get();
+        $materials = Schema::hasTable('materials') ? Material::latest()->get() : collect();
         $locations = Location::orderBy('nama_lokasi')->get();
         $transports = Transport::orderBy('jenis')->get();
         $programs = Program::orderBy('urutan')->orderBy('nama')->get();
 
         // 2. Query data sesi mengajar
-        $query = TeachingSession::with(['guru.grade', 'guru.programs', 'guru.user', 'location', 'transport', 'program', 'material', 'attendances'])
+        $relations = ['guru.grade', 'guru.programs', 'guru.user', 'location', 'transport', 'program', 'attendances'];
+        if (Schema::hasTable('materials')) {
+            $relations[] = 'material';
+        }
+
+        $query = TeachingSession::with($relations)
             ->whereMonth('tanggal', $month)
             ->whereYear('tanggal', $year);
 
@@ -463,6 +469,7 @@ class TeachingSessionController extends Controller
                     $s = TeachingSession::find($weekId);
                     if ($s) {
                         $s->update($dataPayload);
+
                         continue;
                     }
                 }
@@ -516,7 +523,7 @@ class TeachingSessionController extends Controller
         $materialId = ! empty($validated['material_id']) ? (int) $validated['material_id'] : (! empty($validated['question_id']) ? (int) $validated['question_id'] : null);
 
         // Jika ada unggahan PDF langsung dari form single ploting
-        if ($request->hasFile('material_pdf')) {
+        if ($request->hasFile('material_pdf') && Schema::hasTable('materials')) {
             $pdfFile = $request->file('material_pdf');
             $pdfPath = $pdfFile->store('materials', 'public');
             $pdfTitle = $validated['material_pdf_title'] ?: pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -632,7 +639,7 @@ class TeachingSessionController extends Controller
         $mapel = in_array(strtoupper((string) $bidang), ['IPA', 'MTK']) ? strtoupper((string) $bidang) : $session->mapel;
 
         $materialId = $request->input('material_id', $request->input('question_id', $session->material_id));
-        if ($request->hasFile('material_pdf')) {
+        if ($request->hasFile('material_pdf') && Schema::hasTable('materials')) {
             $pdfFile = $request->file('material_pdf');
             $pdfPath = $pdfFile->store('materials', 'public');
             $pdfTitle = $request->input('material_pdf_title') ?: pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -647,6 +654,7 @@ class TeachingSessionController extends Controller
                 'subject' => $mapel,
                 'pekan' => 'Pekan '.($request->input('pekan', $session->pekan) ?? 1),
                 'kelas' => $kelas,
+                'level' => $level,
                 'status' => 'approved',
             ]);
             $materialId = $newMat->id;
