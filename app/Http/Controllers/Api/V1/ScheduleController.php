@@ -25,12 +25,13 @@ class ScheduleController extends ApiController
             'bulan' => 'nullable|date_format:Y-m',
             'filter_guru' => 'nullable|integer|exists:gurus,id',
             'filter_mapel' => 'nullable|in:IPA,MTK',
+            'filter_program' => 'nullable|string',
         ]);
 
         $bulan = $validated['bulan'] ?? now()->format('Y-m');
         $guru = $user->guru;
 
-        $query = TeachingSession::with(['guru.grade', 'location', 'transport'])
+        $query = TeachingSession::with(['guru.grade', 'location', 'transport', 'program'])
             ->whereMonth('tanggal', (int) substr($bulan, 5, 2))
             ->whereYear('tanggal', (int) substr($bulan, 0, 4));
 
@@ -40,6 +41,14 @@ class ScheduleController extends ApiController
             $query
                 ->when($validated['filter_guru'] ?? null, fn ($q, $g) => $q->where('guru_id', $g))
                 ->when($validated['filter_mapel'] ?? null, fn ($q, $m) => $q->where('mapel', $m));
+        }
+
+        if (! empty($validated['filter_program'])) {
+            $prog = $validated['filter_program'];
+            $query->where(function ($q) use ($prog) {
+                $q->whereHas('program', fn ($pq) => $pq->where('slug', $prog)->orWhere('nama', 'like', "%{$prog}%"))
+                    ->orWhere('kelas', 'like', "%{$prog}%");
+            });
         }
 
         $sessions = $query->orderBy('tanggal')->orderBy('jam_mulai')->get();
@@ -56,8 +65,16 @@ class ScheduleController extends ApiController
                         'id' => $s->id,
                         'jam_mulai' => $s->jam_mulai->format('H:i'),
                         'jam_selesai' => $s->jam_selesai->format('H:i'),
+                        'session_time' => $s->session_time ?: ($s->jam_mulai->format('H:i').' - '.$s->jam_selesai->format('H:i')),
                         'mapel' => $s->mapel,
                         'jumlah_sesi' => $s->jumlah_sesi,
+                        'program' => $s->program?->nama ?? 'Kelas Khusus',
+                        'program_slug' => $s->program?->slug ?? 'kelas-khusus',
+                        'kelas' => $s->kelas,
+                        'level' => $s->level,
+                        'pekan' => (int) $s->pekan,
+                        'bahan_ajar' => $s->bahan_ajar,
+                        'status' => $s->effective_status,
                         'lokasi' => $s->location->nama_lokasi ?? '-',
                         'location' => $s->location ? [
                             'nama_lokasi' => $s->location->nama_lokasi,

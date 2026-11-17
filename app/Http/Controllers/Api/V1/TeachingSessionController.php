@@ -7,6 +7,7 @@ use App\Http\Resources\TeacherResource;
 use App\Http\Resources\TeachingSessionResource;
 use App\Models\Guru;
 use App\Models\Location;
+use App\Models\Program;
 use App\Models\TeachingSession;
 use App\Models\Transport;
 use Illuminate\Http\JsonResponse;
@@ -139,6 +140,96 @@ class TeachingSessionController extends ApiController
         $session->delete();
 
         return $this->deletedResponse('Teaching session deleted successfully.');
+    }
+
+    /**
+     * External Sync: Sync teaching session from SI ADIK-KK (Kelas Khusus).
+     */
+    public function syncFromAdik(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'guru_id' => 'nullable|integer',
+            'guru_email' => 'nullable|string',
+            'guru_nama' => 'nullable|string',
+            'mapel' => 'required|string',
+            'tanggal' => 'required|date',
+            'pekan' => 'nullable|integer',
+            'session_time' => 'nullable|string',
+            'jam_mulai' => 'nullable|string',
+            'jam_selesai' => 'nullable|string',
+            'kelas' => 'nullable|string',
+            'level' => 'nullable|string',
+            'bahan_ajar' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+            'action' => 'nullable|string|in:upsert,delete',
+            'external_id' => 'nullable|integer',
+        ]);
+
+        $guru = null;
+        if (! empty($validated['guru_id'])) {
+            $guru = Guru::find($validated['guru_id']);
+        }
+        if (! $guru && ! empty($validated['guru_email'])) {
+            $guru = Guru::whereHas('user', fn ($uq) => $uq->where('email', $validated['guru_email']))->first();
+        }
+        if (! $guru && ! empty($validated['guru_nama'])) {
+            $guru = Guru::where('nama', 'like', "%{$validated['guru_nama']}%")->first();
+        }
+
+        if (! $guru) {
+            return $this->errorResponse('Guru tidak ditemukan di sistem SiGuru.', 404);
+        }
+
+        $program = Program::where('slug', 'kelas-khusus')->orWhere('nama', 'like', '%khusus%')->first();
+        $programId = $program?->id ?? Program::first()?->id ?? 1;
+
+        $locationId = Location::first()?->id ?? 1;
+        $transportId = Transport::first()?->id ?? 1;
+
+        $jamMulai = '08:00';
+        $jamSelesai = '09:30';
+        if (! empty($validated['session_time']) && str_contains($validated['session_time'], '-')) {
+            [$s, $e] = explode('-', $validated['session_time'], 2);
+            $jamMulai = trim($s);
+            $jamSelesai = trim($e);
+        } elseif (! empty($validated['jam_mulai']) && ! empty($validated['jam_selesai'])) {
+            $jamMulai = $validated['jam_mulai'];
+            $jamSelesai = $validated['jam_selesai'];
+        }
+
+        if (($validated['action'] ?? 'upsert') === 'delete') {
+            TeachingSession::where('guru_id', $guru->id)
+                ->where('tanggal', $validated['tanggal'])
+                ->where('kelas', $validated['kelas'])
+                ->delete();
+
+            return $this->successResponse(['deleted' => true], 'Sesi mengajar berhasil dihapus.');
+        }
+
+        $session = TeachingSession::updateOrCreate(
+            [
+                'guru_id' => $guru->id,
+                'tanggal' => $validated['tanggal'],
+                'kelas' => $validated['kelas'],
+            ],
+            [
+                'program_id' => $programId,
+                'location_id' => $locationId,
+                'transport_id' => $transportId,
+                'mapel' => in_array(strtoupper($validated['mapel']), ['MTK', 'IPA']) ? strtoupper($validated['mapel']) : 'MTK',
+                'pekan' => $validated['pekan'] ?? 1,
+                'level' => $validated['level'] ?? null,
+                'jam_mulai' => $jamMulai,
+                'jam_selesai' => $jamSelesai,
+                'session_time' => "{$jamMulai} - {$jamSelesai}",
+                'jumlah_sesi' => 1,
+                'bahan_ajar' => $validated['bahan_ajar'] ?? null,
+                'is_active' => $validated['is_active'] ?? true,
+                'status' => 'dijadwalkan',
+            ]
+        );
+
+        return $this->successResponse(new TeachingSessionResource($session), 'Sesi mengajar kelas khusus berhasil disinkronkan.');
     }
 
     /**
