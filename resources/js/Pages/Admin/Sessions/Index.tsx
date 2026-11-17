@@ -823,15 +823,15 @@ export default function SessionIndex({
                 {viewMode === 'matrix' ? (
                     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse table-fixed min-w-[760px]">
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500">
-                                        <th className="py-3.5 px-4 font-semibold min-w-[200px]">Guru Pengajar</th>
-                                        <th className="py-3.5 px-3 font-semibold text-center w-36">Status Pekan Ini</th>
+                                        <th className="py-2.5 px-3 font-semibold w-40 min-w-[130px]">Guru Pengajar</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-28">Status Pekan Ini</th>
                                         {[1, 2, 3, 4].map((p) => (
                                             <th
                                                 key={p}
-                                                className={`py-3 px-3 font-bold text-center transition-colors w-[230px] min-w-[230px] max-w-[230px] ${
+                                                className={`py-2.5 px-1.5 font-bold text-center transition-colors w-[19%] ${
                                                     p === currentPekan ? 'bg-blue-100/90 text-blue-900 font-black border-x-2 border-blue-300' : ''
                                                 }`}
                                             >
@@ -846,7 +846,7 @@ export default function SessionIndex({
                                                 </div>
                                             </th>
                                         ))}
-                                        <th className="py-3.5 px-3 font-semibold text-center w-32">Aksi</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-24">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -859,26 +859,26 @@ export default function SessionIndex({
                                     ) : (
                                         filteredTeachers.map((t) => (
                                             <tr key={t.id} className="hover:bg-slate-50/70 align-top transition-colors">
-                                                <td className="py-3.5 px-4">
-                                                    <p className="font-bold text-slate-800 truncate max-w-[190px]">
+                                                <td className="py-2.5 px-3">
+                                                    <p className="font-bold text-slate-800 truncate" title={t.nama || t.user?.name}>
                                                         {t.nama || t.user?.name || `Guru #${t.id}`}
                                                     </p>
-                                                    <p className="text-[11px] text-slate-500 mt-0.5">
+                                                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                                                         Bidang: {t.mapel || t.subject || '-'}{t.bidang_2 ? ` / ${t.bidang_2}` : ''}
                                                     </p>
                                                     {(t.program_names?.length || t.programs?.length) ? (
-                                                        <p className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[190px]">
+                                                        <p className="text-[10px] text-slate-400 mt-0.5 truncate">
                                                             Program: {t.program_names?.join(', ') || t.programs?.map(p => p.nama).join(', ')}
                                                         </p>
                                                     ) : null}
                                                 </td>
 
                                                 {/* Status Pekan Ini: Dropdown Selector Aktif / Nonaktif */}
-                                                <td className="py-3.5 px-3 text-center">
+                                                <td className="py-2.5 px-2 text-center w-28">
                                                     <select
                                                         value={isTeacherActive(t) ? 'aktif' : 'nonaktif'}
                                                         onChange={(e) => changeTeacherStatus(t, e.target.value)}
-                                                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border outline-none cursor-pointer transition-all shadow-2xs ${
+                                                        className={`px-2 py-1 rounded-xl text-[10px] font-bold border outline-none cursor-pointer transition-all shadow-2xs w-full text-center ${
                                                             isTeacherActive(t)
                                                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
                                                                 : 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100'
@@ -896,7 +896,7 @@ export default function SessionIndex({
                                                     return (
                                                         <td
                                                             key={p}
-                                                            className={`py-2 px-2.5 transition-colors w-[230px] min-w-[230px] max-w-[230px] ${
+                                                            className={`py-2 px-1.5 transition-colors w-[19%] ${
                                                                 p === currentPekan ? 'bg-blue-50/90 border-x-2 border-blue-200/90' : ''
                                                             }`}
                                                         >
