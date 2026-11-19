@@ -47,6 +47,14 @@ class TeachingSessionController extends Controller
         $currentPekan = min(4, (int) ceil(now()->day / 7));
 
         $teachers = Guru::with(['grade', 'programs', 'user'])->orderBy('nama')->get();
+        $teachers->transform(function ($t) {
+            $t->name = $t->user?->name ?: $t->nama;
+            $t->subject = $t->mapel;
+            $t->subject_2 = $t->bidang_2;
+            $t->kelas_diajar = $t->jenjang ?: ($t->programs->pluck('nama')->implode(', ') ?: '');
+
+            return $t;
+        });
         $materials = Schema::hasTable('materials') ? Material::latest()->get() : collect();
         $locations = Location::orderBy('nama_lokasi')->get();
         $transports = Transport::orderBy('jenis')->get();
@@ -121,7 +129,14 @@ class TeachingSessionController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $schedules->transform(function ($schedule) use ($currentPekan) {
+        $now = now();
+        $schedules->transform(function ($schedule) use ($now, $currentPekan) {
+            if ($schedule->material) {
+                $q = $schedule->material;
+                $cutoff = $q->created_at ? $q->created_at->copy()->addDays(7)->endOfDay() : $now->copy()->addDays(7);
+                $q->is_closed = $now->greaterThan($cutoff);
+                $q->accessible_until_formatted = $cutoff->translatedFormat('d M Y, H:i').' WIB';
+            }
             $schedule->is_current_pekan = (int) $schedule->pekan === (int) $currentPekan;
             $schedule->session_date = $schedule->tanggal ? $schedule->tanggal->format('Y-m-d') : null;
             if (empty($schedule->session_time) && $schedule->jam_mulai && $schedule->jam_selesai) {
@@ -151,6 +166,7 @@ class TeachingSessionController extends Controller
             'month' => $month,
             'year' => $year,
             'currentPekan' => $currentPekan,
+            'basePath' => 'session',
             'filters' => [
                 'month' => $month,
                 'year' => $year,
@@ -165,7 +181,7 @@ class TeachingSessionController extends Controller
                 'search' => $search,
                 'periode' => sprintf('%04d-%02d', $year, $month),
             ],
-            'questionUploadText' => 'Admin menyiapkan & mengunggah materi sebelum hari Minggu (maksimal Minggu pukul 23:59 WIB). Guru menerima dan dapat mengakses materi mulai hari Minggu pada pekan berjalan.',
+            'questionUploadText' => 'Jadwal Materi: Admin menyiapkan & mengunggah materi sebelum hari Rabu. Guru menerima dan dapat mengakses bahan ajar sesuai ploting pekan berjalan mulai hari Rabu.',
         ]);
     }
 
@@ -502,11 +518,95 @@ class TeachingSessionController extends Controller
             return back()->with('success', "Ploting jadwal mengajar ({$countWeeks} sesi) berhasil disimpan.");
         }
 
+        // Dukungan bulk 4 pekan flag ('bulk_cycle' / pekan='all')
+        if ($request->boolean('bulk_cycle') || $request->input('pekan') === 'all') {
+            $validated = $request->validate([
+                'guru_id' => 'required|exists:gurus,id',
+                'month' => 'nullable|integer|min:1|max:12',
+                'year' => 'nullable|integer|min:2020|max:2100',
+                'kelas' => 'nullable|string|max:50',
+                'level' => 'nullable|string|max:100',
+                'bidang' => 'nullable|string|max:100',
+                'material_id' => 'nullable|exists:materials,id',
+                'question_id' => 'nullable|exists:materials,id',
+                'session_date' => 'nullable|date',
+                'session_time' => 'nullable|string|max:50',
+                'is_active' => 'nullable|boolean',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            $month = (int) ($validated['month'] ?? now()->month);
+            $year = (int) ($validated['year'] ?? now()->year);
+            $defaultLocId = Location::first()?->id ?? 1;
+            $defaultTransId = Transport::first()?->id ?? 1;
+            $materialId = ! empty($validated['material_id']) ? (int) $validated['material_id'] : (! empty($validated['question_id']) ? (int) $validated['question_id'] : null);
+            $sessionDate = $validated['session_date'] ?? null;
+            $sessionTime = $validated['session_time'] ?? null;
+            [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, null, null);
+            $kelas = $validated['kelas'] ?? null;
+            $level = $validated['level'] ?? null;
+            $programId = null;
+            if ($level) {
+                $prog = Program::where('nama', $level)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $level)))->first();
+                $programId = $prog?->id;
+            }
+            if (! $programId && $kelas) {
+                $prog = Program::where('nama', $kelas)->orWhere('slug', strtolower(str_replace(' ', '-', (string) $kelas)))->first();
+                $programId = $prog?->id;
+            }
+            if (! $programId) {
+                $programId = Program::first()?->id;
+            }
+            $bidang = $validated['bidang'] ?? 'MTK';
+            $mapel = in_array(strtoupper((string) $bidang), ['IPA', 'MTK']) ? strtoupper((string) $bidang) : 'MTK';
+
+            for ($pekan = 1; $pekan <= 4; $pekan++) {
+                $conflict = $this->checkScheduleConflict(
+                    (int) $validated['guru_id'],
+                    null,
+                    $sessionDate,
+                    $sessionTime,
+                    $jamMulai,
+                    $jamSelesai,
+                    $kelas,
+                    $programId
+                );
+                if ($conflict) {
+                    return back()->withErrors(['conflict' => $conflict])->with('error', $conflict)->withInput();
+                }
+
+                $newSess = TeachingSession::create([
+                    'guru_id' => $validated['guru_id'],
+                    'location_id' => $defaultLocId,
+                    'transport_id' => $defaultTransId,
+                    'program_id' => $programId,
+                    'kelas' => $kelas,
+                    'level' => $level,
+                    'mapel' => $mapel,
+                    'tanggal' => $sessionDate,
+                    'pekan' => $pekan,
+                    'session_time' => $sessionTime,
+                    'jam_mulai' => $jamMulai,
+                    'jam_selesai' => $jamSelesai,
+                    'material_id' => $materialId,
+                    'bahan_ajar' => $validated['notes'] ?? null,
+                    'jumlah_sesi' => 1,
+                    'status' => TeachingSession::STATUS_DIJADWALKAN,
+                    'is_active' => $validated['is_active'] ?? true,
+                    'catatan' => $validated['notes'] ?? null,
+                ]);
+                $this->notifyGuruAboutSession($newSess, 'ditugaskan');
+            }
+
+            return back()->with('success', 'Ploting jadwal mengajar siklus 4 pekan berhasil dibuat.');
+        }
+
         // Ploting Single Sesi Mengajar
         $defaultLocId = Location::first()?->id ?? 1;
         $defaultTransId = Transport::first()?->id ?? 1;
 
         $rules = [
+            'id' => 'nullable|integer|exists:teaching_sessions,id',
             'guru_id' => 'required|exists:gurus,id',
             'location_id' => 'nullable|exists:locations,id',
             'transport_id' => 'nullable|exists:transports,id',
@@ -534,6 +634,7 @@ class TeachingSessionController extends Controller
         ];
 
         $validated = $request->validate($rules);
+        $sessionId = ! empty($validated['id']) ? (int) $validated['id'] : ($request->input('id') ? (int) $request->input('id') : null);
 
         $tanggal = $validated['session_date'] ?? ($validated['tanggal'] ?? today()->toDateString());
         $sessionTime = $validated['session_time'] ?? null;
@@ -584,7 +685,7 @@ class TeachingSessionController extends Controller
         // Cek alarm anti-bentrok
         $conflict = $this->checkScheduleConflict(
             (int) $validated['guru_id'],
-            null,
+            $sessionId,
             $tanggal,
             $sessionTime,
             $jamMulai,
@@ -602,28 +703,52 @@ class TeachingSessionController extends Controller
         $bidang = $validated['bidang'] ?? ($validated['mapel'] ?? 'MTK');
         $mapel = in_array(strtoupper((string) $bidang), ['IPA', 'MTK']) ? strtoupper((string) $bidang) : 'MTK';
 
-        $session = TeachingSession::create([
-            'guru_id' => $validated['guru_id'],
-            'location_id' => $validated['location_id'] ?? $defaultLocId,
-            'transport_id' => $validated['transport_id'] ?? $defaultTransId,
-            'program_id' => $programId,
-            'kelas' => $kelas,
-            'level' => $validated['level'] ?? null,
-            'mapel' => $mapel,
-            'tanggal' => $tanggal,
-            'pekan' => $validated['pekan'] ?? 1,
-            'session_time' => $sessionTime,
-            'jam_mulai' => $jamMulai,
-            'jam_selesai' => $jamSelesai,
-            'material_id' => $materialId,
-            'bahan_ajar' => $validated['bahan_ajar'] ?? ($validated['notes'] ?? null),
-            'jumlah_sesi' => $validated['jumlah_sesi'] ?? 1,
-            'status' => $validated['status'] ?? TeachingSession::STATUS_DIJADWALKAN,
-            'is_active' => $validated['is_active'] ?? true,
-            'catatan' => $validated['notes'] ?? ($validated['catatan'] ?? null),
-        ]);
-
-        $this->notifyGuruAboutSession($session, 'ditugaskan');
+        if ($sessionId) {
+            $session = TeachingSession::findOrFail($sessionId);
+            $session->update([
+                'guru_id' => $validated['guru_id'],
+                'location_id' => $validated['location_id'] ?? $defaultLocId,
+                'transport_id' => $validated['transport_id'] ?? $defaultTransId,
+                'program_id' => $programId,
+                'kelas' => $kelas,
+                'level' => $validated['level'] ?? null,
+                'mapel' => $mapel,
+                'tanggal' => $tanggal,
+                'pekan' => $validated['pekan'] ?? 1,
+                'session_time' => $sessionTime,
+                'jam_mulai' => $jamMulai,
+                'jam_selesai' => $jamSelesai,
+                'material_id' => $materialId,
+                'bahan_ajar' => $validated['bahan_ajar'] ?? ($validated['notes'] ?? null),
+                'jumlah_sesi' => $validated['jumlah_sesi'] ?? 1,
+                'status' => $validated['status'] ?? TeachingSession::STATUS_DIJADWALKAN,
+                'is_active' => $validated['is_active'] ?? true,
+                'catatan' => $validated['notes'] ?? ($validated['catatan'] ?? null),
+            ]);
+            $this->notifyGuruAboutSession($session, 'diperbarui');
+        } else {
+            $session = TeachingSession::create([
+                'guru_id' => $validated['guru_id'],
+                'location_id' => $validated['location_id'] ?? $defaultLocId,
+                'transport_id' => $validated['transport_id'] ?? $defaultTransId,
+                'program_id' => $programId,
+                'kelas' => $kelas,
+                'level' => $validated['level'] ?? null,
+                'mapel' => $mapel,
+                'tanggal' => $tanggal,
+                'pekan' => $validated['pekan'] ?? 1,
+                'session_time' => $sessionTime,
+                'jam_mulai' => $jamMulai,
+                'jam_selesai' => $jamSelesai,
+                'material_id' => $materialId,
+                'bahan_ajar' => $validated['bahan_ajar'] ?? ($validated['notes'] ?? null),
+                'jumlah_sesi' => $validated['jumlah_sesi'] ?? 1,
+                'status' => $validated['status'] ?? TeachingSession::STATUS_DIJADWALKAN,
+                'is_active' => $validated['is_active'] ?? true,
+                'catatan' => $validated['notes'] ?? ($validated['catatan'] ?? null),
+            ]);
+            $this->notifyGuruAboutSession($session, 'ditugaskan');
+        }
 
         return back()->with('success', 'Ploting jadwal sesi mengajar berhasil disimpan.');
     }
