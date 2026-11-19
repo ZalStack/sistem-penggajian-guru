@@ -128,7 +128,7 @@ class DatabaseSeeder extends Seeder
 
             // Pakai akun guru yang sudah ada bila tersedia; hanya buat akun baru
             // ketika guru belum memiliki login.
-            $email = 'guru'.($index + 1).'@satugurukpm.id';
+            $email = User::formatGuruEmail($guru->nama, $guru->user_id);
             $userGuru = $guru->user ?? User::firstOrCreate(
                 ['email' => $email],
                 [

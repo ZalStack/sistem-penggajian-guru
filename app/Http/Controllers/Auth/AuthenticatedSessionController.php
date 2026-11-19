@@ -18,9 +18,36 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        $teachers = \App\Models\User::with(['guru.grade', 'guru.programs'])
+            ->orderBy('name')
+            ->get()
+            ->map(function (\App\Models\User $u) {
+                $isAdmin = $u->role === 'admin';
+                $guru = $u->guru;
+                $mapel = $guru ? trim(($guru->mapel ?? '').($guru->bidang_2 ? ' & '.$guru->bidang_2 : '')) : '-';
+                $gradeKode = $guru?->grade?->kode_grade ?: '-';
+                $jenjang = $guru?->jenjang ?: '-';
+                $domisili = $guru?->domisili ?: ($guru?->alamat ?: '-');
+
+                return [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'role' => $u->role,
+                    'is_admin' => $isAdmin,
+                    'mapel' => $isAdmin ? 'Administrator' : ($mapel ?: 'MTK / IPA'),
+                    'grade' => $isAdmin ? 'Admin Sistem' : $gradeKode,
+                    'jenjang' => $isAdmin ? '-' : $jenjang,
+                    'domisili' => $isAdmin ? '-' : $domisili,
+                    'avatar' => $isAdmin ? '🛡️' : '👨‍🏫',
+                ];
+            })
+            ->values();
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'teachers' => $teachers,
         ]);
     }
 

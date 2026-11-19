@@ -97,11 +97,12 @@ class TeacherController extends ApiController
 
         $passwordToUse = $validated['password'] ?? Str::random(16);
         $isGenerated = ! isset($validated['password']);
+        $formattedEmail = User::formatGuruEmail($validated['nama']);
 
-        DB::transaction(function () use ($validated, $passwordToUse, &$guru) {
+        DB::transaction(function () use ($validated, $passwordToUse, $formattedEmail, &$guru) {
             $user = User::create([
                 'name' => $validated['nama'],
-                'email' => $validated['email'],
+                'email' => $formattedEmail,
                 'password' => Hash::make($passwordToUse),
             ]);
 
@@ -205,7 +206,7 @@ class TeacherController extends ApiController
         if ($teacher->user) {
             $teacher->user->update([
                 'name' => $validated['nama'],
-                'email' => $validated['email'],
+                'email' => User::formatGuruEmail($validated['nama'], $teacher->user->id),
             ]);
         }
 

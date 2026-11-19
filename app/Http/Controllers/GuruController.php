@@ -68,11 +68,12 @@ class GuruController extends Controller
 
         $passwordToUse = $validated['password'] ?? Str::random(16);
         $isGenerated = ! isset($validated['password']);
+        $formattedEmail = User::formatGuruEmail($validated['nama']);
 
-        DB::transaction(function () use ($validated, $passwordToUse, $programIds, &$guru) {
+        DB::transaction(function () use ($validated, $passwordToUse, $programIds, $formattedEmail, &$guru) {
             $user = User::create([
                 'name' => $validated['nama'],
-                'email' => $validated['email'],
+                'email' => $formattedEmail,
                 'password' => Hash::make($passwordToUse),
                 'role' => 'guru',
                 'email_verified_at' => now(),
@@ -88,8 +89,8 @@ class GuruController extends Controller
         AdikSyncService::pushTeacherToAdik($guru);
 
         $msg = $isGenerated
-            ? 'Akun guru berhasil dibuat. Email: '.$validated['email'].' | Password: '.$passwordToUse
-            : 'Akun guru berhasil dibuat. Email: '.$validated['email'];
+            ? 'Akun guru berhasil dibuat. Email: '.$formattedEmail.' | Password: '.$passwordToUse
+            : 'Akun guru berhasil dibuat. Email: '.$formattedEmail;
 
         return redirect()->route('guru.index')->with('success', $msg);
     }
@@ -162,7 +163,7 @@ class GuruController extends Controller
         if ($guru->user) {
             $guru->user->update([
                 'name' => $validated['nama'],
-                'email' => $validated['email'],
+                'email' => User::formatGuruEmail($validated['nama'], $guru->user->id),
             ]);
         }
 

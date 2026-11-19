@@ -121,7 +121,15 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                         <Input
                             label="Nama Lengkap Guru"
                             value={data.nama}
-                            onChange={(e) => setData('nama', e.target.value)}
+                            onChange={(e) => {
+                                const nama = e.target.value;
+                                const clean = nama.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                setData({
+                                    ...data,
+                                    nama,
+                                    email: clean ? `${clean}@satuguru.com` : '',
+                                });
+                            }}
                             error={errors.nama}
                             placeholder="Contoh: Ahmad Dahlan, S.Pd."
                             required
@@ -382,7 +390,7 @@ export default function GuruCreate({ grades, programs }: GuruCreateProps) {
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 error={errors.email}
-                                placeholder="Contoh: guru1@satugurukpm.id"
+                                placeholder="Contoh: ahmaddahlanspd@satuguru.com"
                                 required
                             />
                         </div>

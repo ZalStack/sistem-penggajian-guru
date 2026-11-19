@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,15 +42,37 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $loginInput = trim((string) $this->input('email'));
+        $password = (string) $this->input('password');
+        $remember = $this->boolean('remember');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        // 1. Coba autentikasi langsung via email
+        if (Auth::attempt(['email' => $loginInput, 'password' => $password], $remember)) {
+            RateLimiter::clear($this->throttleKey());
+
+            return;
         }
 
-        RateLimiter::clear($this->throttleKey());
+        // 2. Coba cari berdasarkan Nama Lengkap atau prefix email (@satuguru.com / @siguru.com)
+        $cleanSlug = preg_replace('/[^a-z0-9]/', '', strtolower($loginInput));
+        $candidateUser = \App\Models\User::where('name', $loginInput)
+            ->orWhere('email', $loginInput.'@satuguru.com')
+            ->when($cleanSlug !== '', fn ($q) => $q->orWhere('email', $cleanSlug.'@satuguru.com')->orWhere('email', $cleanSlug.'@siguru.com'))
+            ->orWhereHas('guru', fn ($gq) => $gq->where('nama', $loginInput))
+            ->first();
+
+        if ($candidateUser && \Illuminate\Support\Facades\Hash::check($password, $candidateUser->password)) {
+            Auth::login($candidateUser, $remember);
+            RateLimiter::clear($this->throttleKey());
+
+            return;
+        }
+
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'email' => trans('auth.failed'),
+        ]);
     }
 
     /**

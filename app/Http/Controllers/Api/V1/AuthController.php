@@ -21,12 +21,13 @@ class AuthController extends ApiController
     public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
             'device_name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $throttleKey = Str::lower($validated['email']).'|'.$request->ip();
+        $loginInput = trim($validated['email']);
+        $throttleKey = Str::lower($loginInput).'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             throw ValidationException::withMessages([
@@ -34,7 +35,12 @@ class AuthController extends ApiController
             ]);
         }
 
-        $user = User::where('email', $validated['email'])->first();
+        $cleanSlug = preg_replace('/[^a-z0-9]/', '', strtolower($loginInput));
+        $user = User::where('email', $loginInput)
+            ->orWhere('name', $loginInput)
+            ->when($cleanSlug !== '', fn ($q) => $q->orWhere('email', $cleanSlug.'@satuguru.com')->orWhere('email', $cleanSlug.'@siguru.com'))
+            ->orWhereHas('guru', fn ($gq) => $gq->where('nama', $loginInput))
+            ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             RateLimiter::hit($throttleKey);
