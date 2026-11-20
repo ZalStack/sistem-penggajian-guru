@@ -1613,7 +1613,7 @@ export default function SessionIndex({
                                     );
                                 })}
 
-                                {/* Tombol Tambah Pekan Baru dengan Double Icon + */}
+                                {/* Tombol Tambah Pekan Baru */}
                                 {canAddMorePekan && (
                                     <div className="pt-1 flex justify-center">
                                         <button
@@ -1621,15 +1621,10 @@ export default function SessionIndex({
                                             onClick={addNextPekan}
                                             className="py-1.5 px-4 rounded-xl border-2 border-dashed border-french-blue hover:border-french-blue/80 bg-white hover:bg-french-blue/5 text-french-blue text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                                         >
-                                            <div className="flex items-center -space-x-1">
-                                                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                            </div>
-                                            <span>+ + Tambah Pekan {nextPekanNumber}</span>
+                                            <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <span>Tambah Pekan {nextPekanNumber}</span>
                                         </button>
                                     </div>
                                 )}
