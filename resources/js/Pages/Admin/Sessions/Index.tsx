@@ -1238,7 +1238,9 @@ export default function SessionIndex({
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-light-cyan text-[10px] uppercase tracking-wider text-gray-500">
                                         <th className="py-2.5 px-2 font-semibold text-center w-10">No</th>
-                                        <th className="py-2.5 px-3 font-semibold w-36 min-w-[130px]">Waktu Sesi</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-16">Pekan</th>
+                                        <th className="py-2.5 px-2.5 font-semibold text-center w-24">Jam</th>
+                                        <th className="py-2.5 px-2.5 font-semibold text-center w-24">Tanggal</th>
                                         <th className="py-2.5 px-3 font-semibold min-w-[130px]">Nama</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-24">Kelas</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-20">Bidang</th>
@@ -1251,7 +1253,7 @@ export default function SessionIndex({
                                 <tbody className="divide-y divide-light-cyan/60 text-[11px]">
                                     {filteredSchedules.length === 0 ? (
                                         <tr>
-                                            <td colSpan={9} className="py-6 text-center text-gray-400">
+                                            <td colSpan={11} className="py-6 text-center text-gray-400">
                                                 Tidak ada data sesi mengajar ditemukan.
                                             </td>
                                         </tr>
@@ -1269,16 +1271,20 @@ export default function SessionIndex({
                                                     <td className="py-2.5 px-2 text-center font-bold text-gray-500">
                                                         {(pagination?.from || 1) + sIdx}
                                                     </td>
-                                                    <td className="py-2.5 px-3">
-                                                        <div className="font-bold text-deep-twilight">{s.session_time || '-'}</div>
-                                                        <div className="text-[10px] text-gray-400">{formatDate((s as any).session_date || s.tanggal)}</div>
+                                                    <td className="py-2.5 px-2 text-center">
                                                         <span
-                                                            className={`px-1.5 py-0.2 mt-0.5 rounded text-[9px] font-bold inline-block ${
+                                                            className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block ${
                                                                 s.is_current_pekan ? 'bg-blue-100 text-blue-800 ring-1 ring-blue-300' : 'bg-slate-100 text-slate-700'
                                                             }`}
                                                         >
                                                             Pekan {s.pekan}
                                                         </span>
+                                                    </td>
+                                                    <td className="py-2.5 px-2.5 text-center font-bold text-deep-twilight whitespace-nowrap">
+                                                        {s.session_time || '-'}
+                                                    </td>
+                                                    <td className="py-2.5 px-2.5 text-center text-slate-600 whitespace-nowrap">
+                                                        {formatDate((s as any).session_date || s.tanggal)}
                                                     </td>
                                                     <td className="py-2.5 px-3">
                                                         <p className="font-bold text-deep-twilight">{teacherObj?.user?.name || teacherObj?.name || teacherObj?.nama || '-'}</p>
