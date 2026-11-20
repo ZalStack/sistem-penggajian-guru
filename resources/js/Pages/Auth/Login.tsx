@@ -100,15 +100,7 @@ export default function Login({
             setSelectedAccount(null);
         }
 
-        const exact = teachers.find(
-            (t) => t.name.toLowerCase() === q || (t.email && t.email.toLowerCase() === q)
-        );
-        if (exact) {
-            setSelectedAccount(exact);
-            setData('email', exact.email || exact.name);
-        } else {
-            setData('email', val);
-        }
+        setData('email', val);
     };
 
     const handleSelectAccount = (account: TeacherAccount) => {
