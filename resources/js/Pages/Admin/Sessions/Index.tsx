@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { useState, useMemo, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useMemo, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Guru, Location, Material, Program, TeachingSession, Transport, PaginatedData } from '@/types';
 
 interface SessionIndexProps {
@@ -719,6 +719,7 @@ export default function SessionIndex({
             pekan: filterPekan || undefined,
             status: filterStatus || undefined,
             search: teacherSearch || undefined,
+            per_page: 15,
         }, { preserveState: true });
     };
 
@@ -728,9 +729,11 @@ export default function SessionIndex({
         setFilterBidang('');
         setFilterPekan('');
         setFilterStatus('');
+        setTeacherPage(1);
         router.get(`/${basePath}`, {
             month: selectedMonth,
             year: selectedYear,
+            per_page: 15,
         }, { preserveState: true });
     };
 
@@ -783,6 +786,19 @@ export default function SessionIndex({
             return true;
         });
     }, [teachersList, schedulesList, teacherSearch, filterStatus, filterBidang, filterKelas, filterPekan]);
+
+    const [teacherPage, setTeacherPage] = useState(1);
+    const teacherPerPage = 15;
+
+    useEffect(() => {
+        setTeacherPage(1);
+    }, [teacherSearch, filterStatus, filterBidang, filterKelas, filterPekan]);
+
+    const teacherTotalPages = Math.ceil(filteredTeachers.length / teacherPerPage) || 1;
+    const paginatedTeachers = useMemo(() => {
+        const start = (teacherPage - 1) * teacherPerPage;
+        return filteredTeachers.slice(start, start + teacherPerPage);
+    }, [filteredTeachers, teacherPage, teacherPerPage]);
 
     // Filter schedules for list view
     const filteredSchedules = useMemo(() => {
@@ -1048,11 +1064,11 @@ export default function SessionIndex({
                                             </td>
                                         </tr>
                                     ) : (
-                                        filteredTeachers.map((t, tIdx) => {
+                                        paginatedTeachers.map((t, tIdx) => {
                                             const tSchedules = [1, 2, 3, 4].map(p => getSchedulesFor(t.id, p));
                                             return (
                                                 <tr key={t.id} className="hover:bg-slate-50/60 align-top">
-                                                    <td className="py-2.5 px-1 text-center font-bold text-gray-500">{tIdx + 1}</td>
+                                                    <td className="py-2.5 px-1 text-center font-bold text-gray-500">{(teacherPage - 1) * teacherPerPage + tIdx + 1}</td>
                                                     <td className="py-2.5 px-2">
                                                         <p className="font-bold text-deep-twilight truncate" title={t.user?.name || t.name || (t as any).nama}>
                                                             {t.user?.name || t.name || (t as any).nama || `Guru #${t.id}`}
@@ -1160,6 +1176,49 @@ export default function SessionIndex({
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Navigasi Paginasi Matriks Guru (Maksimal 15 Guru per Halaman) */}
+                        {filteredTeachers.length > 0 && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2.5 text-xs text-slate-600 border-t border-light-cyan/60 bg-slate-50/50">
+                                <div>
+                                    Menampilkan <strong className="text-slate-800">{(teacherPage - 1) * teacherPerPage + 1}</strong> sampai <strong className="text-slate-800">{Math.min(teacherPage * teacherPerPage, filteredTeachers.length)}</strong> dari <strong className="text-slate-800">{filteredTeachers.length}</strong> total guru
+                                </div>
+                                {teacherTotalPages > 1 && (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            type="button"
+                                            disabled={teacherPage <= 1}
+                                            onClick={() => setTeacherPage((p) => Math.max(1, p - 1))}
+                                            className="px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                        >
+                                            &laquo; Prev
+                                        </button>
+                                        {Array.from({ length: teacherTotalPages }, (_, i) => i + 1).map((p) => (
+                                            <button
+                                                key={p}
+                                                type="button"
+                                                onClick={() => setTeacherPage(p)}
+                                                className={`px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer ${
+                                                    p === teacherPage
+                                                        ? 'bg-bright-teal text-white border-bright-teal font-bold'
+                                                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {p}
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            disabled={teacherPage >= teacherTotalPages}
+                                            onClick={() => setTeacherPage((p) => Math.min(teacherTotalPages, p + 1))}
+                                            className="px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                                        >
+                                            Next &raquo;
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     /* TAMPILAN 2: Daftar Sesi Mengajar */
@@ -1280,39 +1339,39 @@ export default function SessionIndex({
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
 
-                {/* Navigasi Paginasi yang Rapi & Bersih */}
-                {pagination && pagination.total > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 py-1 text-xs text-slate-600">
-                        <div>
-                            Menampilkan <strong className="text-slate-800">{pagination.from || 1}</strong> sampai <strong className="text-slate-800">{pagination.to || pagination.total}</strong> dari <strong className="text-slate-800">{pagination.total}</strong> total sesi
-                        </div>
-                        <div className="flex items-center gap-1">
-                            {pagination.links?.map((link: any, i: number) => {
-                                if (link.url) {
-                                    return (
-                                        <button
-                                            key={i}
-                                            type="button"
-                                            onClick={() => goToPage(link.url)}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                            className={`px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer ${
-                                                link.active ? 'bg-bright-teal text-white border-bright-teal font-bold' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                                            }`}
-                                        />
-                                    );
-                                }
-                                return (
-                                    <span
-                                        key={i}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className="px-2.5 py-1 text-xs text-slate-400 border border-transparent"
-                                    />
-                                );
-                            })}
-                        </div>
+                        {/* Navigasi Paginasi Daftar Sesi (Maksimal 15 Sesi per Halaman) */}
+                        {pagination && pagination.total > 0 && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-2.5 text-xs text-slate-600 border-t border-light-cyan/60 bg-slate-50/50">
+                                <div>
+                                    Menampilkan <strong className="text-slate-800">{pagination.from || 1}</strong> sampai <strong className="text-slate-800">{pagination.to || pagination.total}</strong> dari <strong className="text-slate-800">{pagination.total}</strong> total sesi
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    {pagination.links?.map((link: any, i: number) => {
+                                        if (link.url) {
+                                            return (
+                                                <button
+                                                    key={i}
+                                                    type="button"
+                                                    onClick={() => goToPage(link.url)}
+                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                    className={`px-2.5 py-1 rounded-lg border text-xs transition-all cursor-pointer ${
+                                                        link.active ? 'bg-bright-teal text-white border-bright-teal font-bold' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                                                    }`}
+                                                />
+                                            );
+                                        }
+                                        return (
+                                            <span
+                                                key={i}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                                className="px-2.5 py-1 text-xs text-slate-400 border border-transparent"
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

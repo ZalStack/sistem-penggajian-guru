@@ -151,8 +151,12 @@ class TeachingSessionController extends Controller
             return $schedule;
         });
 
-        // Paginated sessions untuk kompatibilitas tampilan lama bila diperlukan
-        $paginatedSessions = (clone $query)->paginate(15)->withQueryString();
+        // Paginated sessions (maksimal 15 sesi per halaman)
+        $perPage = (int) $request->input('per_page', 15);
+        if ($perPage > 15 || $perPage < 1) {
+            $perPage = 15;
+        }
+        $paginatedSessions = (clone $query)->paginate($perPage)->withQueryString();
 
         return Inertia::render('Admin/Sessions/Index', [
             'sessions' => $paginatedSessions,
