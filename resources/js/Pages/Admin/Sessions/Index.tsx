@@ -1301,7 +1301,7 @@ export default function SessionIndex({
                                                                 <span className="text-[11px] font-medium text-slate-700">📄 {qObj.title}</span>
                                                             </div>
                                                         ) : (
-                                                            <span className="text-[10px] text-gray-400 italic">Belum ada bahan ajar</span>
+                                                            <span className="text-xs text-gray-400 font-medium">-</span>
                                                         )}
                                                     </td>
                                                     <td className="py-2.5 px-2 text-center">
