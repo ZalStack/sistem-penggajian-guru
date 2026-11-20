@@ -1293,7 +1293,11 @@ export default function SessionIndex({
                                                         </span>
                                                     </td>
                                                     <td className="py-2.5 px-2 text-center whitespace-nowrap">
-                                                        <span className="text-slate-600 font-medium">{s.level || '-'}</span>
+                                                        {s.level ? (
+                                                            <span className="text-slate-700 font-medium">{s.level}</span>
+                                                        ) : (
+                                                            <span className="font-bold text-gray-800 text-sm leading-none">-</span>
+                                                        )}
                                                     </td>
                                                     <td className="py-2.5 px-3 max-w-[180px]">
                                                         {qObj ? (
