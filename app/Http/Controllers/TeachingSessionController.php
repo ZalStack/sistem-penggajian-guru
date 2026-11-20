@@ -12,6 +12,7 @@ use App\Models\Transport;
 use App\Support\Tanggal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 
@@ -399,8 +400,8 @@ class TeachingSessionController extends Controller
             $request->merge(['guru_id' => (int) $guruId, 'teacher_id' => (int) $guruId]);
         }
 
-        // Dukungan bulk weeks (Siklus 2 Pekan atau 4 Pekan)
-        $weeksInput = $request->input('weeks', $request->input('cycles'));
+        // Dukungan bulk sessions / weeks (Siklus 2 Pekan, 4 Pekan, atau Multi-Sesi per Pekan)
+        $weeksInput = $request->input('sessions', $request->input('weeks', $request->input('cycles')));
         if (is_array($weeksInput) && count($weeksInput) > 0) {
             $validated = $request->validate([
                 'guru_id' => 'required|exists:gurus,id',
@@ -423,7 +424,7 @@ class TeachingSessionController extends Controller
                 }
                 $pekan = (int) ($weekData['pekan'] ?? ($idx + 1));
                 if ($pekan < 1 || $pekan > 4) {
-                    continue;
+                    $pekan = 1;
                 }
                 $kelas = $weekData['kelas'] ?? ($validated['kelas'] ?? null);
                 $sessionDate = ! empty($weekData['session_date']) ? $weekData['session_date'] : ($weekData['tanggal'] ?? null);
@@ -455,7 +456,7 @@ class TeachingSessionController extends Controller
                 }
                 $pekan = (int) ($weekData['pekan'] ?? ($idx + 1));
                 if ($pekan < 1 || $pekan > 4) {
-                    continue;
+                    $pekan = 1;
                 }
                 $kelas = $weekData['kelas'] ?? ($validated['kelas'] ?? null);
                 $weekId = ! empty($weekData['id']) ? (int) $weekData['id'] : null;
@@ -463,6 +464,27 @@ class TeachingSessionController extends Controller
                 $sessionTime = ! empty($weekData['session_time']) ? $weekData['session_time'] : null;
                 $materialId = ! empty($weekData['material_id']) ? (int) $weekData['material_id'] : (! empty($weekData['question_id']) ? (int) $weekData['question_id'] : null);
                 $bidang = $weekData['bidang'] ?? ($weekData['mapel'] ?? ($validated['bidang'] ?? 'MTK'));
+
+                // Cek unggahan file PDF dari modal sessions
+                $pdfFile = $request->file("sessions.{$idx}.material_pdf") ?: ($request->file('sessions')[$idx]['material_pdf'] ?? null);
+                if ($pdfFile instanceof UploadedFile && Schema::hasTable('materials')) {
+                    $pdfPath = $pdfFile->store('materials', 'public');
+                    $pdfTitle = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $newMat = Material::create([
+                        'uploaded_by' => auth()->id(),
+                        'title' => $pdfTitle,
+                        'file_path' => $pdfPath,
+                        'file_name' => $pdfFile->getClientOriginalName(),
+                        'file_type' => $pdfFile->getMimeType(),
+                        'file_size' => $pdfFile->getSize(),
+                        'subject' => in_array($bidang, ['IPA', 'MTK']) ? $bidang : 'MTK',
+                        'pekan' => 'Pekan '.$pekan,
+                        'kelas' => $kelas,
+                        'level' => $weekData['level'] ?? ($validated['level'] ?? null),
+                        'status' => 'approved',
+                    ]);
+                    $materialId = $newMat->id;
+                }
 
                 [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $weekData['jam_mulai'] ?? null, $weekData['jam_selesai'] ?? null);
                 if ($jamMulai && $jamSelesai) {
