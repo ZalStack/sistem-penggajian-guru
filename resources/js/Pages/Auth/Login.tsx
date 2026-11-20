@@ -3,7 +3,7 @@ import Button from '@/Components/ui/button';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Icon } from '@iconify/react';
-import { FormEventHandler, useMemo, useState } from 'react';
+import { FormEventHandler, KeyboardEvent, useMemo, useRef, useState } from 'react';
 
 interface TeacherAccount {
     id: number;
@@ -36,6 +36,8 @@ export default function Login({
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<TeacherAccount | null>(null);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const suggestionsContainerRef = useRef<HTMLDivElement>(null);
 
     const filteredTeachers = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -49,8 +51,47 @@ export default function Login({
             .slice(0, 10);
     }, [search, teachers]);
 
+    const scrollHighlightedIntoView = (index: number) => {
+        requestAnimationFrame(() => {
+            if (!suggestionsContainerRef.current) return;
+            const items = suggestionsContainerRef.current.querySelectorAll('button');
+            if (items[index]) {
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        });
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        const len = filteredTeachers.length;
+        if (len === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const next = !isOpen ? 0 : (highlightedIndex + 1) % len;
+            setIsOpen(true);
+            setHighlightedIndex(next);
+            scrollHighlightedIntoView(next);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prev = !isOpen ? len - 1 : (highlightedIndex - 1 + len) % len;
+            setIsOpen(true);
+            setHighlightedIndex(prev);
+            scrollHighlightedIntoView(prev);
+        } else if (e.key === 'Enter') {
+            if (isOpen && highlightedIndex >= 0 && filteredTeachers[highlightedIndex]) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSelectAccount(filteredTeachers[highlightedIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            setIsOpen(false);
+            setHighlightedIndex(-1);
+        }
+    };
+
     const handleSearchChange = (val: string) => {
         setSearch(val);
+        setHighlightedIndex(-1);
         const q = val.trim().toLowerCase();
         if (q.length > 0) {
             setIsOpen(true);
@@ -75,6 +116,7 @@ export default function Login({
         setSearch(account.name);
         setData('email', account.email || account.name);
         setIsOpen(false);
+        setHighlightedIndex(-1);
     };
 
     const handleClearSelection = () => {
@@ -82,6 +124,7 @@ export default function Login({
         setSearch('');
         setData('email', '');
         setIsOpen(false);
+        setHighlightedIndex(-1);
     };
 
     const submit: FormEventHandler = (e) => {
@@ -138,6 +181,7 @@ export default function Login({
                             type="text"
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
+                            onKeyDown={handleKeyDown}
                             onFocus={() => {
                                 if (search.trim().length > 0) setIsOpen(true);
                             }}
@@ -158,13 +202,19 @@ export default function Login({
 
                     {/* Autocomplete Dropdown */}
                     {isOpen && filteredTeachers.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 max-h-56 overflow-y-auto z-30 divide-y divide-slate-100">
-                            {filteredTeachers.map((t) => (
+                        <div
+                            ref={suggestionsContainerRef}
+                            className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 max-h-56 overflow-y-auto z-30 divide-y divide-slate-100"
+                        >
+                            {filteredTeachers.map((t, idx) => (
                                 <button
                                     key={t.id}
                                     type="button"
                                     onClick={() => handleSelectAccount(t)}
-                                    className="w-full text-left px-3.5 py-2.5 hover:bg-indigo-50/70 transition flex items-center justify-between gap-2 cursor-pointer"
+                                    onMouseEnter={() => setHighlightedIndex(idx)}
+                                    className={`w-full text-left px-3.5 py-2.5 transition flex items-center justify-between gap-2 cursor-pointer ${
+                                        highlightedIndex === idx ? 'bg-indigo-100/80 ring-1 ring-indigo-300' : 'hover:bg-indigo-50/70'
+                                    }`}
                                 >
                                     <div className="min-w-0">
                                         <div className="font-bold text-xs text-slate-800 truncate flex items-center gap-2">
