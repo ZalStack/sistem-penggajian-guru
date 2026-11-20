@@ -167,6 +167,8 @@ class TeachingSessionController extends Controller
             'month' => $month,
             'year' => $year,
             'currentPekan' => $currentPekan,
+            'currentMonth' => (int) now()->month,
+            'currentYear' => (int) now()->year,
             'basePath' => 'session',
             'filters' => [
                 'month' => $month,
