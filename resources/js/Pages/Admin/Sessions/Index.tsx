@@ -1238,13 +1238,13 @@ export default function SessionIndex({
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-light-cyan text-[10px] uppercase tracking-wider text-gray-500">
                                         <th className="py-2.5 px-2 font-semibold text-center w-10">No</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-16">Pekan</th>
-                                        <th className="py-2.5 px-2.5 font-semibold text-center w-24">Jam</th>
-                                        <th className="py-2.5 px-2.5 font-semibold text-center w-24">Tanggal</th>
+                                        <th className="py-2.5 px-2.5 font-semibold text-center whitespace-nowrap">Pekan</th>
+                                        <th className="py-2.5 px-2.5 font-semibold text-center whitespace-nowrap">Jam</th>
+                                        <th className="py-2.5 px-2.5 font-semibold text-center whitespace-nowrap">Tanggal</th>
                                         <th className="py-2.5 px-3 font-semibold min-w-[130px]">Nama</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-24">Kelas</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-20">Bidang</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-28">Level</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center whitespace-nowrap">Kelas</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center whitespace-nowrap">Bidang</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center whitespace-nowrap">Level</th>
                                         <th className="py-2.5 px-3 font-semibold max-w-[180px]">Bahan Ajar</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-20">Status</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-20">Aksi</th>
@@ -1271,14 +1271,8 @@ export default function SessionIndex({
                                                     <td className="py-2.5 px-2 text-center font-bold text-gray-500">
                                                         {(pagination?.from || 1) + sIdx}
                                                     </td>
-                                                    <td className="py-2.5 px-2 text-center">
-                                                        <span
-                                                            className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block ${
-                                                                s.is_current_pekan ? 'bg-blue-100 text-blue-800 ring-1 ring-blue-300' : 'bg-slate-100 text-slate-700'
-                                                            }`}
-                                                        >
-                                                            Pekan {s.pekan}
-                                                        </span>
+                                                    <td className="py-2.5 px-2.5 text-center font-bold text-deep-twilight whitespace-nowrap">
+                                                        Pekan {s.pekan}
                                                     </td>
                                                     <td className="py-2.5 px-2.5 text-center font-bold text-deep-twilight whitespace-nowrap">
                                                         {s.session_time || '-'}
@@ -1290,15 +1284,15 @@ export default function SessionIndex({
                                                         <p className="font-bold text-deep-twilight">{teacherObj?.user?.name || teacherObj?.name || teacherObj?.nama || '-'}</p>
                                                         <p className="text-[10px] text-gray-400">NIP: {teacherObj?.nip || '-'}</p>
                                                     </td>
-                                                    <td className="py-2.5 px-2 text-center">
+                                                    <td className="py-2.5 px-2 text-center whitespace-nowrap">
                                                         <span className="font-bold text-deep-twilight">{s.kelas || 'Semua Kelas'}</span>
                                                     </td>
-                                                    <td className="py-2.5 px-2 text-center">
+                                                    <td className="py-2.5 px-2 text-center whitespace-nowrap">
                                                         <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-bright-teal/10 text-bright-teal">
                                                             {(s as any).bidang || s.mapel || '-'}
                                                         </span>
                                                     </td>
-                                                    <td className="py-2.5 px-2 text-center">
+                                                    <td className="py-2.5 px-2 text-center whitespace-nowrap">
                                                         <span className="text-slate-600 font-medium">{s.level || '-'}</span>
                                                     </td>
                                                     <td className="py-2.5 px-3 max-w-[180px]">
