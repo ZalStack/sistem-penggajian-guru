@@ -586,7 +586,7 @@ export default function JadwalIndex({
                             <Icon icon="tabler:search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
                             <input
                                 type="text"
-                                placeholder="Pencarian cepat: cari nama guru, mapel, materi ajar, atau lokasi..."
+                                placeholder="Pencarian cepat: cari nama guru, bidang, materi ajar, atau lokasi..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 text-xs font-[500] text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400"
@@ -750,7 +750,7 @@ export default function JadwalIndex({
                                                             </span>
                                                         )}
                                                         <span className="text-[10px] font-[700] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                                                            Mapel: {session.mapel}
+                                                            Bidang: {session.mapel}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -855,7 +855,7 @@ export default function JadwalIndex({
                                                 </span>
                                             )}
                                             <span className="text-xs font-[700] text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                                                Mata Pelajaran: {selectedSession.mapel}
+                                                Bidang: {selectedSession.mapel}
                                             </span>
                                         </div>
                                     </div>

@@ -943,7 +943,7 @@ export default function SessionIndex({
                                 onChange={(e) => setFilterBidang(e.target.value)}
                                 className="w-full px-2 py-1.5 rounded-xl border border-light-cyan bg-light-cyan/20 text-xs text-deep-twilight focus:bg-white focus:border-bright-teal outline-none transition-all cursor-pointer"
                             >
-                                <option value="">Mapel</option>
+                                <option value="">Bidang</option>
                                 <option value="MTK">MTK</option>
                                 <option value="IPA">IPA</option>
                             </select>
@@ -1238,11 +1238,11 @@ export default function SessionIndex({
                                 <thead>
                                     <tr className="bg-slate-50 border-b border-light-cyan text-[10px] uppercase tracking-wider text-gray-500">
                                         <th className="py-2.5 px-2 font-semibold text-center w-10">No</th>
-                                        <th className="py-2.5 px-3 font-semibold w-32 min-w-[120px]">Waktu Sesi</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-20">Pekan</th>
-                                        <th className="py-2.5 px-3 font-semibold min-w-[130px]">Guru Pengajar</th>
-                                        <th className="py-2.5 px-3 font-semibold min-w-[120px]">Kelas & Level</th>
-                                        <th className="py-2.5 px-2 font-semibold text-center w-16">Mapel</th>
+                                        <th className="py-2.5 px-3 font-semibold w-36 min-w-[130px]">Waktu Sesi</th>
+                                        <th className="py-2.5 px-3 font-semibold min-w-[130px]">Nama</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-24">Kelas</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-20">Bidang</th>
+                                        <th className="py-2.5 px-2 font-semibold text-center w-28">Level</th>
                                         <th className="py-2.5 px-3 font-semibold max-w-[180px]">Bahan Ajar</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-20">Status</th>
                                         <th className="py-2.5 px-2 font-semibold text-center w-20">Aksi</th>
@@ -1272,10 +1272,8 @@ export default function SessionIndex({
                                                     <td className="py-2.5 px-3">
                                                         <div className="font-bold text-deep-twilight">{s.session_time || '-'}</div>
                                                         <div className="text-[10px] text-gray-400">{formatDate((s as any).session_date || s.tanggal)}</div>
-                                                    </td>
-                                                    <td className="py-2.5 px-2 text-center">
                                                         <span
-                                                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-block ${
+                                                            className={`px-1.5 py-0.2 mt-0.5 rounded text-[9px] font-bold inline-block ${
                                                                 s.is_current_pekan ? 'bg-blue-100 text-blue-800 ring-1 ring-blue-300' : 'bg-slate-100 text-slate-700'
                                                             }`}
                                                         >
@@ -1286,14 +1284,16 @@ export default function SessionIndex({
                                                         <p className="font-bold text-deep-twilight">{teacherObj?.user?.name || teacherObj?.name || teacherObj?.nama || '-'}</p>
                                                         <p className="text-[10px] text-gray-400">NIP: {teacherObj?.nip || '-'}</p>
                                                     </td>
-                                                    <td className="py-2.5 px-3">
+                                                    <td className="py-2.5 px-2 text-center">
                                                         <span className="font-bold text-deep-twilight">{s.kelas || 'Semua Kelas'}</span>
-                                                        {s.level && <span className="text-[10px] text-gray-500 block">Level: {s.level}</span>}
                                                     </td>
                                                     <td className="py-2.5 px-2 text-center">
                                                         <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-bright-teal/10 text-bright-teal">
                                                             {(s as any).bidang || s.mapel || '-'}
                                                         </span>
+                                                    </td>
+                                                    <td className="py-2.5 px-2 text-center">
+                                                        <span className="text-slate-600 font-medium">{s.level || '-'}</span>
                                                     </td>
                                                     <td className="py-2.5 px-3 max-w-[180px]">
                                                         {qObj ? (
@@ -1626,7 +1626,7 @@ export default function SessionIndex({
                                                                 </select>
                                                             </div>
                                                             <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Mapel / Bidang</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Bidang</label>
                                                                 <select
                                                                     value={s.bidang}
                                                                     disabled={isLocked}
@@ -1838,7 +1838,7 @@ export default function SessionIndex({
                                                 <span className="text-deep-twilight font-normal">{selectedWeekDetail.session1.kelas || 'Semua Kelas'}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-gray-500">Mapel:</span>
+                                                <span className="text-gray-500">Bidang:</span>
                                                 <span className="text-deep-twilight font-normal">{selectedWeekDetail.session1.bidang || selectedWeekDetail.session1.mapel || '-'}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
@@ -1920,7 +1920,7 @@ export default function SessionIndex({
                                                 <span className="text-deep-twilight font-normal">{selectedWeekDetail.session2.kelas || 'Semua Kelas'}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-gray-500">Mapel:</span>
+                                                <span className="text-gray-500">Bidang:</span>
                                                 <span className="text-deep-twilight font-normal">{selectedWeekDetail.session2.bidang || selectedWeekDetail.session2.mapel || '-'}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
