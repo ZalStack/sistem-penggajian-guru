@@ -1014,6 +1014,7 @@ export default function SessionIndex({
                                                             <select
                                                                 value={isTeacherActive(t) ? 'aktif' : 'nonaktif'}
                                                                 onChange={(e) => changeTeacherStatus(t, e.target.value)}
+                                                                style={{ backgroundImage: 'none' }}
                                                                 className={`appearance-none pl-2.5 pr-6 py-1.5 rounded-xl text-xs font-semibold border outline-none cursor-pointer transition-all w-full text-center shadow-2xs ${
                                                                     isTeacherActive(t)
                                                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
@@ -1023,7 +1024,7 @@ export default function SessionIndex({
                                                                 <option value="aktif">Aktif</option>
                                                                 <option value="nonaktif">Nonaktif</option>
                                                             </select>
-                                                            <svg className="w-3.5 h-3.5 absolute right-1.5 top-2.5 pointer-events-none text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                                             </svg>
                                                         </div>
