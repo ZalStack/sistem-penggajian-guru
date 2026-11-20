@@ -1359,7 +1359,7 @@ export default function SessionIndex({
                                         <option value="">-- Pilih Guru --</option>
                                         {teachersList.map((t) => (
                                             <option key={t.id} value={t.id}>
-                                                {t.user?.name || t.name || (t as any).nama} ({(t as any).subject || (t as any).mapel || 'Umum'})
+                                                {t.user?.name || t.name || (t as any).nama}
                                             </option>
                                         ))}
                                     </select>
