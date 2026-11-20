@@ -177,9 +177,9 @@ export default function Login({
                             <Icon icon="tabler:user" className="text-[17px]" />
                         </div>
                         <input
-                            id="email"
-                            name="search_guru"
-                            type="text"
+                            id="teacher-search-box"
+                            name="search_guru_query"
+                            type="search"
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -187,12 +187,12 @@ export default function Login({
                                 if (search.trim().length > 0) setIsOpen(true);
                             }}
                             placeholder="Ketik nama guru atau admin..."
-                            required
-                            autoComplete="off"
+                            autoComplete="new-password"
                             autoCorrect="off"
                             autoCapitalize="off"
                             spellCheck="false"
                             data-lpignore="true"
+                            data-1p-ignore="true"
                             data-form-type="other"
                             className="w-full pl-10 pr-8 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all bg-white"
                         />
