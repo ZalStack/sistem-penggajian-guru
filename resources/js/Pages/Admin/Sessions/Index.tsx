@@ -375,20 +375,73 @@ export default function SessionIndex({
         }));
     };
 
+    const createSessionFromSchedule = (sched: any): SessionRowForm => {
+        let start = '08:00';
+        let end = '09:30';
+        if (sched?.session_time && sched.session_time.includes('-')) {
+            const parts = sched.session_time.split('-');
+            if (parts[0]) start = parts[0].trim();
+            if (parts[1]) end = parts[1].trim();
+        } else if (sched?.session_time) {
+            start = sched.session_time.trim();
+        }
+
+        return {
+            _uid: sessionUidCounter++,
+            id: sched.id || null,
+            pekan: Number(sched.pekan) || 1,
+            kelas: sched.kelas || '',
+            level: sched.level || '',
+            bidang: sched.bidang || sched.mapel || 'MTK',
+            question_id: sched.question_id || (sched.material_id ? String(sched.material_id) : ''),
+            session_date: sched.session_date ? String(sched.session_date).slice(0, 10) : (sched.tanggal ? String(sched.tanggal).slice(0, 10) : ''),
+            jam_mulai: start,
+            jam_selesai: end,
+            session_time: sched.session_time || `${start} - ${end}`,
+            is_active: Boolean(sched.is_active),
+            notes: sched.notes || sched.catatan || '',
+            show_pdf_upload: false,
+            material_pdf: null,
+            pdf_name: sched.material_path ? sched.material_path.split('/').pop() : '',
+        };
+    };
+
     const onTeacherChange = (teacherId: string) => {
         const teacher = teachersList.find(t => Number(t.id) === Number(teacherId));
-        const defaultBidang = ((teacher as any)?.subject || (teacher as any)?.mapel) === 'IPA' ? 'IPA' : 'MTK';
-        const defaultKelas = teacher?.kelas_diajar || '';
+        if (teacher && !modalForm.is_edit) {
+            const existingSchedules = schedulesList.filter(s =>
+                (Number((s as any).teacher_id) === Number(teacher.id) || Number((s as any).guru_id) === Number(teacher.id)) &&
+                (Number((s as any).month) === Number(modalForm.month) || (s.tanggal && new Date(s.tanggal).getMonth() + 1 === Number(modalForm.month))) &&
+                (Number((s as any).year) === Number(modalForm.year) || (s.tanggal && new Date(s.tanggal).getFullYear() === Number(modalForm.year)))
+            ).sort((a, b) => Number(a.pekan) - Number(b.pekan));
 
-        setModalForm(prev => ({
-            ...prev,
-            teacher_id: teacherId,
-            sessions: prev.sessions.map(s => ({
-                ...s,
-                kelas: s.kelas || defaultKelas,
-                bidang: s.bidang || defaultBidang,
-            })),
-        }));
+            if (existingSchedules.length > 0) {
+                setModalForm(prev => ({
+                    ...prev,
+                    teacher_id: teacherId,
+                    sessions: existingSchedules.map(createSessionFromSchedule),
+                }));
+            } else {
+                setModalForm(prev => ({
+                    ...prev,
+                    teacher_id: teacherId,
+                    sessions: [createEmptySession(1, teacher)],
+                }));
+            }
+        } else if (teacher) {
+            const defaultBidang = ((teacher as any)?.subject || (teacher as any)?.mapel) === 'IPA' ? 'IPA' : 'MTK';
+            const defaultKelas = teacher?.kelas_diajar || '';
+
+            setModalForm(prev => ({
+                ...prev,
+                teacher_id: teacherId,
+                sessions: prev.sessions.map(s => ({
+                    ...s,
+                    kelas: s.kelas || defaultKelas,
+                    bidang: s.bidang || defaultBidang,
+                })),
+            }));
+        }
     };
 
     const setCycleMode = (mode: 'single' | '2weeks' | '4weeks') => {
@@ -441,6 +494,13 @@ export default function SessionIndex({
     const openModalAturSesiGuru = (teacher: any) => {
         if (!teacher) return;
         setDismissedConflict(false);
+
+        const existingSchedules = schedulesList.filter(s =>
+            (Number((s as any).teacher_id) === Number(teacher.id) || Number((s as any).guru_id) === Number(teacher.id)) &&
+            (Number((s as any).month) === Number(selectedMonth) || (s.tanggal && new Date(s.tanggal).getMonth() + 1 === Number(selectedMonth))) &&
+            (Number((s as any).year) === Number(selectedYear) || (s.tanggal && new Date(s.tanggal).getFullYear() === Number(selectedYear)))
+        ).sort((a, b) => Number(a.pekan) - Number(b.pekan));
+
         setModalForm({
             is_edit: false,
             is_specific: false,
@@ -448,7 +508,9 @@ export default function SessionIndex({
             teacher_id: String(teacher.id),
             month: selectedMonth,
             year: selectedYear,
-            sessions: [createEmptySession(1, teacher)],
+            sessions: existingSchedules.length > 0
+                ? existingSchedules.map(createSessionFromSchedule)
+                : [createEmptySession(1, teacher)],
         });
         setShowModal(true);
     };
@@ -1295,24 +1357,24 @@ export default function SessionIndex({
                                         <div
                                             key={pekanNum}
                                             className={`rounded-xl border transition-all p-3 space-y-2.5 shadow-2xs ${
-                                                isPlotted ? 'border-slate-300 bg-slate-100/80 opacity-60' : 'border-slate-200 bg-white'
+                                                isPlotted ? 'border-slate-400 bg-slate-200/90' : 'border-slate-200 bg-white'
                                             }`}
                                         >
-                                            {/* Header Pekan: Background Biru Modern (atau Abu-abu jika sudah terploting) */}
+                                            {/* Header Pekan: Background Biru Modern (atau Abu-abu Gelap Kontras jika sudah terploting) */}
                                             <div
                                                 className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors shadow-xs ${
-                                                    isPlotted ? 'bg-slate-400 text-white' : 'bg-french-blue text-white'
+                                                    isPlotted ? 'bg-slate-700 text-white' : 'bg-french-blue text-white'
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                                                            isPlotted ? 'bg-black/20 text-white' : 'bg-white/20 text-white'
+                                                            isPlotted ? 'bg-slate-900/60 text-white' : 'bg-white/20 text-white'
                                                         }`}
                                                     >
                                                         Pekan {pekanNum}
                                                     </span>
-                                                    <span className="text-[11px] text-white/90 font-medium">
+                                                    <span className={`text-[11px] font-medium ${isPlotted ? 'text-slate-100 font-semibold' : 'text-white/90'}`}>
                                                         {isPlotted ? 'Sudah Diploting (Terkunci)' : `${sessionsInPekan.length} Sesi Terjadwal`}
                                                     </span>
                                                 </div>
@@ -1343,7 +1405,7 @@ export default function SessionIndex({
                                                     )}
 
                                                     {isPlotted && (
-                                                        <span className="text-[10px] bg-black/20 text-white px-2 py-0.5 rounded-md font-medium">
+                                                        <span className="text-[10px] bg-slate-900/60 text-white px-2 py-0.5 rounded-md font-bold tracking-wide">
                                                             Terkunci
                                                         </span>
                                                     )}
@@ -1356,7 +1418,7 @@ export default function SessionIndex({
                                                     <div
                                                         key={s._uid}
                                                         className={`p-2.5 rounded-lg border space-y-2 relative transition-colors ${
-                                                            isPlotted ? 'border-slate-300 bg-slate-200/50' : 'border-slate-200/90 bg-slate-50/70'
+                                                            isPlotted ? 'border-slate-400 bg-slate-300/70 shadow-xs' : 'border-slate-200/90 bg-slate-50/70'
                                                         }`}
                                                     >
                                                         {/* Sub-Header Sesi */}
@@ -1364,16 +1426,16 @@ export default function SessionIndex({
                                                             <div className="flex items-center gap-1.5">
                                                                 <span
                                                                     className={`w-4 h-4 rounded-full text-white text-[9px] font-bold flex items-center justify-center ${
-                                                                        isPlotted ? 'bg-slate-500' : 'bg-french-blue'
+                                                                        isPlotted ? 'bg-slate-700' : 'bg-french-blue'
                                                                     }`}
                                                                 >
                                                                     {getSessionIndexInPekan(s)}
                                                                 </span>
-                                                                <span className={`text-xs font-bold ${isPlotted ? 'text-slate-600' : 'text-slate-800'}`}>
+                                                                <span className={`text-xs font-bold ${isPlotted ? 'text-slate-800' : 'text-slate-800'}`}>
                                                                     Sesi {getSessionIndexInPekan(s)}
                                                                 </span>
                                                                 {isPlotted && (
-                                                                    <span className="text-[10px] text-slate-500 italic ml-1">
+                                                                    <span className="text-[10px] text-slate-700 font-semibold italic ml-1">
                                                                         (Sudah ada jadwal di pekan ini)
                                                                     </span>
                                                                 )}
@@ -1393,17 +1455,17 @@ export default function SessionIndex({
                                                         {/* Input Tanggal & Jam Picker */}
                                                         <div className="grid grid-cols-1 sm:grid-cols-5 gap-1.5">
                                                             <div>
-                                                                <label className="block text-[9px] font-bold text-gray-600 uppercase mb-0.5">Tanggal Sesi</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-gray-600'}`}>Tanggal Sesi</label>
                                                                 <input
                                                                     type="date"
                                                                     value={s.session_date}
                                                                     disabled={isPlotted}
                                                                     onChange={(e) => updateSession(s._uid, { session_date: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-[9px] font-bold text-gray-600 uppercase mb-0.5">Jam Mulai</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-gray-600'}`}>Jam Mulai</label>
                                                                 <input
                                                                     type="time"
                                                                     value={s.jam_mulai}
@@ -1412,11 +1474,11 @@ export default function SessionIndex({
                                                                         updateSession(s._uid, { jam_mulai: e.target.value });
                                                                         onTimeChange({ ...s, jam_mulai: e.target.value });
                                                                     }}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-[9px] font-bold text-gray-600 uppercase mb-0.5">Jam Selesai</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-gray-600'}`}>Jam Selesai</label>
                                                                 <input
                                                                     type="time"
                                                                     value={s.jam_selesai}
@@ -1425,16 +1487,16 @@ export default function SessionIndex({
                                                                         updateSession(s._uid, { jam_selesai: e.target.value });
                                                                         onTimeChange({ ...s, jam_selesai: e.target.value });
                                                                     }}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-[9px] font-bold text-gray-600 uppercase mb-0.5">Kelas</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-gray-600'}`}>Kelas</label>
                                                                 <select
                                                                     value={s.kelas}
                                                                     disabled={isPlotted}
                                                                     onChange={(e) => updateSession(s._uid, { kelas: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
                                                                 >
                                                                     <option value="">Semua Kelas</option>
                                                                     {KELAS_OPTIONS.map((k) => (
@@ -1443,12 +1505,12 @@ export default function SessionIndex({
                                                                 </select>
                                                             </div>
                                                             <div>
-                                                                <label className="block text-[9px] font-bold text-gray-600 uppercase mb-0.5">Mapel / Bidang</label>
+                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-gray-600'}`}>Mapel / Bidang</label>
                                                                 <select
                                                                     value={s.bidang}
                                                                     disabled={isPlotted}
                                                                     onChange={(e) => updateSession(s._uid, { bidang: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:border-slate-300 disabled:cursor-not-allowed"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
                                                                 >
                                                                     <option value="MTK">MTK</option>
                                                                     <option value="IPA">IPA</option>
@@ -1457,17 +1519,17 @@ export default function SessionIndex({
                                                         </div>
 
                                                         {/* Bahan Ajar: Bank Soal & Direct PDF Upload */}
-                                                        <div className="pt-1.5 border-t border-slate-200/80 space-y-1.5">
+                                                        <div className={`pt-1.5 border-t border-slate-200/80 space-y-1.5 ${isPlotted ? 'border-slate-400/80' : ''}`}>
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                 <div>
-                                                                    <label className="block text-[9px] font-bold text-slate-600 uppercase mb-0.5">
+                                                                    <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isPlotted ? 'text-slate-800' : 'text-slate-600'}`}>
                                                                         Pilih Materi Dari Bank Soal
                                                                     </label>
                                                                     <select
                                                                         value={s.question_id}
                                                                         disabled={Boolean(s.material_pdf) || isPlotted}
                                                                         onChange={(e) => updateSession(s._uid, { question_id: e.target.value })}
-                                                                        className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs text-deep-twilight outline-none disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+                                                                        className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs text-deep-twilight outline-none disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed cursor-pointer"
                                                                     >
                                                                         <option value="">-- Tanpa Materi --</option>
                                                                         {questionsList.map((q) => (
@@ -1480,14 +1542,14 @@ export default function SessionIndex({
 
                                                                 <div>
                                                                     <div className="flex items-center justify-between mb-0.5">
-                                                                        <label className="block text-[9px] font-bold text-slate-600 uppercase">
+                                                                        <label className={`block text-[9px] font-bold uppercase ${isPlotted ? 'text-slate-800' : 'text-slate-600'}`}>
                                                                             Atau Upload PDF Langsung
                                                                         </label>
                                                                         <button
                                                                             type="button"
                                                                             disabled={isPlotted}
                                                                             onClick={() => updateSession(s._uid, { show_pdf_upload: !s.show_pdf_upload })}
-                                                                            className="text-[9px] text-french-blue hover:underline cursor-pointer font-semibold"
+                                                                            className="text-[9px] text-french-blue hover:underline cursor-pointer font-semibold disabled:hidden"
                                                                         >
                                                                             {s.show_pdf_upload ? 'Tutup Upload' : '+ Upload PDF'}
                                                                         </button>
@@ -1516,15 +1578,17 @@ export default function SessionIndex({
                                                                     )}
 
                                                                     {s.pdf_name && !s.show_pdf_upload && (
-                                                                        <div className="text-[10px] text-slate-700 flex items-center justify-between bg-slate-100 px-2 py-0.5 rounded">
+                                                                        <div className="text-[10px] text-slate-800 flex items-center justify-between bg-slate-200/80 px-2 py-0.5 rounded font-medium border border-slate-300">
                                                                             <span className="truncate">📎 {s.pdf_name}</span>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => clearSessionPdf(s)}
-                                                                                className="text-red-500 font-bold ml-1"
-                                                                            >
-                                                                                &times;
-                                                                            </button>
+                                                                            {!isPlotted && (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => clearSessionPdf(s)}
+                                                                                    className="text-red-500 font-bold ml-1"
+                                                                                >
+                                                                                    &times;
+                                                                                </button>
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1538,7 +1602,7 @@ export default function SessionIndex({
                                                                     disabled={isPlotted}
                                                                     onChange={(e) => updateSession(s._uid, { notes: e.target.value })}
                                                                     placeholder="Catatan sesi (opsional)"
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-[11px] text-deep-twilight outline-none placeholder:text-gray-400"
+                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-[11px] text-deep-twilight outline-none placeholder:text-gray-400 disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-medium disabled:cursor-not-allowed"
                                                                 />
                                                             </div>
                                                         </div>
@@ -1549,56 +1613,27 @@ export default function SessionIndex({
                                     );
                                 })}
 
-                                {/* Tombol Tambah Pekan Baru */}
+                                {/* Tombol Tambah Pekan Baru dengan Double Icon + */}
                                 {canAddMorePekan && (
-                                    <button
-                                        type="button"
-                                        onClick={addNextPekan}
-                                        className="w-full py-2 rounded-xl border-2 border-dashed border-french-blue/30 text-french-blue hover:border-french-blue hover:bg-french-blue/5 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        <span>+ Tambah Pekan {nextPekanNumber}</span>
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Tombol Siklus Singkat (Hanya Muncul Jika Bukan Edit & Bukan Guru Spesifik) */}
-                            {!modalForm.is_edit && !modalForm.is_specific && (
-                                <div className="pt-2 border-t border-light-cyan/60 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Template Siklus Cepat:</span>
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="pt-1 flex justify-center">
                                         <button
                                             type="button"
-                                            onClick={() => setCycleMode('single')}
-                                            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border cursor-pointer ${
-                                                modalForm.cycle_mode === 'single' ? 'bg-french-blue text-white border-french-blue' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                                            }`}
+                                            onClick={addNextPekan}
+                                            className="py-1.5 px-4 rounded-xl border-2 border-dashed border-french-blue hover:border-french-blue/80 bg-white hover:bg-french-blue/5 text-french-blue text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                                         >
-                                            1 Sesi
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setCycleMode('2weeks')}
-                                            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border cursor-pointer ${
-                                                modalForm.cycle_mode === '2weeks' ? 'bg-bright-teal text-white border-bright-teal' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                                            }`}
-                                        >
-                                            2 Pekan
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setCycleMode('4weeks')}
-                                            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border cursor-pointer ${
-                                                modalForm.cycle_mode === '4weeks' ? 'bg-deep-twilight text-white border-deep-twilight' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                                            }`}
-                                        >
-                                            4 Pekan Penuh
+                                            <div className="flex items-center -space-x-1">
+                                                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                                <svg className="w-3.5 h-3.5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                            </div>
+                                            <span>+ + Tambah Pekan {nextPekanNumber}</span>
                                         </button>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
 
                             {/* Action Submit Modal */}
                             <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-light-cyan/60">
