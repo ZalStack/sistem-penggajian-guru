@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +19,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
-        $teachers = \App\Models\User::with(['guru.grade', 'guru.programs'])
+        $teachers = User::with(['guru.grade', 'guru.programs'])
             ->orderBy('name')
             ->get()
-            ->map(function (\App\Models\User $u) {
+            ->map(function (User $u) {
                 $isAdmin = $u->role === 'admin';
                 $guru = $u->guru;
                 $mapel = $guru ? trim(($guru->mapel ?? '').($guru->bidang_2 ? ' & '.$guru->bidang_2 : '')) : '-';

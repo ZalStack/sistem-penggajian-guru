@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\Program;
 use App\Models\TeachingSession;
 use App\Models\Transport;
+use App\Services\AdikSyncService;
 use App\Support\Tanggal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -532,6 +533,7 @@ class TeachingSessionController extends Controller
                     $s = TeachingSession::find($weekId);
                     if ($s) {
                         $s->update($dataPayload);
+                        AdikSyncService::pushScheduleToAdik($s->fresh(), 'upsert');
 
                         continue;
                     }
@@ -539,6 +541,7 @@ class TeachingSessionController extends Controller
 
                 $newSession = TeachingSession::create($dataPayload);
                 $this->notifyGuruAboutSession($newSession, 'ditugaskan');
+                AdikSyncService::pushScheduleToAdik($newSession, 'upsert');
             }
 
             $countWeeks = count($weeksInput);
@@ -624,6 +627,7 @@ class TeachingSessionController extends Controller
                     'catatan' => $validated['notes'] ?? null,
                 ]);
                 $this->notifyGuruAboutSession($newSess, 'ditugaskan');
+                AdikSyncService::pushScheduleToAdik($newSess, 'upsert');
             }
 
             return back()->with('success', 'Ploting jadwal mengajar siklus 4 pekan berhasil dibuat.');
@@ -754,6 +758,7 @@ class TeachingSessionController extends Controller
                 'catatan' => $validated['notes'] ?? ($validated['catatan'] ?? null),
             ]);
             $this->notifyGuruAboutSession($session, 'diperbarui');
+            AdikSyncService::pushScheduleToAdik($session->fresh(), 'upsert');
         } else {
             $session = TeachingSession::create([
                 'guru_id' => $validated['guru_id'],
@@ -776,6 +781,7 @@ class TeachingSessionController extends Controller
                 'catatan' => $validated['notes'] ?? ($validated['catatan'] ?? null),
             ]);
             $this->notifyGuruAboutSession($session, 'ditugaskan');
+            AdikSyncService::pushScheduleToAdik($session, 'upsert');
         }
 
         return back()->with('success', 'Ploting jadwal sesi mengajar berhasil disimpan.');
@@ -874,6 +880,7 @@ class TeachingSessionController extends Controller
         ]);
 
         $this->notifyGuruAboutSession($session->fresh(), 'diperbarui', $guruBerubah);
+        AdikSyncService::pushScheduleToAdik($session->fresh(), 'upsert');
 
         return back()->with('success', 'Sesi mengajar berhasil diperbarui.');
     }
@@ -897,6 +904,8 @@ class TeachingSessionController extends Controller
                 'sesi'
             );
         }
+
+        AdikSyncService::pushScheduleToAdik($session, 'delete');
 
         $session->delete();
 

@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class GuruExcelSeeder extends Seeder
 {
@@ -131,8 +130,11 @@ class GuruExcelSeeder extends Seeder
 
     private function parseTunjangan(?string $value): float
     {
-        if (empty($value)) return 0;
+        if (empty($value)) {
+            return 0;
+        }
         $clean = str_replace(['Rp', ',', ' '], '', $value);
+
         return is_numeric($clean) ? (float) $clean : 0;
     }
 
@@ -143,21 +145,28 @@ class GuruExcelSeeder extends Seeder
         $clean = preg_replace('/[^a-zA-Z\s]/', ' ', $clean);
         $clean = preg_replace('/\s+/', ' ', trim($clean));
         $parts = explode(' ', strtolower($clean));
-        $parts = array_filter($parts, fn($p) => strlen($p) > 1);
+        $parts = array_filter($parts, fn ($p) => strlen($p) > 1);
         $parts = array_values(array_slice($parts, 0, 2));
-        if (count($parts) === 0) $parts = ['guru'];
-        if (count($parts) === 1) $parts[] = 'guru';
+        if (count($parts) === 0) {
+            $parts = ['guru'];
+        }
+        if (count($parts) === 1) {
+            $parts[] = 'guru';
+        }
         $base = implode('.', $parts);
         $base = preg_replace('/[^a-z0-9.]/', '', $base);
         $base = trim($base, '.');
-        if (empty($base)) $base = 'guru';
-        $email = $base . '@siguru.com';
+        if (empty($base)) {
+            $base = 'guru';
+        }
+        $email = $base.'@siguru.com';
         $counter = 2;
         while (isset($used[$email]) || User::where('email', $email)->exists()) {
-            $email = $base . $counter . '@siguru.com';
+            $email = $base.$counter.'@siguru.com';
             $counter++;
         }
         $used[$email] = true;
+
         return $email;
     }
 
@@ -167,6 +176,7 @@ class GuruExcelSeeder extends Seeder
         // Ensure grades exist
         if (empty($gradeMap)) {
             $this->command->warn('Grades table kosong, buat default A1-C2 dahulu.');
+
             return;
         }
 
@@ -183,22 +193,29 @@ class GuruExcelSeeder extends Seeder
                 $nama = trim($row['nama']);
                 $gradeKode = trim($row['grade']);
                 $gradeId = $gradeMap[$gradeKode] ?? null;
-                if (!$gradeId) {
-                    $this->command->warn("Baris ".($idx+1)." grade {$gradeKode} tidak ditemukan untuk {$nama}, dilewati.");
+                if (! $gradeId) {
+                    $this->command->warn('Baris '.($idx + 1)." grade {$gradeKode} tidak ditemukan untuk {$nama}, dilewati.");
                     $skipped++;
+
                     continue;
                 }
 
                 $domisili = trim($row['domisili']);
-                if ($domisili === '' || $domisili === '-') $domisili = null;
+                if ($domisili === '' || $domisili === '-') {
+                    $domisili = null;
+                }
 
                 $tunjangan = $this->parseTunjangan($row['tunjangan']);
                 $norek = trim($row['norek']);
                 // Biarkan 'Staff' / 'Tidak Aktif' apa adanya sesuai Excel, jika kosong null
-                if ($norek === '') $norek = null;
+                if ($norek === '') {
+                    $norek = null;
+                }
 
                 $ket = trim($row['ket']);
-                if ($ket === '') $ket = null;
+                if ($ket === '') {
+                    $ket = null;
+                }
 
                 // Cek duplikat persis nama+grade+norek+ket (untuk Anis kembar)
                 $exists = Guru::where('nama', $nama)
@@ -208,7 +225,7 @@ class GuruExcelSeeder extends Seeder
                     ->first();
                 if ($exists) {
                     // Pastikan user exists
-                    if (!$exists->user) {
+                    if (! $exists->user) {
                         $email = $this->generateEmail($nama, $usedEmails);
                         $user = User::create([
                             'name' => $nama,
@@ -220,6 +237,7 @@ class GuruExcelSeeder extends Seeder
                         $exists->update(['user_id' => $user->id]);
                     }
                     $skipped++;
+
                     continue;
                 }
 

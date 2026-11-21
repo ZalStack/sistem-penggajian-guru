@@ -31,7 +31,7 @@ class ScheduleController extends ApiController
         $bulan = $validated['bulan'] ?? now()->format('Y-m');
         $guru = $user->guru;
 
-        $query = TeachingSession::with(['guru.grade', 'location', 'transport', 'program'])
+        $query = TeachingSession::with(['guru.grade', 'location', 'transport', 'program', 'material'])
             ->whereMonth('tanggal', (int) substr($bulan, 5, 2))
             ->whereYear('tanggal', (int) substr($bulan, 0, 4));
 
@@ -73,7 +73,8 @@ class ScheduleController extends ApiController
                         'kelas' => $s->kelas,
                         'level' => $s->level,
                         'pekan' => (int) $s->pekan,
-                        'bahan_ajar' => $s->bahan_ajar,
+                        'bahan_ajar' => $s->material?->title ?: $s->bahan_ajar,
+                        'material_title' => $s->material?->title,
                         'status' => $s->effective_status,
                         'lokasi' => $s->location->nama_lokasi ?? '-',
                         'location' => $s->location ? [

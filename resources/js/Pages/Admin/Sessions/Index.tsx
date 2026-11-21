@@ -636,14 +636,14 @@ export default function SessionIndex({
             sessionsToSubmit.forEach((s, idx) => {
                 if (s.id) formData.append(`sessions[${idx}][id]`, String(s.id));
                 formData.append(`sessions[${idx}][pekan]`, String(s.pekan));
-                if (s.kelas) formData.append(`sessions[${idx}][kelas]`, s.kelas);
-                if (s.level) formData.append(`sessions[${idx}][level]`, s.level);
-                if (s.bidang) formData.append(`sessions[${idx}][bidang]`, s.bidang);
-                if (s.session_date) formData.append(`sessions[${idx}][session_date]`, s.session_date);
-                if (s.session_time) formData.append(`sessions[${idx}][session_time]`, s.session_time);
+                formData.append(`sessions[${idx}][kelas]`, s.kelas || '');
+                formData.append(`sessions[${idx}][level]`, s.level || '');
+                formData.append(`sessions[${idx}][bidang]`, s.bidang || '');
+                formData.append(`sessions[${idx}][session_date]`, s.session_date || '');
+                formData.append(`sessions[${idx}][session_time]`, s.session_time || '');
                 formData.append(`sessions[${idx}][is_active]`, s.is_active ? '1' : '0');
-                if (s.notes) formData.append(`sessions[${idx}][notes]`, s.notes);
-                if (s.question_id) formData.append(`sessions[${idx}][question_id]`, s.question_id);
+                formData.append(`sessions[${idx}][notes]`, s.notes || '');
+                formData.append(`sessions[${idx}][question_id]`, s.question_id || '');
                 if (s.material_pdf instanceof File) {
                     formData.append(`sessions[${idx}][material_pdf]`, s.material_pdf);
                 }

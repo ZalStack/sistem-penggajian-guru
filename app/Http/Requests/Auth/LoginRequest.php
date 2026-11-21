@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -55,13 +57,13 @@ class LoginRequest extends FormRequest
 
         // 2. Coba cari berdasarkan Nama Lengkap atau prefix email (@satuguru.com / @siguru.com)
         $cleanSlug = preg_replace('/[^a-z0-9]/', '', strtolower($loginInput));
-        $candidateUser = \App\Models\User::where('name', $loginInput)
+        $candidateUser = User::where('name', $loginInput)
             ->orWhere('email', $loginInput.'@satuguru.com')
             ->when($cleanSlug !== '', fn ($q) => $q->orWhere('email', $cleanSlug.'@satuguru.com')->orWhere('email', $cleanSlug.'@siguru.com'))
             ->orWhereHas('guru', fn ($gq) => $gq->where('nama', $loginInput))
             ->first();
 
-        if ($candidateUser && \Illuminate\Support\Facades\Hash::check($password, $candidateUser->password)) {
+        if ($candidateUser && Hash::check($password, $candidateUser->password)) {
             Auth::login($candidateUser, $remember);
             RateLimiter::clear($this->throttleKey());
 
