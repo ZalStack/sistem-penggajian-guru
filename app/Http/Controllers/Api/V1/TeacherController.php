@@ -285,6 +285,44 @@ class TeacherController extends ApiController
     }
 
     /**
+     * External Sync: Sync teacher active status from SI ADIK-KK.
+     */
+    public function syncFromAdik(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'guru_id' => 'nullable|integer',
+            'guru_email' => 'nullable|string',
+            'guru_nama' => 'nullable|string',
+            'is_active_this_week' => 'required|boolean',
+        ]);
+
+        $guru = null;
+        if (! empty($validated['guru_id'])) {
+            $guru = Guru::find($validated['guru_id']);
+        }
+        if (! $guru && ! empty($validated['guru_email'])) {
+            $guru = Guru::whereHas('user', fn ($uq) => $uq->where('email', $validated['guru_email']))->first();
+        }
+        if (! $guru && ! empty($validated['guru_nama'])) {
+            $guru = Guru::where('nama', 'like', "%{$validated['guru_nama']}%")->first();
+        }
+
+        if (! $guru) {
+            return $this->errorResponse('Guru tidak ditemukan di sistem SiGuru.', 404);
+        }
+
+        $guru->update([
+            'is_active_this_week' => $validated['is_active_this_week'],
+        ]);
+
+        return $this->successResponse([
+            'guru_id' => $guru->id,
+            'nama' => $guru->nama,
+            'is_active_this_week' => (bool) $guru->is_active_this_week,
+        ], 'Status aktif guru berhasil disinkronkan dari SI ADIK-KK.');
+    }
+
+    /**
      * Normalisasi bidang kedua guru agar selalu berbeda dari bidang utamanya.
      */
     private function normalisasiBidang(?string $bidang, string $mapel): ?string

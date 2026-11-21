@@ -106,6 +106,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('attendances/sync-from-adik', [AttendanceController::class, 'syncFromAdik'])->name('attendances.sync-from-adik.delete');
         Route::post('teaching-sessions/sync-from-adik', [TeachingSessionController::class, 'syncFromAdik'])->name('teaching-sessions.sync-from-adik');
         Route::delete('teaching-sessions/sync-from-adik', [TeachingSessionController::class, 'syncFromAdik'])->name('teaching-sessions.sync-from-adik.delete');
+        Route::post('teachers/sync-from-adik', [TeacherController::class, 'syncFromAdik'])->name('teachers.sync-from-adik');
 
         /*
         |----------------------------------------------------------------------

@@ -43,6 +43,7 @@ class AdikSyncService
                 'riwayat_pendidikan' => $guru->riwayat_pendidikan,
                 'riwayat_mengajar' => $guru->riwayat_mengajar,
                 'keterangan_mengajar' => $guru->keterangan_mengajar,
+                'is_active_this_week' => (bool) ($guru->is_active_this_week ?? true),
                 'grade' => $guru->grade ? [
                     'id' => $guru->grade->id,
                     'kode_grade' => $guru->grade->kode_grade,

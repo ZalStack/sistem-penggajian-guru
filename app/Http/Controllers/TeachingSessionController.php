@@ -930,6 +930,8 @@ class TeachingSessionController extends Controller
             'is_active_this_week' => $newStatus,
         ]);
 
+        AdikSyncService::pushTeacherToAdik($guru->fresh());
+
         $statusLabel = $newStatus ? 'Aktif' : 'Nonaktif';
 
         return back()->with('success', "Status akun guru berhasil diatur menjadi {$statusLabel}.");
