@@ -24,6 +24,7 @@ class TeacherResource extends JsonResource
             'keterangan_mengajar' => $this->keterangan_mengajar,
             'riwayat_mengajar' => $this->riwayat_mengajar,
             'lama_mengajar' => $this->lama_mengajar,
+            'is_active_this_week' => (bool) ($this->is_active_this_week ?? true),
             'grade' => new GradeResource($this->whenLoaded('grade')),
             // Sensitive fields are only exposed to admin accounts.
             $this->mergeWhen($isAdmin, [
