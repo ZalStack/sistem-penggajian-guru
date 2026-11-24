@@ -48,9 +48,6 @@ class TeachingSessionController extends Controller
         $search = trim((string) $request->input('search', ''));
         $currentPekan = min(4, (int) ceil(now()->day / 7));
 
-        // Segarkan status keaktifan akun guru mingguan (aktif hanya jika ada jadwal di pekan berjalan saat ini)
-        self::refreshGuruWeeklyActiveStatus();
-
         $teachers = Guru::with(['grade', 'programs', 'user'])->orderBy('nama')->get();
         $teachers->transform(function ($t) {
             $t->name = $t->user?->name ?: $t->nama;
@@ -143,9 +140,9 @@ class TeachingSessionController extends Controller
                 $q->accessible_until_formatted = $cutoff->translatedFormat('d M Y, H:i').' WIB';
             }
             $schedule->is_current_pekan = (int) $schedule->pekan === (int) $currentPekan;
-            $schedule->session_date = $schedule->tanggal ? $schedule->tanggal->format('Y-m-d') : null;
+            $schedule->session_date = $this->formatDateValue($schedule->tanggal);
             if (empty($schedule->session_time) && $schedule->jam_mulai && $schedule->jam_selesai) {
-                $schedule->session_time = $schedule->jam_mulai->format('H:i').' - '.$schedule->jam_selesai->format('H:i');
+                $schedule->session_time = $this->formatTimeValue($schedule->jam_mulai).' - '.$this->formatTimeValue($schedule->jam_selesai);
             }
             $schedule->teacher_id = $schedule->guru_id;
             $schedule->teacher = $schedule->guru;
@@ -258,7 +255,7 @@ class TeachingSessionController extends Controller
 
                 $dup = $dupQuery->first();
                 if ($dup) {
-                    $timeStr = $dup->session_time ? " ({$dup->session_time})" : ($dup->jam_mulai ? " ({$dup->jam_mulai->format('H:i')}-{$dup->jam_selesai->format('H:i')})" : '');
+                    $timeStr = $dup->session_time ? " ({$dup->session_time})" : ($dup->jam_mulai ? " ({$this->formatTimeValue($dup->jam_mulai)}-{$this->formatTimeValue($dup->jam_selesai)})" : '');
 
                     return "Peringatan Anti-Bentrok: {$guruName} sudah memiliki jadwal di {$kelas} pada {$formattedDate}{$timeStr}. Batalkan atau ubah sesi lama terlebih dahulu.";
                 }
@@ -298,7 +295,7 @@ class TeachingSessionController extends Controller
                 $conflictKelas = $conflictKelasQuery->first();
                 if ($conflictKelas) {
                     $otherName = $conflictKelas->guru?->nama ?: ($conflictKelas->guru?->user?->name ?: 'Guru Lain');
-                    $timeStr = $conflictKelas->session_time ? " ({$conflictKelas->session_time})" : ($conflictKelas->jam_mulai ? " ({$conflictKelas->jam_mulai->format('H:i')}-{$conflictKelas->jam_selesai->format('H:i')})" : '');
+                    $timeStr = $conflictKelas->session_time ? " ({$conflictKelas->session_time})" : ($conflictKelas->jam_mulai ? " ({$this->formatTimeValue($conflictKelas->jam_mulai)}-{$this->formatTimeValue($conflictKelas->jam_selesai)})" : '');
                     $kLabel = $kelas ?: ($conflictKelas->program?->nama ?: 'kelas');
 
                     return "Peringatan Anti-Bentrok: {$kLabel} pada hari {$formattedDate}{$timeStr} sudah diisi oleh {$otherName}. Batalkan sesi lama terlebih dahulu.";
@@ -803,9 +800,9 @@ class TeachingSessionController extends Controller
         $defaultLocId = $session->location_id ?: (Location::first()?->id ?? 1);
         $defaultTransId = $session->transport_id ?: (Transport::first()?->id ?? 1);
 
-        $tanggal = $request->input('session_date', $request->input('tanggal', $session->tanggal?->format('Y-m-d')));
+        $tanggal = $request->input('session_date', $request->input('tanggal', $this->formatDateValue($session->tanggal)));
         $sessionTime = $request->input('session_time', $session->session_time);
-        [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $request->input('jam_mulai', $session->jam_mulai?->format('H:i')), $request->input('jam_selesai', $session->jam_selesai?->format('H:i')));
+        [$jamMulai, $jamSelesai] = $this->parseTimeRange($sessionTime, $request->input('jam_mulai', $this->formatTimeValue($session->jam_mulai)), $request->input('jam_selesai', $this->formatTimeValue($session->jam_selesai)));
         if ($jamMulai && $jamSelesai) {
             $sessionTime = "{$jamMulai} - {$jamSelesai}";
         }
@@ -901,7 +898,7 @@ class TeachingSessionController extends Controller
 
         if ($session->guru?->user) {
             $tgl = $session->tanggal ? Tanggal::tanggalPanjang($session->tanggal) : 'sesi';
-            $jam = $session->jam_mulai ? $session->jam_mulai->format('H:i') : ($session->session_time ?: '');
+            $jam = $this->formatTimeValue($session->jam_mulai, $session->session_time ?: '');
             Notification::send(
                 $session->guru->user,
                 'Sesi Mengajar Dihapus',
@@ -945,10 +942,10 @@ class TeachingSessionController extends Controller
                 ->where('is_active', true)
                 ->exists();
 
-            if ((bool) ($guru->is_active_this_week ?? false) !== $hasActiveScheduleThisWeek) {
-                $guru->update(['is_active_this_week' => $hasActiveScheduleThisWeek]);
+            if ($hasActiveScheduleThisWeek && ! $guru->is_active_this_week) {
+                $guru->update(['is_active_this_week' => true]);
                 try {
-                    AdikSyncService::pushTeacherToAdik($guru);
+                    AdikSyncService::pushTeacherToAdik($guru->fresh());
                 } catch (\Throwable $e) {
                     // Abaikan kesalahan koneksi sync jika terjadi timeout
                 }
@@ -967,14 +964,18 @@ class TeachingSessionController extends Controller
         } elseif ($request->has('is_active_this_week')) {
             $newStatus = $request->boolean('is_active_this_week');
         } else {
-            $newStatus = ! (bool) ($guru->is_active_this_week ?? true);
+            $newStatus = ! (bool) ($guru->is_active_this_week ?? false);
         }
 
         $guru->update([
             'is_active_this_week' => $newStatus,
         ]);
 
-        AdikSyncService::pushTeacherToAdik($guru->fresh());
+        try {
+            AdikSyncService::pushTeacherToAdik($guru->fresh());
+        } catch (\Throwable $e) {
+            // Abaikan kesalahan koneksi sync jika terjadi timeout
+        }
 
         $statusLabel = $newStatus ? 'Aktif' : 'Nonaktif';
 
@@ -1023,7 +1024,7 @@ class TeachingSessionController extends Controller
 
         $tglStr = $session->tanggal ? Tanggal::tanggalPanjang($session->tanggal) : 'sesi';
         $jamStr = $session->jam_mulai && $session->jam_selesai
-            ? $session->jam_mulai->format('H:i').'-'.$session->jam_selesai->format('H:i')
+            ? $this->formatTimeValue($session->jam_mulai).'-'.$this->formatTimeValue($session->jam_selesai)
             : ($session->session_time ?: '');
 
         $pesan = 'Anda '.$aksi.' sesi mengajar '.$tglStr
@@ -1033,5 +1034,34 @@ class TeachingSessionController extends Controller
             .'. Status: '.ucfirst($session->status).'.'.($session->catatan ? ' Catatan: '.$session->catatan : '');
 
         Notification::send($user, $judul, $pesan, 'info', 'sesi');
+    }
+
+    private function formatTimeValue($val, string $fallback = ''): string
+    {
+        if (! $val) {
+            return $fallback;
+        }
+        if ($val instanceof \DateTimeInterface) {
+            return $val->format('H:i');
+        }
+        $clean = trim((string) $val);
+        if (preg_match('/^(\d{1,2}:\d{2})/', $clean, $m)) {
+            return $m[1];
+        }
+
+        return strlen($clean) >= 5 ? substr($clean, 0, 5) : $clean;
+    }
+
+    private function formatDateValue($val): ?string
+    {
+        if (! $val) {
+            return null;
+        }
+        if ($val instanceof \DateTimeInterface) {
+            return $val->format('Y-m-d');
+        }
+        $str = (string) $val;
+
+        return strlen($str) >= 10 ? substr($str, 0, 10) : $str;
     }
 }

@@ -75,20 +75,7 @@ class JadwalController extends Controller
                 ->when($validated['filter_status'] ?? null, fn ($q, $status) => $q->where('status', $status));
         }
 
-        $formatTime = function ($val, ?string $fallback = '-'): string {
-            if (empty($val)) {
-                return $fallback ?? '-';
-            }
-            if ($val instanceof \DateTimeInterface) {
-                return $val->format('H:i');
-            }
-            $clean = trim((string) $val);
-            if (str_contains($clean, ':')) {
-                return substr($clean, 0, 5);
-            }
-
-            return $clean ?: ($fallback ?? '-');
-        };
+        $formatTime = fn ($val, ?string $fallback = '-') => $this->formatTime($val, $fallback);
 
         $sessions = $query->orderBy('jam_mulai')->orderBy('jam_selesai')->get()->groupBy(function (TeachingSession $s) {
             if ($s->tanggal instanceof \DateTimeInterface) {
@@ -107,7 +94,7 @@ class JadwalController extends Controller
             }
         }
 
-        $days = collect(range(0, 6))->map(function (int $offset) use ($mulai, $sessions, $isAdmin, $selectedDate) {
+        $days = collect(range(0, 6))->map(function (int $offset) use ($mulai, $sessions, $isAdmin, $selectedDate, $formatTime) {
             $tanggal = $mulai->copy()->addDays($offset);
             $tanggalKey = $tanggal->toDateString();
             $daySessions = $sessions->get($tanggalKey, collect());
@@ -207,5 +194,21 @@ class JadwalController extends Controller
             ],
             'role' => $isAdmin ? 'admin' : 'guru',
         ]);
+    }
+
+    private function formatTime($val, ?string $fallback = '-'): string
+    {
+        if (empty($val)) {
+            return $fallback ?? '-';
+        }
+        if ($val instanceof \DateTimeInterface) {
+            return $val->format('H:i');
+        }
+        $clean = trim((string) $val);
+        if (str_contains($clean, ':')) {
+            return substr($clean, 0, 5);
+        }
+
+        return $clean ?: ($fallback ?? '-');
     }
 }
