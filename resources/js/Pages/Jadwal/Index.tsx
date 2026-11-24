@@ -260,6 +260,19 @@ export default function JadwalIndex({
         );
     };
 
+    // Auto-polling realtime setiap 5 detik agar jadwal mengajar selalu sinkron
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!selectedSession) {
+                router.reload({
+                    only: ['days', 'sessions', 'activeDayData', 'otherDayWithSessions', 'rekapPekan'],
+                });
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [selectedSession]);
+
     const hasActiveFilters = Boolean(filterGuru || filterProgram || filterHari || filterStatus || searchQuery);
 
     // Format badge status

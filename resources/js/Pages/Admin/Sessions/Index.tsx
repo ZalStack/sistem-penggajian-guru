@@ -743,6 +743,20 @@ export default function SessionIndex({
         }
     };
 
+    // Auto-polling realtime setiap 5 detik agar selalu sinkron otomatis dengan Adik-Kakak
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // Hanya reload jika modal sedang tidak terbuka (agar tidak mengganggu saat admin mengetik/input)
+            if (!showModal && !showDetailModal) {
+                router.reload({
+                    only: ['sessions', 'schedules', 'teachers', 'gurus'],
+                });
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [showModal, showDetailModal]);
+
     // Filter teachers for matrix view
     const filteredTeachers = useMemo(() => {
         return teachersList.filter((t) => {
