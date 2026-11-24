@@ -716,8 +716,11 @@ export default function SessionIndex({
             const matchTeacher = Number((s as any).teacher_id) === Number(t.id) || Number((s as any).guru_id) === Number(t.id);
             if (!matchTeacher) return false;
             if (Number(s.pekan) !== Number(targetPekan)) return false;
-            if (Number((s as any).month) && Number((s as any).month) !== targetMonth) return false;
-            if (Number((s as any).year) && Number((s as any).year) !== targetYear) return false;
+
+            const sMonth = (s as any).month ? Number((s as any).month) : (s.tanggal ? new Date(s.tanggal).getMonth() + 1 : targetMonth);
+            const sYear = (s as any).year ? Number((s as any).year) : (s.tanggal ? new Date(s.tanggal).getFullYear() : targetYear);
+            if (sMonth !== targetMonth || sYear !== targetYear) return false;
+
             if (s.is_active === false || (s as any).is_active === 0 || (s as any).is_active === '0') return false;
             return true;
         });

@@ -75,7 +75,28 @@ class JadwalController extends Controller
                 ->when($validated['filter_status'] ?? null, fn ($q, $status) => $q->where('status', $status));
         }
 
-        $sessions = $query->orderBy('jam_mulai')->orderBy('jam_selesai')->get()->groupBy(fn (TeachingSession $s) => $s->tanggal->format('Y-m-d'));
+        $formatTime = function ($val, ?string $fallback = '-'): string {
+            if (empty($val)) {
+                return $fallback ?? '-';
+            }
+            if ($val instanceof \DateTimeInterface) {
+                return $val->format('H:i');
+            }
+            $clean = trim((string) $val);
+            if (str_contains($clean, ':')) {
+                return substr($clean, 0, 5);
+            }
+
+            return $clean ?: ($fallback ?? '-');
+        };
+
+        $sessions = $query->orderBy('jam_mulai')->orderBy('jam_selesai')->get()->groupBy(function (TeachingSession $s) {
+            if ($s->tanggal instanceof \DateTimeInterface) {
+                return $s->tanggal->format('Y-m-d');
+            }
+
+            return $s->tanggal ? substr((string) $s->tanggal, 0, 10) : '';
+        });
 
         // Jika user membuka halaman tanpa parameter spesifik, dan hari ini kosong tapi ada hari lain di pekan ini yang memiliki sesi,
         // prioritaskan hari terdekat yang ada sesinya agar user langsung melihat kartu jadwal mengajar yang aktif.
@@ -105,8 +126,8 @@ class JadwalController extends Controller
                 'kosong' => $daySessions->isEmpty(),
                 'sessions' => $daySessions->values()->map(fn (TeachingSession $s) => [
                     'id' => $s->id,
-                    'jam_mulai' => $s->jam_mulai->format('H:i'),
-                    'jam_selesai' => $s->jam_selesai->format('H:i'),
+                    'jam_mulai' => $formatTime($s->jam_mulai, $s->session_time ? trim(explode('-', $s->session_time)[0]) : '08:00'),
+                    'jam_selesai' => $formatTime($s->jam_selesai, $s->session_time && str_contains($s->session_time, '-') ? trim(explode('-', $s->session_time)[1]) : '09:30'),
                     'jumlah_sesi' => $s->jumlah_sesi,
                     'mapel' => $s->mapel,
                     'pekan' => $s->pekan,
@@ -153,8 +174,8 @@ class JadwalController extends Controller
             'total_jadwal' => $selectedDaySessions->count(),
             'total_guru' => $isAdmin ? $selectedDaySessions->pluck('guru_id')->filter()->unique()->count() : ($selectedDaySessions->isNotEmpty() ? 1 : 0),
             'total_program' => $selectedDaySessions->pluck('program_id')->filter()->unique()->count(),
-            'jam_terawal' => $selectedDaySessions->min('jam_mulai')?->format('H:i') ?? '-',
-            'jam_terakhir' => $selectedDaySessions->max('jam_selesai')?->format('H:i') ?? '-',
+            'jam_terawal' => $formatTime($selectedDaySessions->pluck('jam_mulai')->filter()->sort()->first(), '-'),
+            'jam_terakhir' => $formatTime($selectedDaySessions->pluck('jam_selesai')->filter()->sort()->last(), '-'),
         ];
 
         return Inertia::render('Jadwal/Index', [

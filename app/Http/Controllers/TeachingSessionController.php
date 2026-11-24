@@ -938,9 +938,7 @@ class TeachingSessionController extends Controller
         $gurus = $gurusQuery->get();
 
         foreach ($gurus as $guru) {
-            $hasActiveScheduleThisWeek = TeachingSession::where(function ($q) use ($guru) {
-                $q->where('guru_id', $guru->id)->orWhere('teacher_id', $guru->id);
-            })
+            $hasActiveScheduleThisWeek = TeachingSession::where('guru_id', $guru->id)
                 ->whereYear('tanggal', $currentYear)
                 ->whereMonth('tanggal', $currentMonth)
                 ->where('pekan', $currentPekan)
