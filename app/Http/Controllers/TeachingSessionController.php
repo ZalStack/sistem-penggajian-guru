@@ -48,6 +48,9 @@ class TeachingSessionController extends Controller
         $search = trim((string) $request->input('search', ''));
         $currentPekan = min(4, (int) ceil(now()->day / 7));
 
+        // Segarkan status keaktifan akun guru mingguan (aktif hanya jika ada jadwal di pekan berjalan saat ini)
+        self::refreshGuruWeeklyActiveStatus();
+
         $teachers = Guru::with(['grade', 'programs', 'user'])->orderBy('nama')->get();
         $teachers->transform(function ($t) {
             $t->name = $t->user?->name ?: $t->nama;
@@ -545,6 +548,7 @@ class TeachingSessionController extends Controller
             }
 
             $countWeeks = count($weeksInput);
+            self::refreshGuruWeeklyActiveStatus((int) $validated['guru_id']);
 
             return back()->with('success', "Ploting jadwal mengajar ({$countWeeks} sesi) berhasil disimpan.");
         }
@@ -784,6 +788,8 @@ class TeachingSessionController extends Controller
             AdikSyncService::pushScheduleToAdik($session, 'upsert');
         }
 
+        self::refreshGuruWeeklyActiveStatus((int) $validated['guru_id']);
+
         return back()->with('success', 'Ploting jadwal sesi mengajar berhasil disimpan.');
     }
 
@@ -905,11 +911,51 @@ class TeachingSessionController extends Controller
             );
         }
 
+        $guruId = $session->guru_id;
         AdikSyncService::pushScheduleToAdik($session, 'delete');
 
         $session->delete();
+        self::refreshGuruWeeklyActiveStatus((int) $guruId);
 
         return back()->with('success', 'Ploting jadwal mengajar berhasil dihapus.');
+    }
+
+    /**
+     * Memperbarui status keaktifan akun guru mingguan secara otomatis:
+     * Akun guru defaultnya nonaktif, dan baru aktif jika memiliki jadwal mengajar aktif pada pekan berjalan saat ini.
+     */
+    public static function refreshGuruWeeklyActiveStatus(?int $guruId = null): void
+    {
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+
+        $gurusQuery = Guru::query();
+        if ($guruId) {
+            $gurusQuery->where('id', $guruId);
+        }
+
+        $gurus = $gurusQuery->get();
+
+        foreach ($gurus as $guru) {
+            $hasActiveScheduleThisWeek = TeachingSession::where(function ($q) use ($guru) {
+                $q->where('guru_id', $guru->id)->orWhere('teacher_id', $guru->id);
+            })
+                ->whereYear('tanggal', $currentYear)
+                ->whereMonth('tanggal', $currentMonth)
+                ->where('pekan', $currentPekan)
+                ->where('is_active', true)
+                ->exists();
+
+            if ((bool) ($guru->is_active_this_week ?? false) !== $hasActiveScheduleThisWeek) {
+                $guru->update(['is_active_this_week' => $hasActiveScheduleThisWeek]);
+                try {
+                    AdikSyncService::pushTeacherToAdik($guru);
+                } catch (\Throwable $e) {
+                    // Abaikan kesalahan koneksi sync jika terjadi timeout
+                }
+            }
+        }
     }
 
     /**

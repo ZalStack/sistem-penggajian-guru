@@ -704,8 +704,25 @@ export default function SessionIndex({
         }
     };
 
+    // Status keaktifan akun guru: defaultnya Nonaktif, baru aktif jika guru memiliki jadwal yang diploting pada pekan acuan (pekan berjalan / pekan filter)
     const isTeacherActive = (t: any) => {
-        return t ? t.is_active_this_week !== false : true;
+        if (!t || !t.id) return false;
+
+        const targetPekan = filterPekan ? Number(filterPekan) : (currentPekan || 1);
+        const targetMonth = Number(selectedMonth || currentMonth);
+        const targetYear = Number(selectedYear || currentYear);
+
+        const activeSchedulesInWeek = schedulesList.filter(s => {
+            const matchTeacher = Number((s as any).teacher_id) === Number(t.id) || Number((s as any).guru_id) === Number(t.id);
+            if (!matchTeacher) return false;
+            if (Number(s.pekan) !== Number(targetPekan)) return false;
+            if (Number((s as any).month) && Number((s as any).month) !== targetMonth) return false;
+            if (Number((s as any).year) && Number((s as any).year) !== targetYear) return false;
+            if (s.is_active === false || (s as any).is_active === 0 || (s as any).is_active === '0') return false;
+            return true;
+        });
+
+        return activeSchedulesInWeek.length > 0;
     };
 
     const changeTeacherStatus = (teacher: any, value: string) => {
