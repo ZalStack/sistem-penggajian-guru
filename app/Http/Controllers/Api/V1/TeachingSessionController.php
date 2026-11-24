@@ -137,7 +137,32 @@ class TeachingSessionController extends ApiController
             return $this->errorResponse("Teaching session cannot be deleted because it still has {$attendanceCount} attendance record(s).", 409);
         }
 
+        $guruId = $session->guru_id;
+        AdikSyncService::pushScheduleToAdik($session, 'delete');
         $session->delete();
+
+        // Segarkan status keaktifan guru jika tidak ada sesi lain pekan ini
+        $guru = Guru::find($guruId);
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+
+        if ($guru) {
+            $hasOtherActive = $guru->sessions()
+                ->where('pekan', $currentPekan)
+                ->where('is_active', true)
+                ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+                ->exists();
+
+            if (! $hasOtherActive) {
+                $guru->update([
+                    'active_week_override' => null,
+                    'is_active_this_week' => false,
+                ]);
+            }
+        }
+
+        \App\Http\Controllers\TeachingSessionController::refreshGuruWeeklyActiveStatus((int) $guruId);
 
         return $this->deletedResponse('Teaching session deleted successfully.');
     }
@@ -163,6 +188,7 @@ class TeachingSessionController extends ApiController
             'is_active' => 'nullable|boolean',
             'action' => 'nullable|string|in:upsert,delete',
             'external_id' => 'nullable|integer',
+            'siguru_session_id' => 'nullable|integer',
         ]);
 
         $guru = null;
@@ -198,10 +224,43 @@ class TeachingSessionController extends ApiController
         }
 
         if (($validated['action'] ?? 'upsert') === 'delete') {
-            TeachingSession::where('guru_id', $guru->id)
-                ->where('tanggal', $validated['tanggal'])
-                ->where('kelas', $validated['kelas'])
-                ->delete();
+            $deleted = false;
+            $siguruSessionId = $request->input('siguru_session_id', $validated['external_id'] ?? null);
+            if (! empty($siguruSessionId)) {
+                $deleted = TeachingSession::where('id', (int) $siguruSessionId)->delete() > 0;
+            }
+            if (! $deleted) {
+                $delQuery = TeachingSession::where('guru_id', $guru->id);
+                if (! empty($validated['tanggal'])) {
+                    $delQuery->whereDate('tanggal', $validated['tanggal']);
+                }
+                if (! empty($validated['kelas'])) {
+                    $delQuery->where('kelas', $validated['kelas']);
+                }
+                if (! empty($validated['pekan'])) {
+                    $delQuery->where('pekan', (int) $validated['pekan']);
+                }
+                $delQuery->delete();
+            }
+
+            $currentPekan = min(4, (int) ceil(now()->day / 7));
+            $currentMonth = (int) now()->month;
+            $currentYear = (int) now()->year;
+
+            $hasOtherActive = $guru->sessions()
+                ->where('pekan', $currentPekan)
+                ->where('is_active', true)
+                ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+                ->exists();
+
+            if (! $hasOtherActive) {
+                $guru->update([
+                    'active_week_override' => null,
+                    'is_active_this_week' => false,
+                ]);
+            }
+
+            \App\Http\Controllers\TeachingSessionController::refreshGuruWeeklyActiveStatus((int) $guru->id);
 
             return $this->successResponse(['deleted' => true], 'Sesi mengajar berhasil dihapus.');
         }

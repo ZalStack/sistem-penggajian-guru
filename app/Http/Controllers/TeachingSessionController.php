@@ -941,6 +941,27 @@ class TeachingSessionController extends Controller
         AdikSyncService::pushScheduleToAdik($session, 'delete');
 
         $session->delete();
+
+        $guru = Guru::find($guruId);
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+
+        if ($guru) {
+            $hasOtherActive = $guru->sessions()
+                ->where('pekan', $currentPekan)
+                ->where('is_active', true)
+                ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+                ->exists();
+
+            if (! $hasOtherActive) {
+                $guru->update([
+                    'active_week_override' => null,
+                    'is_active_this_week' => false,
+                ]);
+            }
+        }
+
         self::refreshGuruWeeklyActiveStatus((int) $guruId);
 
         return back()->with('success', 'Ploting jadwal mengajar berhasil dihapus.');
