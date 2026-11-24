@@ -548,6 +548,23 @@ class TeachingSessionController extends Controller
             }
 
             $countWeeks = count($weeksInput);
+            $guru = Guru::find((int) $validated['guru_id']);
+            $currentPekan = min(4, (int) ceil(now()->day / 7));
+            $currentMonth = (int) now()->month;
+            $currentYear = (int) now()->year;
+            $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+            if ($guru && ! empty($guru->active_week_override) && str_starts_with((string) $guru->active_week_override, $weekKey.':0')) {
+                $guru->update(['active_week_override' => null]);
+            }
+            $guru = Guru::find((int) $validated['guru_id']);
+            $currentPekan = min(4, (int) ceil(now()->day / 7));
+            $currentMonth = (int) now()->month;
+            $currentYear = (int) now()->year;
+            $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+            if ($guru && ! empty($guru->active_week_override) && str_starts_with((string) $guru->active_week_override, $weekKey.':0')) {
+                $guru->update(['active_week_override' => null]);
+            }
+
             self::refreshGuruWeeklyActiveStatus((int) $validated['guru_id']);
 
             return back()->with('success', "Ploting jadwal mengajar ({$countWeeks} sesi) berhasil disimpan.");
@@ -786,6 +803,15 @@ class TeachingSessionController extends Controller
             ]);
             $this->notifyGuruAboutSession($session, 'ditugaskan');
             AdikSyncService::pushScheduleToAdik($session, 'upsert');
+        }
+
+        $guru = Guru::find((int) $validated['guru_id']);
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+        $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+        if ($guru && ! empty($guru->active_week_override) && str_starts_with((string) $guru->active_week_override, $weekKey.':0')) {
+            $guru->update(['active_week_override' => null]);
         }
 
         self::refreshGuruWeeklyActiveStatus((int) $validated['guru_id']);

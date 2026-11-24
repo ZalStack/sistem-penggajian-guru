@@ -136,11 +136,20 @@ class Guru extends Model
 
         // 2. Otomatis: Aktif HANYA jika memiliki jadwal mengajar aktif pada pekan berjalan ini
         return $this->sessions()
-            ->whereYear('tanggal', $currentYear)
-            ->whereMonth('tanggal', $currentMonth)
             ->where('pekan', $currentPekan)
             ->where('is_active', true)
             ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+            ->where(function ($q) use ($currentYear, $currentMonth) {
+                $q->where(function ($sub) use ($currentYear, $currentMonth) {
+                    $sub->whereNotNull('tanggal')
+                        ->whereYear('tanggal', $currentYear)
+                        ->whereMonth('tanggal', $currentMonth);
+                })->orWhere(function ($sub) use ($currentYear, $currentMonth) {
+                    $sub->whereNull('tanggal')
+                        ->whereYear('created_at', $currentYear)
+                        ->whereMonth('created_at', $currentMonth);
+                });
+            })
             ->exists();
     }
 
