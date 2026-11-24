@@ -57,6 +57,7 @@ interface SessionRowForm {
 }
 
 const KELAS_OPTIONS = [
+    'Kelas Khusus',
     'Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6',
     'Kelas 7', 'Kelas 8', 'Kelas 9', 'Kelas 10', 'Kelas 11', 'Kelas 12',
 ];
@@ -137,6 +138,12 @@ export default function SessionIndex({
 
     // MODAL TERPADU STATE
     const [showModal, setShowModal] = useState(false);
+    const [expandedWeeks, setExpandedWeeks] = useState<number[]>([1, 2, 3, 4]);
+    const toggleExpandWeek = (pekanNum: number) => {
+        setExpandedWeeks(prev =>
+            prev.includes(pekanNum) ? prev.filter(p => p !== pekanNum) : [...prev, pekanNum]
+        );
+    };
     const [modalForm, setModalForm] = useState<{
         is_edit: boolean;
         is_specific: boolean;
@@ -207,6 +214,17 @@ export default function SessionIndex({
             material_pdf: null,
             pdf_name: '',
         };
+    };
+
+    // Ambil sesi terplot untuk guru tertentu pada pekan dan bulan terpilih
+    const getPlottedSchedulesForTeacherAndPekan = (teacherId: number | string, pekan: number | string, month = selectedMonth, year = selectedYear) => {
+        if (!teacherId) return [];
+        return schedulesList.filter(s =>
+            (Number((s as any).teacher_id) === Number(teacherId) || Number((s as any).guru_id) === Number(teacherId)) &&
+            Number(s.pekan) === Number(pekan) &&
+            (Number((s as any).month) === Number(month) || (s.tanggal && new Date(s.tanggal).getMonth() + 1 === Number(month))) &&
+            (Number((s as any).year) === Number(year) || (s.tanggal && new Date(s.tanggal).getFullYear() === Number(year)))
+        );
     };
 
     // Cek pekan yang sudah diplot untuk guru tertentu pada bulan dan tahun terpilih
@@ -293,10 +311,13 @@ export default function SessionIndex({
 
     // Daftar nomor pekan yang saat ini aktif di form modal
     const activePekans = useMemo(() => {
+        if (!modalForm.is_edit && !modalForm.is_specific) {
+            return [1, 2, 3, 4];
+        }
         const peks = modalForm.sessions.map(s => Number(s.pekan)).filter(Boolean);
         const unique = Array.from(new Set(peks)).sort((a, b) => a - b);
         return unique.length > 0 ? unique : [1];
-    }, [modalForm.sessions]);
+    }, [modalForm.is_edit, modalForm.is_specific, modalForm.sessions]);
 
     const getSessionsForPekan = (pekan: number | string) => {
         return modalForm.sessions.filter(s => Number(s.pekan) === Number(pekan));
@@ -418,25 +439,32 @@ export default function SessionIndex({
         let end = '09:30';
         if (sched?.session_time && sched.session_time.includes('-')) {
             const parts = sched.session_time.split('-');
-            if (parts[0]) start = parts[0].trim();
-            if (parts[1]) end = parts[1].trim();
+            if (parts[0]) start = parts[0].trim().slice(0, 5);
+            if (parts[1]) end = parts[1].trim().slice(0, 5);
         } else if (sched?.session_time) {
-            start = sched.session_time.trim();
+            start = sched.session_time.trim().slice(0, 5);
+        } else if (sched?.jam_mulai && sched?.jam_selesai) {
+            start = String(sched.jam_mulai).trim().slice(0, 5);
+            end = String(sched.jam_selesai).trim().slice(0, 5);
         }
+
+        const dateVal = sched.session_date ? String(sched.session_date).slice(0, 10) : (sched.tanggal ? String(sched.tanggal).slice(0, 10) : '');
+        const kelasVal = sched.kelas || sched.program || sched.level || '';
+        const bidangVal = sched.bidang || sched.mapel || 'MTK';
 
         return {
             _uid: sessionUidCounter++,
             id: sched.id || null,
             pekan: Number(sched.pekan) || 1,
-            kelas: sched.kelas || '',
+            kelas: kelasVal,
             level: sched.level || '',
-            bidang: sched.bidang || sched.mapel || 'MTK',
+            bidang: bidangVal,
             question_id: sched.question_id || (sched.material_id ? String(sched.material_id) : ''),
-            session_date: sched.session_date ? String(sched.session_date).slice(0, 10) : (sched.tanggal ? String(sched.tanggal).slice(0, 10) : ''),
+            session_date: dateVal,
             jam_mulai: start,
             jam_selesai: end,
             session_time: sched.session_time || `${start} - ${end}`,
-            is_active: Boolean(sched.is_active),
+            is_active: sched.is_active !== undefined ? Boolean(sched.is_active) : true,
             notes: sched.notes || sched.catatan || '',
             show_pdf_upload: false,
             material_pdf: null,
@@ -524,6 +552,7 @@ export default function SessionIndex({
 
     const openModalTambahSesi = (teacher: any = null, pekan: number | null = null) => {
         setDismissedConflict(false);
+        setExpandedWeeks([1, 2, 3, 4]);
         setModalForm({
             is_edit: false,
             is_specific: Boolean(teacher),
@@ -539,6 +568,7 @@ export default function SessionIndex({
     const openModalAturSesiGuru = (teacher: any) => {
         if (!teacher) return;
         setDismissedConflict(false);
+        setExpandedWeeks([1, 2, 3, 4]);
 
         const existingSchedules = schedulesList.filter(s =>
             (Number((s as any).teacher_id) === Number(teacher.id) || Number((s as any).guru_id) === Number(teacher.id)) &&
@@ -1491,34 +1521,37 @@ export default function SessionIndex({
                                     const isLocked = isPekanLockedInModal(pekanNum);
                                     const isPast = isPekanPast(pekanNum, modalForm.month, modalForm.year);
                                     const sessionsInPekan = getSessionsForPekan(pekanNum);
+                                    const plottedSessions = getPlottedSchedulesForTeacherAndPekan(modalForm.teacher_id, pekanNum, modalForm.month, modalForm.year);
+                                    const isExpanded = expandedWeeks.includes(pekanNum);
 
                                     return (
                                         <div
                                             key={pekanNum}
                                             className={`rounded-xl border transition-all p-3 space-y-2.5 shadow-2xs ${
-                                                isLocked ? 'border-slate-400 bg-slate-200/90' : 'border-slate-200 bg-white'
+                                                isLocked ? "border-slate-300 bg-slate-100/90" : "border-slate-200 bg-white"
                                             }`}
                                         >
-                                            {/* Header Pekan: Background Biru Modern (atau Abu-abu Gelap Kontras jika sudah terploting/lewat) */}
+                                            {/* Header Pekan dengan Accordion Toggle */}
                                             <div
-                                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors shadow-xs ${
-                                                    isLocked ? 'bg-slate-700 text-white' : 'bg-french-blue text-white'
+                                                onClick={() => toggleExpandWeek(pekanNum)}
+                                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors shadow-xs cursor-pointer select-none ${
+                                                    isLocked ? "bg-slate-700 hover:bg-slate-800 text-white" : "bg-french-blue hover:bg-deep-twilight text-white"
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span
                                                         className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                                                            isLocked ? 'bg-slate-900/60 text-white' : 'bg-white/20 text-white'
+                                                            isLocked ? "bg-slate-900/60 text-white" : "bg-white/20 text-white"
                                                         }`}
                                                     >
                                                         Pekan {pekanNum}
                                                     </span>
-                                                    <span className={`text-[11px] font-medium ${isLocked ? 'text-slate-100 font-semibold' : 'text-white/90'}`}>
-                                                        {isPlotted ? 'Sudah Diploting (Terkunci)' : (isPast ? 'Sudah Terlewat (Terkunci)' : `${sessionsInPekan.length} Sesi Terjadwal`)}
+                                                    <span className={`text-[11px] font-medium ${isLocked ? "text-slate-100 font-semibold" : "text-white/90"}`}>
+                                                        {isPlotted ? "Sudah Diploting" : (isPast ? "Tidak Ada Jadwal (Terlewat)" : `${sessionsInPekan.length} Sesi Terjadwal`)}
                                                     </span>
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5">
+                                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                     {!modalForm.is_edit && !modalForm.is_specific && !isLocked && (
                                                         <button
                                                             type="button"
@@ -1533,221 +1566,279 @@ export default function SessionIndex({
                                                         </button>
                                                     )}
 
-                                                    {!modalForm.is_edit && !modalForm.is_specific && activePekans.length > 1 && !isLocked && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removePekan(pekanNum)}
-                                                            className="text-[10px] text-white/90 hover:text-white hover:underline cursor-pointer font-medium px-1.5 py-0.5 rounded bg-rose-500/80 hover:bg-rose-600 transition-colors"
-                                                        >
-                                                            Hapus Pekan
-                                                        </button>
-                                                    )}
-
                                                     {isLocked && (
                                                         <span className="text-[10px] bg-slate-900/60 text-white px-2 py-0.5 rounded-md font-bold tracking-wide">
-                                                            {isPast && !isPlotted ? 'Terlewat' : 'Terkunci'}
+                                                            {isPlotted ? "Terkunci" : "Terlewat"}
                                                         </span>
                                                     )}
+
+                                                    {/* Panah Accordion Chevron */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleExpandWeek(pekanNum)}
+                                                        className="p-1 rounded-md hover:bg-white/20 text-white transition-colors cursor-pointer"
+                                                        title={isExpanded ? "Tutup Pekan" : "Buka Pekan"}
+                                                    >
+                                                        <svg
+                                                            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
 
-                                            {/* Daftar Kartu Sesi di dalam Pekan Ini */}
-                                            <div className="space-y-2">
-                                                {sessionsInPekan.map((s) => (
-                                                    <div
-                                                        key={s._uid}
-                                                        className={`p-2.5 rounded-lg border space-y-2 relative transition-colors ${
-                                                            isLocked ? 'border-slate-400 bg-slate-300/70 shadow-xs' : 'border-slate-200/90 bg-slate-50/70'
-                                                        }`}
-                                                    >
-                                                        {/* Sub-Header Sesi */}
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span
-                                                                    className={`w-4 h-4 rounded-full text-white text-[9px] font-bold flex items-center justify-center ${
-                                                                        isLocked ? 'bg-slate-700' : 'bg-french-blue'
-                                                                    }`}
-                                                                >
-                                                                    {getSessionIndexInPekan(s)}
-                                                                </span>
-                                                                <span className={`text-xs font-bold ${isLocked ? 'text-slate-800' : 'text-slate-800'}`}>
-                                                                    Sesi {getSessionIndexInPekan(s)}
-                                                                </span>
-                                                                {isLocked && (
-                                                                    <span className="text-[10px] text-slate-700 font-semibold italic ml-1">
-                                                                        {isPlotted ? '(Sudah ada jadwal di pekan ini)' : '(Pekan ini sudah lewat)'}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            {!modalForm.is_edit && !modalForm.is_specific && !isLocked && (modalForm.sessions.length > 1 || sessionsInPekan.length > 1) && (
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => removeSessionByUid(s._uid)}
-                                                                    className="text-[10px] text-red-500 hover:text-red-700 hover:underline cursor-pointer font-medium"
-                                                                >
-                                                                    Hapus Sesi
-                                                                </button>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Input Tanggal & Jam Picker */}
-                                                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-1.5">
-                                                            <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Tanggal Sesi</label>
-                                                                <input
-                                                                    type="date"
-                                                                    value={s.session_date}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => updateSession(s._uid, { session_date: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Jam Mulai</label>
-                                                                <input
-                                                                    type="time"
-                                                                    value={s.jam_mulai}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => {
-                                                                        updateSession(s._uid, { jam_mulai: e.target.value });
-                                                                        onTimeChange({ ...s, jam_mulai: e.target.value });
-                                                                    }}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Jam Selesai</label>
-                                                                <input
-                                                                    type="time"
-                                                                    value={s.jam_selesai}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => {
-                                                                        updateSession(s._uid, { jam_selesai: e.target.value });
-                                                                        onTimeChange({ ...s, jam_selesai: e.target.value });
-                                                                    }}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Kelas</label>
-                                                                <select
-                                                                    value={s.kelas}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => updateSession(s._uid, { kelas: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
-                                                                >
-                                                                    <option value="">Semua Kelas</option>
-                                                                    {KELAS_OPTIONS.map((k) => (
-                                                                        <option key={k} value={k}>{k}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                            <div>
-                                                                <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-gray-600'}`}>Bidang</label>
-                                                                <select
-                                                                    value={s.bidang}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => updateSession(s._uid, { bidang: e.target.value })}
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed"
-                                                                >
-                                                                    <option value="MTK">MTK</option>
-                                                                    <option value="IPA">IPA</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Bahan Ajar: Bank Soal & Direct PDF Upload */}
-                                                        <div className={`pt-1.5 border-t border-slate-200/80 space-y-1.5 ${isLocked ? 'border-slate-400/80' : ''}`}>
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                <div>
-                                                                    <label className={`block text-[9px] font-bold uppercase mb-0.5 ${isLocked ? 'text-slate-800' : 'text-slate-600'}`}>
-                                                                        Pilih Materi Dari Bank Soal
-                                                                    </label>
-                                                                    <select
-                                                                        value={s.question_id}
-                                                                        disabled={Boolean(s.material_pdf) || isLocked}
-                                                                        onChange={(e) => updateSession(s._uid, { question_id: e.target.value })}
-                                                                        className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs text-deep-twilight outline-none disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-bold disabled:cursor-not-allowed cursor-pointer"
+                                            {/* Isi Konten Accordion */}
+                                            {isExpanded && (
+                                                <div className="space-y-2 pt-0.5">
+                                                    {/* JIKA PEKAN TERKUNCI & SUDAH DIPLOT: TAMPILKAN KARTU RINGKASAN READ-ONLY YANG BERSIH */}
+                                                    {isLocked && isPlotted ? (
+                                                        <div className="space-y-2">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                                {(plottedSessions.length > 0 ? plottedSessions : sessionsInPekan).map((sched, idx) => (
+                                                                    <div
+                                                                        key={sched.id || idx}
+                                                                        className="p-2.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1.5 text-xs"
                                                                     >
-                                                                        <option value="">-- Tanpa Materi --</option>
-                                                                        {questionsList.map((q) => (
-                                                                            <option key={q.id} value={q.id}>
-                                                                                {q.title} ({q.subject || 'MTK'} - {(q as any).pekan || 'Umum'})
-                                                                            </option>
-                                                                        ))}
-                                                                    </select>
-                                                                </div>
-
-                                                                <div>
-                                                                    <div className="flex items-center justify-between mb-0.5">
-                                                                        <label className={`block text-[9px] font-bold uppercase ${isLocked ? 'text-slate-800' : 'text-slate-600'}`}>
-                                                                            Atau Upload PDF Langsung
-                                                                        </label>
-                                                                        <button
-                                                                            type="button"
-                                                                            disabled={isLocked}
-                                                                            onClick={() => updateSession(s._uid, { show_pdf_upload: !s.show_pdf_upload })}
-                                                                            className="text-[9px] text-french-blue hover:underline cursor-pointer font-semibold disabled:hidden"
-                                                                        >
-                                                                            {s.show_pdf_upload ? 'Tutup Upload' : '+ Upload PDF'}
-                                                                        </button>
+                                                                        <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                                                                            <span className="font-bold text-french-blue text-[11px]">Sesi {idx + 1}</span>
+                                                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-semibold ${
+                                                                                sched.is_active !== false ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"
+                                                                            }`}>
+                                                                                {sched.is_active !== false ? "Aktif" : "Nonaktif"}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="space-y-1 text-[11px] text-slate-700">
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-gray-400">Kelas:</span>
+                                                                                <span className="font-semibold text-deep-twilight">{sched.kelas || sched.program || "Semua Kelas"}</span>
+                                                                            </div>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-gray-400">Bidang:</span>
+                                                                                <span className="font-semibold text-deep-twilight">{sched.bidang || sched.mapel || "-"}</span>
+                                                                            </div>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-gray-400">Waktu:</span>
+                                                                                <span className="font-semibold text-deep-twilight">⏰ {sched.session_time || `${sched.jam_mulai || "08:00"} - ${sched.jam_selesai || "09:30"}`}</span>
+                                                                            </div>
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-gray-400">Tanggal:</span>
+                                                                                <span className="font-semibold text-deep-twilight">📅 {formatDate(sched.session_date || sched.tanggal)}</span>
+                                                                            </div>
+                                                                            {(sched.question || sched.material || sched.bahan_ajar) && (
+                                                                                <div className="pt-1 border-t border-slate-100 text-[10px] truncate text-slate-600">
+                                                                                    📄 {(sched.question || sched.material)?.title || sched.bahan_ajar}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[10px] flex items-center gap-1.5">
+                                                                <span>ℹ️</span>
+                                                                <span>Pekan ini sudah terploting dan terkunci. Jika ingin mengubah jadwal sesi ini, silakan gunakan tombol <strong>Ubah</strong> pada tabel atau detail sesi.</span>
+                                                            </div>
+                                                        </div>
+                                                    ) : isLocked && !isPlotted ? (
+                                                        /* JIKA PEKAN TERLEWAT DAN KOSONG (TIDAK ADA JADWAL) */
+                                                        <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-white text-center space-y-1 text-slate-500 text-xs">
+                                                            <p className="font-semibold text-slate-600">Tidak Ada Jadwal</p>
+                                                            <p className="text-[11px] text-slate-400 italic">Pekan ini telah terlewat dan tidak dijadwalkan sesi mengajar.</p>
+                                                        </div>
+                                                    ) : sessionsInPekan.length === 0 ? (
+                                                        /* JIKA PEKAN AKTIF TAPI BELUM ADA SESI */
+                                                        <div className="p-4 rounded-xl border border-dashed border-french-blue/30 bg-french-blue/5 text-center space-y-2">
+                                                            <p className="text-xs text-slate-600 font-medium">Belum ada sesi di Pekan {pekanNum}.</p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => addSessionForPekan(pekanNum)}
+                                                                className="px-3 py-1.5 bg-french-blue text-white rounded-lg text-xs font-semibold hover:bg-deep-twilight transition-colors cursor-pointer inline-flex items-center gap-1"
+                                                            >
+                                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                                                </svg>
+                                                                <span>+ Tambah Sesi Pekan {pekanNum}</span>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        /* JIKA PEKAN AKTIF (MISAL PEKAN 4): TAMPILKAN FORM SESI AKTIF LENGKAP */
+                                                        sessionsInPekan.map((s) => (
+                                                            <div
+                                                                key={s._uid}
+                                                                className="p-2.5 rounded-lg border space-y-2 relative transition-colors border-slate-200/90 bg-slate-50/70"
+                                                            >
+                                                                {/* Sub-Header Sesi */}
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="w-4 h-4 rounded-full text-white text-[9px] font-bold flex items-center justify-center bg-french-blue">
+                                                                            {getSessionIndexInPekan(s)}
+                                                                        </span>
+                                                                        <span className="text-xs font-bold text-slate-800">
+                                                                            Sesi {getSessionIndexInPekan(s)}
+                                                                        </span>
                                                                     </div>
 
-                                                                    {s.show_pdf_upload && (
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <input
-                                                                                type="file"
-                                                                                accept=".pdf"
-                                                                                disabled={isLocked}
-                                                                                onChange={(e) => onFileChange(e, s)}
-                                                                                className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-french-blue/10 file:text-french-blue hover:file:bg-french-blue/20 cursor-pointer"
-                                                                            />
-                                                                            {s.pdf_name && (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => clearSessionPdf(s)}
-                                                                                    className="text-red-500 hover:text-red-700 text-xs font-bold"
-                                                                                    title="Hapus file PDF"
-                                                                                >
-                                                                                    &times;
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-
-                                                                    {s.pdf_name && !s.show_pdf_upload && (
-                                                                        <div className="text-[10px] text-slate-800 flex items-center justify-between bg-slate-200/80 px-2 py-0.5 rounded font-medium border border-slate-300">
-                                                                            <span className="truncate">📎 {s.pdf_name}</span>
-                                                                            {!isLocked && (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => clearSessionPdf(s)}
-                                                                                    className="text-red-500 font-bold ml-1"
-                                                                                >
-                                                                                    &times;
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
+                                                                    {!modalForm.is_edit && !modalForm.is_specific && (sessionsInPekan.length > 1) && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => removeSessionByUid(s._uid)}
+                                                                            className="text-[10px] text-red-500 hover:text-red-700 hover:underline cursor-pointer font-medium"
+                                                                        >
+                                                                            Hapus Sesi
+                                                                        </button>
                                                                     )}
                                                                 </div>
-                                                            </div>
 
-                                                            {/* Catatan Sesi */}
-                                                            <div>
-                                                                <input
-                                                                    type="text"
-                                                                    value={s.notes}
-                                                                    disabled={isLocked}
-                                                                    onChange={(e) => updateSession(s._uid, { notes: e.target.value })}
-                                                                    placeholder="Catatan sesi (opsional)"
-                                                                    className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-[11px] text-deep-twilight outline-none placeholder:text-gray-400 disabled:bg-slate-300/80 disabled:text-slate-900 disabled:border-slate-400 disabled:font-medium disabled:cursor-not-allowed"
-                                                                />
+                                                                {/* Input Tanggal & Jam Picker */}
+                                                                <div className="grid grid-cols-1 sm:grid-cols-5 gap-1.5">
+                                                                    <div>
+                                                                        <label className="block text-[9px] font-bold uppercase mb-0.5 text-gray-600">Tanggal Sesi</label>
+                                                                        <input
+                                                                            type="date"
+                                                                            value={s.session_date}
+                                                                            onChange={(e) => updateSession(s._uid, { session_date: e.target.value })}
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-[9px] font-bold uppercase mb-0.5 text-gray-600">Jam Mulai</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={s.jam_mulai}
+                                                                            onChange={(e) => {
+                                                                                updateSession(s._uid, { jam_mulai: e.target.value });
+                                                                                onTimeChange({ ...s, jam_mulai: e.target.value });
+                                                                            }}
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-[9px] font-bold uppercase mb-0.5 text-gray-600">Jam Selesai</label>
+                                                                        <input
+                                                                            type="time"
+                                                                            value={s.jam_selesai}
+                                                                            onChange={(e) => {
+                                                                                updateSession(s._uid, { jam_selesai: e.target.value });
+                                                                                onTimeChange({ ...s, jam_selesai: e.target.value });
+                                                                            }}
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none focus:border-bright-teal cursor-pointer"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-[9px] font-bold uppercase mb-0.5 text-gray-600">Kelas</label>
+                                                                        <select
+                                                                            value={s.kelas}
+                                                                            onChange={(e) => updateSession(s._uid, { kelas: e.target.value })}
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer"
+                                                                        >
+                                                                            <option value="">Semua Kelas</option>
+                                                                            {KELAS_OPTIONS.map((k) => (
+                                                                                <option key={k} value={k}>{k}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="block text-[9px] font-bold uppercase mb-0.5 text-gray-600">Bidang</label>
+                                                                        <select
+                                                                            value={s.bidang}
+                                                                            onChange={(e) => updateSession(s._uid, { bidang: e.target.value })}
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs font-semibold text-deep-twilight outline-none cursor-pointer"
+                                                                        >
+                                                                            <option value="MTK">MTK</option>
+                                                                            <option value="IPA">IPA</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Bahan Ajar: Bank Soal & Direct PDF Upload */}
+                                                                <div className="pt-1.5 border-t border-slate-200/80 space-y-1.5">
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                        <div>
+                                                                            <label className="block text-[9px] font-bold uppercase mb-0.5 text-slate-600">
+                                                                                Pilih Materi Dari Bank Soal
+                                                                            </label>
+                                                                            <select
+                                                                                value={s.question_id}
+                                                                                onChange={(e) => updateSession(s._uid, { question_id: e.target.value })}
+                                                                                className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs text-deep-twilight outline-none cursor-pointer"
+                                                                            >
+                                                                                <option value="">-- Tanpa Bahan Ajar / Pilih Nanti --</option>
+                                                                                {materialsList.map((m) => (
+                                                                                    <option key={m.id} value={m.id}>
+                                                                                        {m.title || m.nama_materi || `Materi #${m.id}`}
+                                                                                    </option>
+                                                                                ))}
+                                                                            </select>
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="flex items-center justify-between mb-0.5">
+                                                                                <label className="block text-[9px] font-bold uppercase text-slate-600">
+                                                                                    Atau Upload PDF Langsung
+                                                                                </label>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => updateSession(s._uid, { show_pdf_upload: !s.show_pdf_upload })}
+                                                                                    className="text-[9px] text-french-blue hover:underline cursor-pointer font-semibold"
+                                                                                >
+                                                                                    {s.show_pdf_upload ? "Tutup Upload" : "+ Upload PDF"}
+                                                                                </button>
+                                                                            </div>
+
+                                                                            {s.show_pdf_upload && (
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <input
+                                                                                        type="file"
+                                                                                        accept=".pdf"
+                                                                                        onChange={(e) => onFileChange(e, s)}
+                                                                                        className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-french-blue/10 file:text-french-blue hover:file:bg-french-blue/20 cursor-pointer"
+                                                                                    />
+                                                                                    {s.pdf_name && (
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => clearSessionPdf(s)}
+                                                                                            className="text-red-500 hover:text-red-700 text-xs font-bold"
+                                                                                            title="Hapus file terpilih"
+                                                                                        >
+                                                                                            &times;
+                                                                                        </button>
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+
+                                                                            {s.pdf_name && !s.show_pdf_upload && (
+                                                                                <div className="text-[10px] text-slate-800 flex items-center justify-between bg-slate-200/80 px-2 py-0.5 rounded font-medium border border-slate-300">
+                                                                                    <span className="truncate">📎 {s.pdf_name}</span>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => clearSessionPdf(s)}
+                                                                                        className="text-red-500 font-bold ml-1"
+                                                                                    >
+                                                                                        &times;
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Catatan Sesi */}
+                                                                    <div>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={s.notes}
+                                                                            onChange={(e) => updateSession(s._uid, { notes: e.target.value })}
+                                                                            placeholder="Catatan sesi (opsional)"
+                                                                            className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-[11px] text-deep-twilight outline-none placeholder:text-gray-400"
+                                                                        />
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
