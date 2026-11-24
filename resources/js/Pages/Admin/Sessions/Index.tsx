@@ -87,7 +87,8 @@ export default function SessionIndex({
 }: SessionIndexProps) {
     const page = usePage();
     const teachersList = initialTeachers.length > 0 ? initialTeachers : initialGurus;
-    const questionsList = initialQuestions.length > 0 ? initialQuestions : initialMaterials;
+    const materialsList = initialMaterials.length > 0 ? initialMaterials : initialQuestions;
+    const questionsList = materialsList;
     const schedulesList = initialSchedules;
     const pagination = initialPagination || (initialSessions && 'total' in initialSessions ? initialSessions : null);
 
@@ -1624,23 +1625,23 @@ export default function SessionIndex({
                                                                         <div className="space-y-1 text-[11px] text-slate-700">
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-gray-400">Kelas:</span>
-                                                                                <span className="font-semibold text-deep-twilight">{sched.kelas || sched.program || "Semua Kelas"}</span>
+                                                                                <span className="font-semibold text-deep-twilight">{(sched as any).kelas || (sched as any).program?.nama || (sched as any).program?.name || (typeof (sched as any).program === 'string' ? (sched as any).program : "Semua Kelas")}</span>
                                                                             </div>
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-gray-400">Bidang:</span>
-                                                                                <span className="font-semibold text-deep-twilight">{sched.bidang || sched.mapel || "-"}</span>
+                                                                                <span className="font-semibold text-deep-twilight">{(sched as any).bidang || (sched as any).mapel || "-"}</span>
                                                                             </div>
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-gray-400">Waktu:</span>
-                                                                                <span className="font-semibold text-deep-twilight">⏰ {sched.session_time || `${sched.jam_mulai || "08:00"} - ${sched.jam_selesai || "09:30"}`}</span>
+                                                                                <span className="font-semibold text-deep-twilight">⏰ {(sched as any).session_time || `${(sched as any).jam_mulai || "08:00"} - ${(sched as any).jam_selesai || "09:30"}`}</span>
                                                                             </div>
                                                                             <div className="flex items-center justify-between">
                                                                                 <span className="text-gray-400">Tanggal:</span>
-                                                                                <span className="font-semibold text-deep-twilight">📅 {formatDate(sched.session_date || sched.tanggal)}</span>
+                                                                                <span className="font-semibold text-deep-twilight">📅 {formatDate((sched as any).session_date || (sched as any).tanggal)}</span>
                                                                             </div>
-                                                                            {(sched.question || sched.material || sched.bahan_ajar) && (
+                                                                            {((sched as any).question || (sched as any).material || (sched as any).bahan_ajar) && (
                                                                                 <div className="pt-1 border-t border-slate-100 text-[10px] truncate text-slate-600">
-                                                                                    📄 {(sched.question || sched.material)?.title || sched.bahan_ajar}
+                                                                                    📄 {((sched as any).question || (sched as any).material)?.title || (sched as any).bahan_ajar}
                                                                                 </div>
                                                                             )}
                                                                         </div>
@@ -1776,7 +1777,7 @@ export default function SessionIndex({
                                                                                 className="w-full px-2 py-1 rounded-lg border border-light-cyan bg-white text-xs text-deep-twilight outline-none cursor-pointer"
                                                                             >
                                                                                 <option value="">-- Tanpa Bahan Ajar / Pilih Nanti --</option>
-                                                                                {materialsList.map((m) => (
+                                                                                {materialsList.map((m: any) => (
                                                                                     <option key={m.id} value={m.id}>
                                                                                         {m.title || m.nama_materi || `Materi #${m.id}`}
                                                                                     </option>
