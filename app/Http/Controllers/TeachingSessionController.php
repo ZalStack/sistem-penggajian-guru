@@ -48,6 +48,9 @@ class TeachingSessionController extends Controller
         $search = trim((string) $request->input('search', ''));
         $currentPekan = min(4, (int) ceil(now()->day / 7));
 
+        // Segarkan status keaktifan akun guru mingguan secara dinamis
+        self::refreshGuruWeeklyActiveStatus();
+
         $teachers = Guru::with(['grade', 'programs', 'user'])->orderBy('nama')->get();
         $teachers->transform(function ($t) {
             $t->name = $t->user?->name ?: $t->nama;
@@ -935,15 +938,10 @@ class TeachingSessionController extends Controller
         $gurus = $gurusQuery->get();
 
         foreach ($gurus as $guru) {
-            $hasActiveScheduleThisWeek = TeachingSession::where('guru_id', $guru->id)
-                ->whereYear('tanggal', $currentYear)
-                ->whereMonth('tanggal', $currentMonth)
-                ->where('pekan', $currentPekan)
-                ->where('is_active', true)
-                ->exists();
+            $computedStatus = $guru->computeActiveStatusForCurrentWeek();
 
-            if ($hasActiveScheduleThisWeek && ! $guru->is_active_this_week) {
-                $guru->update(['is_active_this_week' => true]);
+            if ((bool) ($guru->is_active_this_week ?? false) !== $computedStatus) {
+                $guru->update(['is_active_this_week' => $computedStatus]);
                 try {
                     AdikSyncService::pushTeacherToAdik($guru->fresh());
                 } catch (\Throwable $e) {
@@ -958,16 +956,24 @@ class TeachingSessionController extends Controller
      */
     public function toggleTeacherActive(Request $request, Guru $guru)
     {
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+        $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+
         $newStatus = true;
         if ($request->has('status')) {
             $newStatus = $request->input('status') === 'aktif';
         } elseif ($request->has('is_active_this_week')) {
             $newStatus = $request->boolean('is_active_this_week');
         } else {
-            $newStatus = ! (bool) ($guru->is_active_this_week ?? false);
+            $newStatus = ! $guru->computeActiveStatusForCurrentWeek();
         }
 
+        $overrideVal = $weekKey.':'.($newStatus ? '1' : '0');
+
         $guru->update([
+            'active_week_override' => $overrideVal,
             'is_active_this_week' => $newStatus,
         ]);
 

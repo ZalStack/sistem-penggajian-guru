@@ -35,6 +35,7 @@ class Guru extends Model
         'keterangan_mengajar',
         'aktivitas_luar_kpm',
         'is_active_this_week',
+        'active_week_override',
     ];
 
     protected $casts = [
@@ -119,6 +120,28 @@ class Guru extends Model
         return $this->programs->contains(
             fn (Program $program) => str_contains(strtolower($program->nama), 'khusus')
         );
+    }
+
+    public function computeActiveStatusForCurrentWeek(): bool
+    {
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+        $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+
+        // 1. Manual override admin pada pekan berjalan ini
+        if (! empty($this->active_week_override) && str_starts_with((string) $this->active_week_override, $weekKey.':')) {
+            return str_ends_with((string) $this->active_week_override, ':1');
+        }
+
+        // 2. Otomatis: Aktif HANYA jika memiliki jadwal mengajar aktif pada pekan berjalan ini
+        return $this->sessions()
+            ->whereYear('tanggal', $currentYear)
+            ->whereMonth('tanggal', $currentMonth)
+            ->where('pekan', $currentPekan)
+            ->where('is_active', true)
+            ->where('status', '!=', TeachingSession::STATUS_DIBATALKAN)
+            ->exists();
     }
 
     /**

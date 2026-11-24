@@ -311,8 +311,16 @@ class TeacherController extends ApiController
             return $this->errorResponse('Guru tidak ditemukan di sistem SiGuru.', 404);
         }
 
+        $currentPekan = min(4, (int) ceil(now()->day / 7));
+        $currentMonth = (int) now()->month;
+        $currentYear = (int) now()->year;
+        $weekKey = "{$currentYear}-{$currentMonth}-{$currentPekan}";
+
+        $override = $request->input('active_week_override', $weekKey.':'.($validated['is_active_this_week'] ? '1' : '0'));
+
         $guru->update([
             'is_active_this_week' => $validated['is_active_this_week'],
+            'active_week_override' => $override,
         ]);
 
         return $this->successResponse([
