@@ -481,26 +481,20 @@ export default function SessionIndex({
                 (Number((s as any).year) === Number(modalForm.year) || (s.tanggal && new Date(s.tanggal).getFullYear() === Number(modalForm.year)))
             ).sort((a, b) => Number(a.pekan) - Number(b.pekan));
 
-            if (existingSchedules.length > 0) {
-                setModalForm(prev => ({
-                    ...prev,
-                    teacher_id: teacherId,
-                    sessions: existingSchedules.map(createSessionFromSchedule),
-                }));
-            } else {
-                let defaultPekan = 1;
-                for (let p = 1; p <= 4; p++) {
-                    if (!isPekanPast(p, modalForm.month, modalForm.year)) {
-                        defaultPekan = p;
-                        break;
-                    }
-                }
-                setModalForm(prev => ({
-                    ...prev,
-                    teacher_id: teacherId,
-                    sessions: [createEmptySession(defaultPekan, teacher)],
-                }));
-            }
+            const availableWeeks = [1, 2, 3, 4].filter(p =>
+                !isPekanPast(p, modalForm.month, modalForm.year) &&
+                !existingSchedules.some(s => Number(s.pekan) === p)
+            );
+
+            const activeWeekToInit = availableWeeks.length > 0 ? availableWeeks[0] : (
+                [1, 2, 3, 4].find(p => !isPekanPast(p, modalForm.month, modalForm.year)) || 4
+            );
+
+            setModalForm(prev => ({
+                ...prev,
+                teacher_id: teacherId,
+                sessions: [createEmptySession(activeWeekToInit, teacher)],
+            }));
         } else if (teacher) {
             const defaultBidang = ((teacher as any)?.subject || (teacher as any)?.mapel) === 'IPA' ? 'IPA' : 'MTK';
             const defaultKelas = teacher?.kelas_diajar || '';
@@ -514,6 +508,8 @@ export default function SessionIndex({
                     bidang: s.bidang || defaultBidang,
                 })),
             }));
+        } else {
+            setModalForm(prev => ({ ...prev, teacher_id: teacherId }));
         }
     };
 
@@ -576,13 +572,15 @@ export default function SessionIndex({
             (Number((s as any).year) === Number(selectedYear) || (s.tanggal && new Date(s.tanggal).getFullYear() === Number(selectedYear)))
         ).sort((a, b) => Number(a.pekan) - Number(b.pekan));
 
-        let defaultPekan = 1;
-        for (let p = 1; p <= 4; p++) {
-            if (!isPekanPast(p, selectedMonth, selectedYear)) {
-                defaultPekan = p;
-                break;
-            }
-        }
+        // Cari pekan yang masih terbuka (belum lewat dan belum diplot)
+        const availableWeeks = [1, 2, 3, 4].filter(p =>
+            !isPekanPast(p, selectedMonth, selectedYear) &&
+            !existingSchedules.some(s => Number(s.pekan) === p)
+        );
+
+        const activeWeekToInit = availableWeeks.length > 0 ? availableWeeks[0] : (
+            [1, 2, 3, 4].find(p => !isPekanPast(p, selectedMonth, selectedYear)) || 4
+        );
 
         setModalForm({
             is_edit: false,
@@ -591,9 +589,7 @@ export default function SessionIndex({
             teacher_id: String(teacher.id),
             month: selectedMonth,
             year: selectedYear,
-            sessions: existingSchedules.length > 0
-                ? existingSchedules.map(createSessionFromSchedule)
-                : [createEmptySession(defaultPekan, teacher)],
+            sessions: [createEmptySession(activeWeekToInit, teacher)],
         });
         setShowModal(true);
     };
