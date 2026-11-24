@@ -1499,15 +1499,6 @@ export default function SessionIndex({
 
                             {/* DAFTAR PEKAN DAN SESI MENGAJAR */}
                             <div className="space-y-3">
-                                {/* Info jika guru sudah memiliki pekan yang diplot */}
-                                {!modalForm.is_edit && modalForm.teacher_id && formattedPlottedWeeksText && (
-                                    <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                                            <span className="capitalize">{formattedPlottedWeeksText}</span>
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* Peringatan jika semua pekan sudah terplot atau pekan yang tersisa sudah lewat */}
                                 {!modalForm.is_edit && modalForm.teacher_id && isNoMorePekanAvailableFor(modalForm.teacher_id, modalForm.month, modalForm.year) && (
