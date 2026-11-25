@@ -22,6 +22,13 @@ class AuthenticatedSessionController extends Controller
         $teachers = User::with(['guru.grade', 'guru.programs'])
             ->orderBy('name')
             ->get()
+            // Hanya sisakan 1 akun admin utama yaitu 'Administrator' (admin@siguru.com), abaikan admin cadangan/duplikat lainnya
+            ->filter(function (User $u) {
+                if ($u->role === 'admin') {
+                    return $u->email === 'admin@siguru.com' || $u->id === 1;
+                }
+                return true;
+            })
             ->map(function (User $u) {
                 $isAdmin = $u->role === 'admin';
                 $guru = $u->guru;
@@ -32,7 +39,7 @@ class AuthenticatedSessionController extends Controller
 
                 return [
                     'id' => $u->id,
-                    'name' => $u->name,
+                    'name' => $isAdmin ? 'Administrator' : $u->name,
                     'email' => $u->email,
                     'role' => $u->role,
                     'is_admin' => $isAdmin,
