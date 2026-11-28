@@ -194,3 +194,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
     });
 });
+
+Route::post('satellite/reset-progress', [\App\Http\Controllers\Api\SatelliteApiController::class, 'resetProgress'])
+    ->name('satellite.reset-progress');
